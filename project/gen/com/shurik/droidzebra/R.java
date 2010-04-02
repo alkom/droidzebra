@@ -32,7 +32,9 @@ public final class R {
     public static final class drawable {
         public static final int ic_menu_play=0x7f020000;
         public static final int ic_menu_switch_sides=0x7f020001;
-        public static final int woodtrim=0x7f020002;
+        public static final int icon=0x7f020002;
+        public static final int logo=0x7f020003;
+        public static final int woodtrim=0x7f020004;
     }
     public static final class id {
         public static final int board=0x7f080001;
@@ -44,9 +46,10 @@ public final class R {
         public static final int gameover_score=0x7f080006;
         public static final int gameover_text=0x7f080005;
         public static final int main_frame=0x7f080000;
-        public static final int progress=0x7f08000b;
+        public static final int splash_logo=0x7f08000a;
+        public static final int splash_progress=0x7f08000c;
+        public static final int splash_text=0x7f08000b;
         public static final int status_panel=0x7f080003;
-        public static final int text=0x7f08000a;
     }
     public static final class layout {
         public static final int board_layout=0x7f030000;

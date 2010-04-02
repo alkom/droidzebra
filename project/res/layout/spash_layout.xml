@@ -4,26 +4,24 @@
   android:layout_width="wrap_content"
   android:layout_height="wrap_content">
 
+        <ImageView android:layout_height="wrap_content" android:src="@drawable/logo" android:id="@+id/splash_logo" android:layout_centerHorizontal="true" android:layout_centerInParent="false" android:layout_centerVertical="false" android:drawingCacheQuality="auto" android:layout_width="wrap_content" android:paddingTop="50sp"></ImageView>
+        
         <TextView
-          android:id="@+id/text"
-		  android:visibility="visible"
+          android:visibility="visible"
           android:layout_width="fill_parent"
-          android:layout_height="fill_parent"
-          android:layout_centerInParent="true"
           android:gravity="center_vertical|center_horizontal"
           android:textColor="#CFB53B"
           android:textSize="24sp" 
           android:background="#000000"
-          android:textStyle="bold" android:typeface="normal" android:text="@string/spash_layout_message"/>
+          android:textStyle="bold" android:typeface="normal" android:text="@string/spash_layout_message" android:layout_below="@+id/splash_logo" android:layout_centerInParent="false" android:layout_centerHorizontal="true" android:layout_height="wrap_content" android:paddingTop="30sp" android:id="@+id/splash_text" android:paddingBottom="30sp"/>
           
 		<ProgressBar 
-		  android:id="@+id/progress" 
-          android:layout_width="wrap_content"
+		  android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:visibility="visible" 
 		  android:layout_centerHorizontal="true" 
-		  android:layout_alignParentBottom="true" 
 		  android:layout_marginBottom="50dp"
-		  android:clickable="false"/>          
+		  android:clickable="false" android:id="@+id/splash_progress" android:layout_below="@+id/splash_text" android:layout_alignParentBottom="false"/>          
+
 
 </RelativeLayout>
