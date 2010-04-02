@@ -331,7 +331,7 @@ public class ZebraEngine extends Thread {
 			}
 
 			setEngineState(ES_READY2PLAY);
-			//setEngineState(ES_PLAY); // test
+			//setEngineState(ES_PLAY);  // test
 		}
 
 		synchronized(mJNILock) {
