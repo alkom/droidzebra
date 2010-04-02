@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="spash_layout_message">DroidZebra is loading</string>
+    <string name="settings_engine_auto_make_moves_summary">Make player moves automatically if there is no alternative</string>
+    <string name="settings_engine_auto_make_moves_title">Auto make forced moves</string>
+    <string name="settings_ui_display_last_move_summary">Mark last move on the board</string>
+    <string name="settings_ui_display_last_move_title">Mark last move</string>
+    <string name="settings_ui_display_moves_summary">Mark valid moves on the board</string>
+    <string name="settings_ui_display_moves_title">View moves</string>
+    <string name="gameover_choices_cancel">View Board</string>
+    <string name="gameover_choices_switch">Switch Sides</string>
+    <string name="gameover_choices_new_game">New Game</string>
+    <string name="settings_ui_display_pv_summary">Display sequence of moves that is the most advantageous to the current player (computed at the lookahead setting)</string>
+    <string name="settings_ui_display_pv_title">Display principal variation</string>
+    <string name="settings_ui_preferences">User Interface</string>
+    <string name="settings_engine_function_summary">Select which side computer plays</string>
+    <string name="settings_engine_function_title">Match-up</string>
+    <string name="settings_engine_function_dialog_title">Select Engine Function</string>
+    
+    <string name="setting_strength_preference_summary">Number of moves computer will analyze while playing</string>
+    <string name="settings_strength_preference_title">Lookahead</string>
+    <string name="settings_strength_dialog_title">Choose One</string>
+    <string name="app_name">DroidZebra</string>
+
+<string name="settings_engine_preferences">Engine Preferences</string>
+
+<string name="gameover_text_white_wins">White wins</string>
+<string name="gameover_text_black_wins">Black wins</string>
+<string name="gameover_text_draw">Draw</string>
+<string name="menu_item_new_game">New Game</string>
+<string name="menu_item_switch_sides">Switch Sides</string>
+<string name="menu_item_undo">Undo</string>
+<string name="menu_item_quit">Quit</string>
+<string name="menu_item_about">About</string>
+<string name="menu_item_settings">Settings</string>
+<string name="gameover_title">Game Over</string>
+<string name="dialog_quit_title">Are you sure?</string>
+<string name="dialog_quit_button_quit">Quit</string>
+<string name="dialog_quit_button_cancel">Cancel</string>
+<string name="dialog_busy_message">&quot;Still thinking... Please touch or press any key to interrupt&quot;</string>
+</resources>

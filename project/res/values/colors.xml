@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<color name="board_color">#2F4F2F</color>
+
+<color name="statuslinecolor">#696969</color>
+<color name="statustextcolor">#ffffff</color>
+<color name="black">#000000</color>
+<color name="white">#ffffff</color>
+<color name="board_color_helpers_valid">#20FFFFFF</color>
+<color name="board_color_helpers_invalid">#20FF0000</color>
+<color name="board_color_selection_invalid">#40FF0000</color>
+<color name="board_color_selection_valid">#40FFFFFF</color>
+<color name="board_line">#696969</color>
+<color name="board_numbers">#CFB53B</color>
+</resources>

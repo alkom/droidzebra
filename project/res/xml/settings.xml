@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceCategory android:title="@string/settings_engine_preferences"><ListPreference android:entries="@array/settings_engine_function_preferences" android:dialogTitle="@string/settings_engine_function_dialog_title" android:title="@string/settings_engine_function_title" android:key="settings_engine_function" android:summary="@string/settings_engine_function_summary" android:entryValues="@array/settings_engine_function_values" android:defaultValue="1"></ListPreference><ListPreference android:title="@string/settings_strength_preference_title" android:dialogTitle="@string/settings_strength_dialog_title" android:entryValues="@array/settings_engine_strengh_values" android:entries="@array/settings_engine_strengh_preferences" android:summary="@string/setting_strength_preference_summary" android:key="settings_engine_strength" android:defaultValue="1|1|1"></ListPreference>
+
+
+
+
+
+
+
+<CheckBoxPreference android:key="settings_engine_auto_make_moves" android:summary="@string/settings_engine_auto_make_moves_summary" android:title="@string/settings_engine_auto_make_moves_title" android:defaultValue="false"></CheckBoxPreference>
+</PreferenceCategory>
+<PreferenceCategory android:title="@string/settings_ui_preferences"><CheckBoxPreference android:key="settings_ui_display_moves" android:summary="@string/settings_ui_display_moves_summary" android:title="@string/settings_ui_display_moves_title" android:defaultValue="true"></CheckBoxPreference><CheckBoxPreference android:key="settings_ui_display_last_move" android:summary="@string/settings_ui_display_last_move_summary" android:title="@string/settings_ui_display_last_move_title" android:defaultValue="true"></CheckBoxPreference><CheckBoxPreference android:title="@string/settings_ui_display_pv_title" android:key="settings_ui_display_pv" android:summary="@string/settings_ui_display_pv_summary" android:defaultValue="true"></CheckBoxPreference>
+
+
+</PreferenceCategory>
+</PreferenceScreen>

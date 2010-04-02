@@ -1,0 +1,415 @@
+package com.shurik.droidzebra;
+
+import com.shurik.droidzebra.ZebraEngine.CandidateMove;
+import com.shurik.droidzebra.ZebraEngine.InvalidMove;
+import com.shurik.droidzebra.ZebraEngine.Move;
+
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.Typeface;
+import android.graphics.Paint.FontMetrics;
+import android.util.AttributeSet;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
+//import android.util.Log;
+
+public class BoardView extends View {
+
+	final private static float lineWidth = 0.5f;
+
+	private int mColorHelpersValid;
+	private int mColorHelpersInvalid;
+	private int mColorSelectionValid;
+	private int mColorSelectionInvalid;
+	private int mColorLine;
+	private int mColorNumbers;
+	
+	private DroidZebra mDroidZebra = null;
+	
+	private float mSizeX = 0;
+	private float mSizeY = 0;
+	private float mSizeCell = 0;
+	private RectF mBoardRect = null;
+	private Paint mPaint = null;
+	private FontMetrics mFontMetrics = null; 
+    private BitmapShader mShaderV = null;
+    private BitmapShader mShaderH = null;
+    
+    private Move mMoveSelection = new Move(0,0);
+    private boolean mShowSelection = false; // highlight selection rectangle
+    private boolean mShowSelectionHelpers = false ;// highlight row/column
+    
+	public BoardView(Context context) {
+		super(context);
+		initBoardView();
+	}
+		
+	public BoardView(Context context, AttributeSet attrs) {
+		super(context,attrs);
+		initBoardView();
+	}
+	
+	private void initBoardView() {
+		if(DroidZebra.class.isInstance(getContext()))
+			setDroidZebra((DroidZebra)getContext());
+
+		Resources r = getResources();
+        setFocusable(true); // make sure we get key events
+
+    	mColorHelpersValid = r.getColor(R.color.board_color_helpers_valid);
+    	mColorHelpersInvalid = r.getColor(R.color.board_color_helpers_invalid);
+    	mColorSelectionValid = r.getColor(R.color.board_color_selection_valid);
+    	mColorSelectionInvalid = r.getColor(R.color.board_color_selection_invalid);
+    	mColorLine = r.getColor(R.color.board_line);
+    	mColorNumbers = r.getColor(R.color.board_numbers);
+        
+        Bitmap woodtrim = BitmapFactory.decodeResource(r, R.drawable.woodtrim);
+        mShaderV = new BitmapShader(woodtrim, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+        mShaderH = new BitmapShader(woodtrim, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+        Matrix m = new Matrix();
+        m.setRotate(90);
+        mShaderH.setLocalMatrix(m);
+	}
+
+	public void setDroidZebra(DroidZebra activity) {
+		mDroidZebra = activity;
+	}
+	
+	public DroidZebra getDroidZebra() {
+		return mDroidZebra;
+	}
+	
+	public RectF getCellRect(int bx, int by) {
+		return new RectF(
+				mBoardRect.left+bx*mSizeCell, 
+				mBoardRect.top+by*mSizeCell, 
+				mBoardRect.left+bx*mSizeCell+mSizeCell-1, 
+				mBoardRect.top+by*mSizeCell+mSizeCell-1
+			);
+	}
+
+	public Move getMoveFromCoord(float x, float y) throws InvalidMove {
+    	int bx = (int)Math.floor((x - mBoardRect.left)/mSizeCell);
+    	int by = (int)Math.floor((y - mBoardRect.top)/mSizeCell);
+    	if(bx<0 || bx>=DroidZebra.boardSize || by<0 || by>=DroidZebra.boardSize) {
+    		throw new InvalidMove();
+    	}
+		return new Move(bx, by);
+	}
+	
+	@Override
+	protected void onDraw(Canvas canvas) {
+
+		Path path;
+		
+        mPaint.setShader(mShaderV);
+
+        path = new Path(); 
+        path.moveTo(0, 0); 
+        path.lineTo(0, mSizeY); 
+        path.lineTo(mBoardRect.left, mBoardRect.bottom);
+        path.lineTo(mBoardRect.left, mBoardRect.top);
+        path.lineTo(0, 0);
+        canvas.drawPath(path, mPaint);
+
+        path = new Path(); 
+        path.moveTo(mSizeX, 0); 
+        path.lineTo(mSizeX, mSizeY); 
+        path.lineTo(mBoardRect.right, mBoardRect.bottom);
+        path.lineTo(mBoardRect.right, mBoardRect.top);
+        path.lineTo(mSizeX, 0);
+        canvas.drawPath(path, mPaint);        
+        
+        mPaint.setShader(mShaderH);
+
+        path = new Path(); 
+        path.moveTo(0, 0); 
+        path.lineTo(mSizeX, 0); 
+        path.lineTo(mBoardRect.right, mBoardRect.top);
+        path.lineTo(mBoardRect.left, mBoardRect.top);
+        path.lineTo(0, 0);
+        canvas.drawPath(path, mPaint);
+
+        path = new Path(); 
+        path.moveTo(0, mSizeY); 
+        path.lineTo(mSizeX, mSizeY); 
+        path.lineTo(mBoardRect.right, mBoardRect.bottom);
+        path.lineTo(mBoardRect.left, mBoardRect.bottom);
+        path.lineTo(0, mSizeY);
+        canvas.drawPath(path, mPaint);        
+
+        mPaint.setShader(null);
+        
+		mPaint.setStrokeWidth(lineWidth);
+		for(int i = 0; i<=DroidZebra.boardSize; i++ ) {
+			mPaint.setColor(mColorLine);
+			canvas.drawLine(mBoardRect.left+i*mSizeCell, mBoardRect.top, mBoardRect.left+i*mSizeCell, mBoardRect.top+mSizeCell*DroidZebra.boardSize, mPaint);
+			canvas.drawLine(mBoardRect.left, mBoardRect.top+i*mSizeCell, mBoardRect.left+mSizeCell*DroidZebra.boardSize, mBoardRect.top+i*mSizeCell, mPaint);
+		}
+		canvas.drawCircle(mBoardRect.left+2*mSizeCell, mBoardRect.top+2*mSizeCell, 2, mPaint);
+		canvas.drawCircle(mBoardRect.left+2*mSizeCell, mBoardRect.top+6*mSizeCell, 2, mPaint);
+		canvas.drawCircle(mBoardRect.left+6*mSizeCell, mBoardRect.top+2*mSizeCell, 2, mPaint);
+		canvas.drawCircle(mBoardRect.left+6*mSizeCell, mBoardRect.top+6*mSizeCell, 2, mPaint);
+
+        for(int i = 0; i<DroidZebra.boardSize; i++ ) {
+			mPaint.setColor(Color.BLACK);
+			canvas.drawText(String.valueOf(i+1), mBoardRect.left/2 + 1, mBoardRect.top + i*mSizeCell + mSizeCell/2 - (mFontMetrics.ascent+mFontMetrics.descent)/2 + 1, mPaint);
+			canvas.drawText(Character.toString((char) ('A'+i)), mBoardRect.left + i*mSizeCell + mSizeCell/2 + 1, mBoardRect.top/2-(mFontMetrics.ascent+mFontMetrics.descent)/2 + 1, mPaint);
+			mPaint.setColor(mColorNumbers);
+			canvas.drawText(String.valueOf(i+1), mBoardRect.left/2, mBoardRect.top + i*mSizeCell + mSizeCell/2 - (mFontMetrics.ascent+mFontMetrics.descent)/2, mPaint);
+			canvas.drawText(Character.toString((char) ('A'+i)), mBoardRect.left + i*mSizeCell + mSizeCell/2, mBoardRect.top/2-(mFontMetrics.ascent+mFontMetrics.descent)/2, mPaint);
+		}
+
+        if( mMoveSelection != null ) {
+        	if( mShowSelectionHelpers ) {
+            	if( mDroidZebra.isValidMove(mMoveSelection) )
+            		mPaint.setColor(mColorHelpersValid);
+            	else
+            		mPaint.setColor(mColorHelpersInvalid);
+
+            	canvas.drawRect(
+	        			mBoardRect.left+mMoveSelection.getX()*mSizeCell, 
+	        			mBoardRect.top, 
+	        			mBoardRect.left+(mMoveSelection.getX()+1)*mSizeCell, 
+	        			mBoardRect.bottom,
+	        			mPaint
+	        		);        	
+	        	canvas.drawRect(
+	        			mBoardRect.left, 
+	        			mBoardRect.top+mMoveSelection.getY()*mSizeCell, 
+	        			mBoardRect.right, 
+	        			mBoardRect.top+(mMoveSelection.getY()+1)*mSizeCell,
+	        			mPaint
+	        		);
+        	} else if( mShowSelection ) {
+            	if( mDroidZebra.isValidMove(mMoveSelection) )
+            		mPaint.setColor(mColorSelectionValid);
+            	else
+            		mPaint.setColor(mColorSelectionInvalid);
+
+            	canvas.drawRect(
+	        			mBoardRect.left+mMoveSelection.getX()*mSizeCell, 
+	        			mBoardRect.top+mMoveSelection.getY()*mSizeCell,
+	        			mBoardRect.left+(mMoveSelection.getX()+1)*mSizeCell, 
+	        			mBoardRect.top+(mMoveSelection.getY()+1)*mSizeCell,
+	        			mPaint
+	        		);        	
+        	}
+        }
+        
+        if( getDroidZebra()==null ) 
+        	return;
+        
+		for(int i = 0; i<DroidZebra.boardSize; i++ ) {
+			for(int j=0; j<DroidZebra.boardSize; j++) {
+				if(getDroidZebra().getBoard()[i][j]==ZebraEngine.PLAYER_EMPTY) continue;
+				if(getDroidZebra().getBoard()[i][j]==ZebraEngine.PLAYER_BLACK)
+					mPaint.setColor(Color.BLACK);
+				else
+					mPaint.setColor(Color.WHITE);
+				canvas.drawCircle(mBoardRect.left+i*mSizeCell+mSizeCell/2, mBoardRect.top+j*mSizeCell+mSizeCell/2, mSizeCell/2-3, mPaint);
+			}
+		}
+
+		if( getDroidZebra().mSettingDisplayMoves && getDroidZebra().getCandidateMoves()!=null ) {
+			mPaint.setColor(Color.RED);
+			mPaint.setStrokeWidth(1.0f);
+			float lineLength = mSizeCell/4;
+			for( CandidateMove m : getDroidZebra().getCandidateMoves() ) {
+				RectF cr = getCellRect(m.mMove.getX(), m.mMove.getY());
+				float pts[] =
+				{ 
+					cr.centerX() - lineLength/2,
+					cr.centerY() - lineLength/2,
+					cr.centerX() + lineLength/2,
+					cr.centerY() + lineLength/2,
+					cr.centerX() + lineLength/2,
+					cr.centerY() - lineLength/2,
+					cr.centerX() - lineLength/2,
+					cr.centerY() + lineLength/2,
+				};
+				canvas.drawLines(pts, 0, 8, mPaint);
+			}
+		}
+
+		if( getDroidZebra().mSettingDisplayLastMove && getDroidZebra().getLastMove()!=null ) {
+			Move lm = getDroidZebra().getLastMove();
+			RectF cellRT = getCellRect(lm.getX(), lm.getY());
+			mPaint.setColor(Color.BLUE);
+			canvas.drawCircle(cellRT.left+2, cellRT.bottom-2, 2, mPaint);			
+		}
+	}
+
+	@Override
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+		mSizeX = mSizeY = Math.min(getMeasuredWidth(), getMeasuredHeight());
+		mSizeCell = Math.min(mSizeX/(DroidZebra.boardSize+1), mSizeY/(DroidZebra.boardSize+1));
+		mBoardRect = new RectF(
+				mSizeX-mSizeCell/2-mSizeCell*DroidZebra.boardSize,
+				mSizeY-mSizeCell/2-mSizeCell*DroidZebra.boardSize,
+				mSizeX-mSizeCell/2,
+				mSizeY-mSizeCell/2
+			);
+
+		mPaint = new Paint();
+		mPaint.setStyle(Paint.Style.FILL);
+		Typeface font = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD);
+		mPaint.setTypeface( font );
+		mPaint.setAntiAlias(true); 
+		mPaint.setTextAlign(Paint.Align.CENTER);
+		mPaint.setTextScaleX(1.0f);
+		mPaint.setTextSize(mSizeCell*0.3f);
+		mPaint.setStrokeWidth(lineWidth);
+		mFontMetrics = mPaint.getFontMetrics();
+		
+		setMeasuredDimension((int)mSizeX, (int)mSizeY);
+	}
+
+	@Override
+    public boolean onKeyDown(int keyCode, KeyEvent msg) {
+		// Log.d("BoardView", String.format("onKeyDown: %d", keyCode));
+
+        int newMX = mMoveSelection.getX();
+        int newMY = mMoveSelection.getY();
+        
+        newMX = mMoveSelection.getX();
+        newMY = mMoveSelection.getY();
+
+		switch(keyCode) {
+		case KeyEvent.KEYCODE_DPAD_LEFT:
+			newMX--;
+			break;
+		case KeyEvent.KEYCODE_DPAD_RIGHT:
+			newMX++;
+			break;
+		case KeyEvent.KEYCODE_DPAD_UP:
+			newMY--;
+			break;
+		case KeyEvent.KEYCODE_DPAD_DOWN:
+			newMY++;
+			break;
+		}
+
+		boolean bMakeMove = (
+				keyCode == KeyEvent.KEYCODE_DPAD_CENTER
+				|| keyCode == KeyEvent.KEYCODE_SPACE );
+		
+        updateSelection(newMX, newMY, bMakeMove, true);
+
+        return false;
+    }
+
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		int action = event.getAction();
+    	int bx = (int)Math.floor((event.getX() - mBoardRect.left)/mSizeCell);
+    	int by = (int)Math.floor((event.getY() - mBoardRect.top)/mSizeCell);
+		switch (action) {
+		case MotionEvent.ACTION_DOWN:
+		case MotionEvent.ACTION_MOVE:
+			mShowSelectionHelpers = true;
+	        updateSelection(bx, by, false, true);
+			break;
+		case MotionEvent.ACTION_UP:
+			mShowSelectionHelpers = false;
+	        updateSelection(bx, by, true, true);
+			break;
+		} 
+		return true;
+	}
+
+	@Override
+	public boolean onTrackballEvent(MotionEvent event) {
+		float tx = event.getX();
+        float ty = event.getY();
+
+        // Log.d("BoardView", String.format("trackball event: %d %f %f", event.getAction(), tx, ty));
+        
+        switch(event.getAction()) {
+        case MotionEvent.ACTION_DOWN: {
+        	updateSelection(mMoveSelection.getX(), mMoveSelection.getY(), true, true);
+        } break;
+        
+        case MotionEvent.ACTION_MOVE: { 
+            int newMX = mMoveSelection.getX();
+            int newMY = mMoveSelection.getY();
+            if( Math.abs(tx)>Math.abs(ty) ) {
+    	        if( tx>0 ) 
+    	        	newMX++; 
+    	        else 
+    	        	newMX--;
+            } else {
+    	        if( ty>0 ) 
+    	        	newMY++; 
+    	        else 
+    	        	newMY--;
+            }
+            updateSelection(newMX, newMY, false, true);
+        } break;
+        
+        default:
+        	return false;
+        }
+
+        return true;
+	}
+
+	private void updateSelection(int bX, int bY, boolean bMakeMove, boolean bShowSelection ) {
+		boolean bInvalidate = false;
+		
+        if(bX<0 || bX>=DroidZebra.boardSize) 
+        	bX = mMoveSelection.getX();
+
+        if(bY<0 || bY>=DroidZebra.boardSize) 
+        	bY = mMoveSelection.getY();
+
+        if( mShowSelection!=bShowSelection ) {
+            mShowSelection = bShowSelection;
+            bInvalidate = true;
+        }
+
+        if( bX!=mMoveSelection.getX() || bY!=mMoveSelection.getY()) {
+        	mMoveSelection = new Move(bX, bY);
+        	bInvalidate = true;
+        }
+
+        	
+        if( bMakeMove ) {
+        	bInvalidate = true;
+			mShowSelectionHelpers = false;
+			
+			// if zebra is still thinking - no move is possible yet - throw a busy dialog
+			if( mDroidZebra.mZebraThread.isThinking()) {
+				mDroidZebra.busyDialog();
+			} else {
+				if( getDroidZebra().mZebraThread.getEngineState()==ZebraEngine.ES_USER_INPUT_WAIT) {
+		        	try {
+						getDroidZebra().mZebraThread.makeMove(mMoveSelection);
+					} catch (InvalidMove e) {
+					} catch (EngineError e) {
+						getDroidZebra().FatalError(e.msg);
+					}
+				}
+			}
+		}
+        
+	    if( bInvalidate ) {
+        	invalidate();
+        }
+	}
+	
+}

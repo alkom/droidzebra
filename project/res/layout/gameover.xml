@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/gameover_root"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:padding="10dp"
+              >
+    <TextView android:id="@+id/gameover_text"
+    		  android:text="Somebody wins"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:textColor="#FFF"
+              android:gravity="center" android:textSize="36sp"/>
+    <TextView android:id="@+id/gameover_score"
+    		  android:text="00:00"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:textColor="#FFF"
+              android:gravity="center" android:textSize="36sp" android:paddingBottom="20sp" android:paddingTop="15sp"/>
+
+<Button android:id="@+id/gameover_choice_new_game" 
+android:layout_width="fill_parent" 
+android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/gameover_choices_new_game">
+</Button>
+
+<Button android:id="@+id/gameover_choice_switch" 
+android:layout_width="fill_parent" 
+android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/gameover_choices_switch">
+</Button>
+
+<Button android:id="@+id/gameover_choice_cancel" 
+android:layout_width="fill_parent" 
+android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/gameover_choices_cancel">
+</Button>
+
+</LinearLayout>
