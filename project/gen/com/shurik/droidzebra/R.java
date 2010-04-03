@@ -59,9 +59,16 @@ public final class R {
     public static final class string {
         public static final int app_name=0x7f070013;
         public static final int dialog_busy_message=0x7f070022;
+        public static final int dialog_donate_cancel=0x7f070028;
+        public static final int dialog_donate_doit=0x7f070027;
+        public static final int dialog_donate_message=0x7f070026;
+        public static final int dialog_donate_title=0x7f070025;
+        public static final int dialog_ok=0x7f070024;
+        public static final int dialog_pass_text=0x7f070023;
         public static final int dialog_quit_button_cancel=0x7f070021;
         public static final int dialog_quit_button_quit=0x7f070020;
         public static final int dialog_quit_title=0x7f07001f;
+        public static final int donate_url=0x7f070029;
         public static final int gameover_choices_cancel=0x7f070007;
         public static final int gameover_choices_new_game=0x7f070009;
         public static final int gameover_choices_switch=0x7f070008;
@@ -70,6 +77,7 @@ public final class R {
         public static final int gameover_text_white_wins=0x7f070015;
         public static final int gameover_title=0x7f07001e;
         public static final int menu_item_about=0x7f07001c;
+        public static final int menu_item_donate=0x7f07002a;
         public static final int menu_item_new_game=0x7f070018;
         public static final int menu_item_quit=0x7f07001b;
         public static final int menu_item_settings=0x7f07001d;

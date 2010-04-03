@@ -292,7 +292,6 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 	const char *black_name;
 	const char *white_name;
 	const char *opening_name;
-	double node_val, eval_val;
 	double move_start, move_stop;
 	int i;
 	int side_to_move;
@@ -507,12 +506,12 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 	if ( side_to_move == BLACKSQ )
 		score_sheet_row++;
 
-	if ( echo ) {
-		set_move_list( black_moves, white_moves, score_sheet_row );
-		set_times( floor( player_time[BLACKSQ] ), floor( player_time[WHITESQ] ) );
-		display_board( stdout, board, side_to_move, TRUE, TRUE, TRUE );
-	}
+	set_move_list( black_moves, white_moves, score_sheet_row );
+	set_times( floor( player_time[BLACKSQ] ), floor( player_time[WHITESQ] ) );
+	display_board( stdout, board, side_to_move, TRUE, TRUE, TRUE );
 
+	/*
+	double node_val, eval_val;
 	adjust_counter( &total_nodes );
 	node_val = counter_value( &total_nodes );
 	adjust_counter( &total_evaluations );
@@ -524,6 +523,8 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 	printf( "Positions evaluated:   %-10.0f\n", eval_val );
 
 	printf( "Total time: %.1f s\n", total_time );
+	*/
+
 	if( !force_exit )
 		droidzebra_message(MSG_GAME_OVER, NULL);
 }

@@ -20,6 +20,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,14 +39,15 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	MENU_TAKE_BACK = 3,
 	MENU_SETTINGS = 4,
 	MENU_SWITCH_SIDES = 5,
-	MENU_ABOUT = 6
+	MENU_DONATE = 6
 	;
 
 	private static final int
 	DIALOG_PASS_ID = 1,
 	DIALOG_GAME_OVER = 2,
 	DIALOG_QUIT = 3,
-	DIALOG_BUSY = 4
+	DIALOG_BUSY = 4,
+	DIALOG_DONATE = 5
 	;
 
 	private static final int
@@ -323,7 +325,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		menu.add(0, MENU_SWITCH_SIDES, 0, R.string.menu_item_switch_sides).setIcon(R.drawable.ic_menu_switch_sides);
 		menu.add(0, MENU_TAKE_BACK, 0, R.string.menu_item_undo).setIcon(android.R.drawable.ic_menu_revert);
 		menu.add(0, MENU_SETTINGS, 0, R.string.menu_item_settings).setIcon(android.R.drawable.ic_menu_preferences);
-		menu.add(0, MENU_ABOUT, 0, R.string.menu_item_about).setIcon(android.R.drawable.ic_menu_info_details);
+		menu.add(0, MENU_DONATE, 0, R.string.menu_item_donate).setIcon(android.R.drawable.ic_menu_send);
 		menu.add(0, MENU_QUIT, 0, R.string.menu_item_quit).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
 		return true;
 	}	
@@ -349,6 +351,9 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			case MENU_SWITCH_SIDES: {
 				switchSides();
 			} break;
+			case MENU_DONATE: {
+				showDialog(DIALOG_DONATE);
+			} return true;
 			}
 		} catch (EngineError e) {
 			FatalError(e.msg);
@@ -504,9 +509,9 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		switch(id) {
 		case DIALOG_PASS_ID: {
-			builder.setTitle("Zebra");
-			builder.setMessage("You have to pass");
-			builder.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+			builder.setTitle(R.string.app_name);
+			builder.setMessage(R.string.dialog_pass_text);
+			builder.setPositiveButton( R.string.dialog_ok, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					mZebraThread.setEngineState(ZebraEngine.ES_USER_INPUT_RESUME);
 				}
@@ -588,6 +593,23 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 			pd.setMessage(getResources().getString(R.string.dialog_busy_message));			
 			dialog = pd;
+		} break;
+		case DIALOG_DONATE: {
+			builder
+			.setTitle(R.string.dialog_donate_title)
+			.setMessage(R.string.dialog_donate_message)
+			.setIcon(R.drawable.icon)
+			.setPositiveButton( R.string.dialog_donate_doit, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					String url = getResources().getString(R.string.donate_url);
+					Intent i = new Intent(Intent.ACTION_VIEW);
+					i.setData(Uri.parse(url));
+					startActivity(i);
+				}
+			}
+			)
+			.setNegativeButton(R.string.dialog_donate_cancel, null);
+			dialog = builder.create();
 		} break;
 		default:
 			dialog = null;

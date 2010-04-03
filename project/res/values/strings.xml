@@ -38,4 +38,12 @@
 <string name="dialog_quit_button_quit">Quit</string>
 <string name="dialog_quit_button_cancel">Cancel</string>
 <string name="dialog_busy_message">&quot;Still thinking... Please touch or press any key to interrupt&quot;</string>
+<string name="dialog_pass_text">You have to pass</string>
+<string name="dialog_ok">OK</string>
+<string name="dialog_donate_title">Support the project</string>
+<string name="dialog_donate_message">DroidZebras is freeware. If you enjoyed it please consider making a small contribution. If you feel like making a donation, the button below will take you to DroidZebra development fund page. Thanks!</string>
+<string name="dialog_donate_doit">Yes, let\'s do it</string>
+<string name="dialog_donate_cancel">No, thanks</string>
+<string name="donate_url">http://10.0.2.2:8000/droidzebra/donate/</string>
+<string name="menu_item_donate">Donate</string>
 </resources>
