@@ -2,6 +2,7 @@ package com.shurik.droidzebra;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -22,6 +23,9 @@ public class ZebraEngine extends Thread {
 
 	static public final int BOARD_SIZE = 8;
 
+	static public String PATTERNS_FILE = "coeffs2.bin"; 
+	static public String BOOK_FILE = "book.bin";
+	
 	// board colors
 	static public final int PLAYER_BLACK = 0;
 	static public final int PLAYER_EMPTY = 1;
@@ -140,7 +144,7 @@ public class ZebraEngine extends Thread {
 	private Handler mHandler;
 
 	// files folder
-	private String mFilesDir;
+	private File mFilesDir;
 
 	// syncronization
 	static private final Object  mJNILock = new Object();
@@ -150,6 +154,48 @@ public class ZebraEngine extends Thread {
 	private int mEngineState = ES_INITIAL;
 
 	private boolean mRun = false;
+
+	public ZebraEngine(Context context, Handler handler)
+	{
+		mContext = context;
+		mHandler = handler;
+	}
+
+	public boolean initFiles()
+	{
+		mFilesDir = null;
+
+		// first check if files exist on internal device
+		File pattern = new File(mContext.getFilesDir(), PATTERNS_FILE);
+		File book = new File(mContext.getFilesDir(), BOOK_FILE);
+		if( pattern.exists() && book.exists() ) {
+			mFilesDir = mContext.getFilesDir();
+			return true;
+		}
+		
+		// if not - try external folder
+		try {
+			if(android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
+				File extDir = new File(android.os.Environment.getExternalStorageDirectory(), "/DroidZebra/files/");
+				_prepareZebraFolder(extDir); //may throw
+				mFilesDir = extDir;
+			}
+		} catch (IOException e) {
+			mFilesDir = null;
+		}
+		
+		// if external did not work out - try internal
+		if(mFilesDir == null) {
+			try {
+				_prepareZebraFolder(mContext.getFilesDir());
+				mFilesDir = mContext.getFilesDir();
+			} catch (IOException e) {
+				fatalError(e.getMessage());
+				return false;
+			}
+		}
+		return true;
+	}
 
 	public void waitForEngineState( int state, int milliseconds )
 	{
@@ -278,24 +324,17 @@ public class ZebraEngine extends Thread {
 			zeSetAutoMakeMoves(0);
 	}
 
-	public ZebraEngine(Context context, Handler handler)
-	{
-		mContext = context;
-		mHandler = handler;
-		mFilesDir = context.getFilesDir().getAbsolutePath();
-	}
-
 	@Override
 	public void run() {
 		setRunning(true);
 
 		setEngineState(ES_INITIAL);
 
-		Asset2File(coeffAssets, "coeffs2.bin");
-		Asset2File(bookAssets, "book.bin");
+		// init data files
+		if( !initFiles() ) return;
 
 		synchronized(mJNILock) {
-			zeGlobalInit(mFilesDir);
+			zeGlobalInit(mFilesDir.getAbsolutePath());
 			zeSetPlayerInfo(PLAYER_BLACK, 0, 0, 0, INFINIT_TIME, 0);
 			zeSetPlayerInfo(PLAYER_WHITE, 0, 0, 0, INFINIT_TIME, 0);
 
@@ -369,8 +408,8 @@ public class ZebraEngine extends Thread {
 				b.putString("error", data.getString("error"));
 				if(getEngineState()==ES_INITIAL) {
 					// delete .bin files
-					new File(mFilesDir + "/coeffs2.bin").delete();
-					new File(mFilesDir + "/book.bin").delete();
+					new File(mFilesDir, PATTERNS_FILE).delete();
+					new File(mFilesDir, BOOK_FILE).delete();
 				}
 				mHandler.sendMessage(msg);
 			} break;
@@ -554,47 +593,40 @@ public class ZebraEngine extends Thread {
 		return retval;
 	}
 
-	// accessors
-
-
-
-	// JNI
-	public native String  zeStringFromJNI();
-	private native void zeGlobalInit(String filesDir);
-	private native void zeGlobalTerminate();
-	private native void zeForceReturn();
-	private native void zeForceExit();
-	private native void zeSetPlayerInfo(
-			int player,
-			int skill,
-			int exactSkill,
-			int wldSkill,
-			int time,
-			int timeIncrement
-	);    
-	private native void zePlay();
-	private native void zeSetAutoMakeMoves(int auto_make_moves);
-
-
-	public native void zeJsonTest(JSONObject json);
-
-	static {
-		System.loadLibrary("droidzebra");
-	}
-
 	public boolean isThinking() {
 		return getEngineState()==ZebraEngine.ES_PLAYINPROGRESS;
 	}
 
-	public void Asset2File(String[] assets, String file_name) {
-		File destFile = mContext.getFileStreamPath(file_name);
-		if( !destFile.exists() || destFile.length()==0 ) {
+	private void _prepareZebraFolder(File dir) throws IOException
+	{
+		File pattern = new File(dir, PATTERNS_FILE);
+		File book = new File(dir, BOOK_FILE);
+		
+		if( pattern.exists() && book.exists() )
+			return;
+
+		if( !dir.exists() && !dir.mkdirs() )
+			throw new IOException(String.format("Unable to create %s", dir));
+			
+		
+		try {
+			_asset2File(coeffAssets, pattern);
+			_asset2File(bookAssets, book);
+		} catch (IOException e) {
+			pattern.delete();
+			book.delete();
+			throw e;
+		}
+	}
+	
+	private void _asset2File(String[] assets, File file) throws IOException {
+		if( !file.exists() || file.length()==0 ) {
 			// copy files
 			AssetManager assetManager = mContext.getAssets();
 			InputStream source = null;
 			OutputStream destination = null;
 			try {
-				destination = mContext.openFileOutput(file_name, 0);
+				destination = new FileOutputStream(file);
 				for(String sourceAsset:assets) {
 					source = assetManager.open(sourceAsset);
 					byte[] buffer = new byte[1024];
@@ -604,10 +636,6 @@ public class ZebraEngine extends Thread {
 						len = source.read(buffer);
 					}	
 				}
-			} catch (FileNotFoundException e) {
-				fatalError(e.getMessage());
-			} catch (IOException e) {
-				fatalError(e.getMessage());
 			}
 			finally {
 				if(destination != null) {
@@ -631,4 +659,27 @@ public class ZebraEngine extends Thread {
 		}
 		
 	}
+
+	// JNI
+	private native void zeGlobalInit(String filesDir);
+	private native void zeGlobalTerminate();
+	private native void zeForceReturn();
+	private native void zeForceExit();
+	private native void zeSetPlayerInfo(
+			int player,
+			int skill,
+			int exactSkill,
+			int wldSkill,
+			int time,
+			int timeIncrement
+	);    
+	private native void zePlay();
+	private native void zeSetAutoMakeMoves(int auto_make_moves);
+
+	public native void zeJsonTest(JSONObject json);
+
+	static {
+		System.loadLibrary("droidzebra");
+	}
+
 }

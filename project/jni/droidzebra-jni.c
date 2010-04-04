@@ -77,20 +77,6 @@ static int _droidzebra_get_ui_event( int side_to_move,ui_event_t* ui_event );
 static jobject _droidzebra_helper_fill_move_list( int side_to_move );
 static void _droidzebra_send_move_list( int side_to_move );
 
-/* This is a trivial JNI example where we use a native method
- * to return a new VM String. See the corresponding Java source
- * file located at:
- *
- *   apps/samples/hello-jni/project/src/com/example/HelloJni/HelloJni.java
- */
-JNIEXPORT jstring
-JNIFn(droidzebra,ZebraEngine,zeStringFromJNI)( JNIEnv* env, jobject thiz )
-{
-	char ret[256];
-	strcpy(ret, "AzZebra");
-	return (*env)->NewStringUTF(env, ret);
-}
-
 JNIEXPORT void
 JNIFn(droidzebra,ZebraEngine,zeJsonTest)( JNIEnv* env, jobject thiz, jobject json )
 {
