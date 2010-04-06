@@ -546,7 +546,6 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 					new View.OnClickListener() {
 						public void onClick(View v) {
 							switchSides();
-							newGame();
 							dismissDialog(DIALOG_GAME_OVER);
 						}
 					});
