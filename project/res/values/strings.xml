@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="spash_layout_message">DroidZebra is loading</string>
-    <string name="settings_engine_auto_make_moves_summary">Make player moves automatically if there is no alternative</string>
-    <string name="settings_engine_auto_make_moves_title">Auto make forced moves</string>
+    <string name="settings_engine_auto_make_moves_summary">Make forced moves automatically</string>
+    <string name="settings_engine_auto_make_moves_title">Auto forced moves</string>
     <string name="settings_ui_display_last_move_summary">Mark last move on the board</string>
     <string name="settings_ui_display_last_move_title">Mark last move</string>
     <string name="settings_ui_display_moves_summary">Mark valid moves on the board</string>
@@ -14,11 +14,11 @@
     <string name="settings_ui_display_pv_title">Display principal variation</string>
     <string name="settings_ui_preferences">User Interface</string>
     <string name="settings_engine_function_summary">Select which side computer plays</string>
-    <string name="settings_engine_function_title">Match-up</string>
+    <string name="settings_engine_function_title">Engine Function</string>
     <string name="settings_engine_function_dialog_title">Select Engine Function</string>
     
-    <string name="setting_strength_preference_summary">Number of moves computer will analyze while playing</string>
-    <string name="settings_strength_preference_title">Lookahead</string>
+    <string name="setting_strength_preference_summary">Engine strength: number of moves computer will analyze while playing</string>
+    <string name="settings_strength_preference_title">Search Depth</string>
     <string name="settings_strength_dialog_title">Choose One</string>
     <string name="app_name">DroidZebra</string>
 
@@ -41,7 +41,7 @@
 <string name="dialog_pass_text">You have to pass</string>
 <string name="dialog_ok">OK</string>
 <string name="dialog_donate_title">Support the project</string>
-<string name="dialog_donate_message">DroidZebras is freeware. If you enjoyed it please consider making a small contribution. If you feel like making a donation, the button below will take you to DroidZebra development fund page. Thanks!</string>
+<string name="dialog_donate_message">DroidZebra is freeware. If you enjoyed it please consider making a small contribution. The button below will take you to DroidZebra development fund page. Thanks!</string>
 <string name="dialog_donate_doit">Yes, let\'s do it</string>
 <string name="dialog_donate_cancel">No, thanks</string>
 <string name="donate_url">https://droidzebra.appspot.com/droidzebra/donate/</string>

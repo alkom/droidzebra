@@ -474,6 +474,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 
 	private void switchSides() {
 		int newFunction = -1;
+		
 		if( mSettingFunction == FUNCTION_ZEBRA_WHITE )
 			newFunction = FUNCTION_ZEBRA_BLACK;
 		else if( mSettingFunction == FUNCTION_ZEBRA_BLACK )
@@ -485,7 +486,12 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			editor.putString(SETTINGS_KEY_FUNCTION, String.format("%d", newFunction));
 			editor.commit();
 		}
+		
 		loadSettings();
+		
+		// start a new game if not playing
+		if( mZebraThread.getEngineState()==ZebraEngine.ES_READY2PLAY )
+			newGame();
 	}
 	
 	@Override

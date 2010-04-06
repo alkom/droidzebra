@@ -34,6 +34,9 @@ public class ZebraEngine extends Thread {
 	// default parameters
 	static public final int INFINIT_TIME = 10000000;
 
+	static private final int SELFPLAY_MOVE_DELAY = 500; // ms
+	private long mMoveStartTime = 0; //ms
+	
 	// messages
 	static public final int 
 	MSG_ERROR = 0,
@@ -535,6 +538,8 @@ public class ZebraEngine extends Thread {
 			} break;
 
 			case MSG_MOVE_START: {
+				mMoveStartTime = android.os.SystemClock.uptimeMillis();
+				
 				mSideToMove = data.getInt("side_to_move");
 				
 				// can change player info here
@@ -561,6 +566,14 @@ public class ZebraEngine extends Thread {
 
 			case MSG_MOVE_END: {
 				mHandler.sendMessage(msg);
+
+				// if self-playing make sure there is enough delay to see that the game is being played :)
+				long moveEnd = android.os.SystemClock.uptimeMillis();
+				if( mPlayerInfo[PLAYER_BLACK].skill>0 
+					&& mPlayerInfo[PLAYER_WHITE].skill>0 
+					&& (moveEnd - mMoveStartTime)<SELFPLAY_MOVE_DELAY ) {
+					android.os.SystemClock.sleep(SELFPLAY_MOVE_DELAY - (moveEnd - mMoveStartTime));
+				}
 			} break;			
 
 			case MSG_EVAL_TEXT: {

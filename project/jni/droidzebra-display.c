@@ -450,11 +450,13 @@ produce_eval_text( EvaluationType eval_info, int short_output ) {
 	int int_confidence;
 	char json_buffer[128+MAX_STRING_LEN];
 
+	// force short output
+	short_output = TRUE;
 
 	buffer = (char *) safe_malloc( MAX_STRING_LEN );
 	len = 0;
-	switch ( eval_info.type ) {
 
+	switch ( eval_info.type ) {
 	case MIDGAME_EVAL:
 		if ( eval_info.score >= MIDGAME_WIN )
 			len = sprintf( buffer, WIN_TEXT );
@@ -594,7 +596,7 @@ produce_eval_text( EvaluationType eval_info, int short_output ) {
 					len = sprintf( buffer, "--" );
 					break;
 	}
-	if ( eval_info.is_book )
+	if ( !short_output && eval_info.is_book )
 		len += sprintf( buffer + len, " (%s)", BOOK_TEXT );
 
 	sprintf(json_buffer, "{ \"eval\":\"%s\" }", buffer);

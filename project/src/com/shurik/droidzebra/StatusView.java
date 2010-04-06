@@ -249,10 +249,10 @@ public class StatusView extends View {
 		
 		// status panel
 		new DrawLine(ID_NONE, 0.40f, STATUS_POS_Y, 0.40f, 1.0f, R.color.statuslinecolor),
-		new DrawLine(ID_NONE, 0.85f, STATUS_POS_Y, 0.85f, 1.0f, R.color.statuslinecolor),
+		new DrawLine(ID_NONE, 0.80f, STATUS_POS_Y, 0.80f, 1.0f, R.color.statuslinecolor),
 		new DrawText(ID_STATUS_OPENING, 0.0f, STATUS_POS_Y+0.04f, 0.40f, 1.0f-0.04f, "Some other opening", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
-		new DrawText(ID_STATUS_PV, 0.40f, STATUS_POS_Y+0.04f, 0.85f, 1.0f-0.04f, "a1 b1 -- c2", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
-		new DrawText(ID_STATUS_EVAL, 0.85f, STATUS_POS_Y+0.04f, 1.0f, 1.0f-0.04f, "+5.4", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
+		new DrawText(ID_STATUS_PV, 0.40f, STATUS_POS_Y+0.04f, 0.80f, 1.0f-0.04f, "a1 b1 -- c2", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
+		new DrawText(ID_STATUS_EVAL, 0.80f, STATUS_POS_Y+0.04f, 1.0f, 1.0f-0.04f, "+5.4", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
 	};
 	private TreeMap<Integer, DrawElement> mDrawTextIDMap = new TreeMap<Integer, DrawElement>();
 	

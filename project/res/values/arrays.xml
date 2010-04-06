@@ -10,6 +10,7 @@
 <item>8 moves + last 16 perfect</item>
 <item>12 moves + last 18 perfect</item>
 <item>16 moves + last 20 perfect</item>
+<item>20 moves + last 22 perfect</item>
 </string-array>
 <string-array name="settings_engine_strengh_values"><item>1|1|1</item>
 <item>1|2|2</item>
@@ -21,11 +22,12 @@
 <item>8|16|18</item>
 <item>12|18|20</item>
 <item>16|20|22</item>
+<item>20|22|24</item>
 </string-array>
-<string-array name="settings_engine_function_preferences"><item>Human vs Human</item>
-<item>Computer plays white</item>
-<item>Computer plays black</item>
-<item>Computer vs Computer</item>
+<string-array name="settings_engine_function_preferences"><item>Zebra is inactive</item>
+<item>Zebra plays white</item>
+<item>Zebra plays black</item>
+<item>Zebra vs Zebra</item>
 </string-array>
 <string-array  name="settings_engine_function_values"><item>0</item>
 <item>1</item>
