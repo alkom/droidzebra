@@ -12,7 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.util.Log;
+//import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -311,7 +311,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 				}
 			} break;
 			case ZebraEngine.MSG_DEBUG: {
-				Log.d("DroidZebra", m.getData().getString("message"));
+				// Log.d("DroidZebra", m.getData().getString("message"));
 			} break;
 			}
 		}

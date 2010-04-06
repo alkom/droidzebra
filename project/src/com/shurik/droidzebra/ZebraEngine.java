@@ -16,7 +16,7 @@ import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
+//import android.util.Log;
 
 
 public class ZebraEngine extends Thread {
@@ -255,7 +255,7 @@ public class ZebraEngine extends Thread {
 			try {
 				mPendingEvent.put("type", UI_EVENT_EXIT);
 			} catch (JSONException e) {
-				Log.getStackTraceString(e);
+				// Log.getStackTraceString(e);
 			}			
 			setEngineState(ES_USER_INPUT_RESUME);
 		}
@@ -264,7 +264,7 @@ public class ZebraEngine extends Thread {
 	public void makeMove(Move move) throws InvalidMove, EngineError
 	{
 		if( getEngineState()!=ES_USER_INPUT_WAIT) {
-			Log.d("ZebraEngine", "Invalid Engine State");
+			// Log.d("ZebraEngine", "Invalid Engine State");
 			return;
 		}
 
@@ -284,7 +284,7 @@ public class ZebraEngine extends Thread {
 			mPendingEvent.put("type", UI_EVENT_MOVE);
 			mPendingEvent.put("move", move.mMove);
 		} catch (JSONException e) {
-			Log.getStackTraceString(e);
+			// Log.getStackTraceString(e);
 		}
 		setEngineState(ES_USER_INPUT_RESUME);
 	}
@@ -292,7 +292,7 @@ public class ZebraEngine extends Thread {
 	public void undoMove() throws EngineError
 	{
 		if( getEngineState()!=ES_USER_INPUT_WAIT) {
-			Log.d("ZebraEngine", "Invalid Engine State");
+			// Log.d("ZebraEngine", "Invalid Engine State");
 			return;
 		}
 
@@ -300,7 +300,7 @@ public class ZebraEngine extends Thread {
 		try {
 			mPendingEvent.put("type", UI_EVENT_UNDO);
 		} catch (JSONException e) {
-			Log.getStackTraceString(e);
+			// Log.getStackTraceString(e);
 		}
 		setEngineState(ES_USER_INPUT_RESUME);
 	}
@@ -314,7 +314,7 @@ public class ZebraEngine extends Thread {
 			try {
 				mPendingEvent.put("type", UI_EVENT_SETTINGS_CHANGE);
 			} catch (JSONException e) {
-				Log.getStackTraceString(e);
+				// Log.getStackTraceString(e);
 			}
 			setEngineState(ES_USER_INPUT_RESUME);
 		}
