@@ -673,13 +673,27 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	}
 
 	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+	    if( keyCode==KeyEvent.KEYCODE_BACK && event.getRepeatCount()==0) {
+			try {
+				mZebraThread.undoMove();
+			} catch (EngineError e) {
+				FatalError(e.msg);
+			}
+	        return true;
+	    }
+	    return super.onKeyDown(keyCode, event);
+	}
+	
+	/* requires api level 5 
+	@Override
 	public void onBackPressed() {
 		try {
 			mZebraThread.undoMove();
 		} catch (EngineError e) {
 			FatalError(e.msg);
 		}
-	}
+	} */
 
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
