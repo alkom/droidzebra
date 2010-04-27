@@ -40,11 +40,15 @@
 #include "zebra/getcoeff.h"
 #include "zebra/timer.h"
 #include "zebra/eval.h"
+#include "zebra/midgame.h"
+#include "zebra/opname.h"
+#include "zebra/thordb.h"
 /*--------- zebra ----------*/
 
 #define DEFAULT_HASH_BITS         18
 #define DEFAULT_RANDOM            TRUE
 #define DEFAULT_SLACK             0.25
+#define DEFAULT_PERTURBATION      0
 #define DEFAULT_WLD_ONLY          FALSE
 #define SEPARATE_TABLES           FALSE
 #define INFINIT_TIME              10000000.0
@@ -57,6 +61,10 @@ static int skill[3];
 static int wld_skill[3], exact_skill[3];
 static int force_exit = 0;
 static int auto_make_forced_moves = 0;
+static float s_slack = DEFAULT_SLACK;
+static float s_perturbation = DEFAULT_PERTURBATION;
+static int s_human_opening = FALSE;
+static const char* s_forced_opening_seq = NULL;
 // --
 
 #define JNIFn(Package, Class, Fname) JNICALL Java_com_shurik_##Package##_##Class##_##Fname
@@ -76,6 +84,8 @@ static jobject _droidzebra_RPC_callback(jint message, jobject json);
 static int _droidzebra_get_ui_event( int side_to_move,ui_event_t* ui_event );
 static jobject _droidzebra_helper_fill_move_list( int side_to_move );
 static void _droidzebra_send_move_list( int side_to_move );
+static void _droidzebra_undo_turn(int* side_to_move);
+static void _droidzebra_on_settings_change(void);
 
 JNIEXPORT void
 JNIFn(droidzebra,ZebraEngine,zeJsonTest)( JNIEnv* env, jobject thiz, jobject json )
@@ -96,7 +106,7 @@ JNIFn(droidzebra,ZebraEngine,zeGlobalInit)(
 {
 	DROIDZEBRA_JNI_SETUP;
 
-	char buf[FILENAME_MAX];
+	char binbookpath[FILENAME_MAX], cmpbookpath[FILENAME_MAX];
 	time_t timer;
 
 	echo = TRUE;
@@ -117,9 +127,17 @@ JNIFn(droidzebra,ZebraEngine,zeGlobalInit)(
 	toggle_status_log(USE_LOG);
 
 	global_setup( DEFAULT_RANDOM, DEFAULT_HASH_BITS );
+	init_thor_database();
 
-	sprintf(buf, "%s/book.bin", android_files_dir);
-	init_learn(buf, TRUE);
+	sprintf(cmpbookpath, "%s/book.cmp.z", android_files_dir);
+	sprintf(binbookpath, "%s/book.bin", android_files_dir);
+	if(access(cmpbookpath, R_OK)==0) {
+		init_osf(FALSE);
+		unpack_compressed_database_gz(cmpbookpath, binbookpath);
+		unlink(cmpbookpath);
+	}
+
+	init_learn(binbookpath, TRUE);
 
 	time(&timer);
 	my_srandom(timer);
@@ -270,6 +288,51 @@ JNIFn(droidzebra,ZebraEngine,zeSetAutoMakeMoves)( JNIEnv* env, jobject thiz, int
 	auto_make_forced_moves = _auto_make_moves;
 }
 
+JNIEXPORT void
+JNIFn(droidzebra,ZebraEngine,zeSetSlack)( JNIEnv* env, jobject thiz, jfloat slack )
+{
+	s_slack = slack;
+	//set_slack( floor( s_slack * 128.0 ) );
+}
+
+JNIEXPORT void
+JNIFn(droidzebra,ZebraEngine,zeSetPerturbation)( JNIEnv* env, jobject thiz, jfloat perturbation )
+{
+	s_perturbation = perturbation;
+	//set_perturbation( floor( s_perturbation * 128.0 ) );
+}
+
+JNIEXPORT void
+JNIFn(droidzebra,ZebraEngine,zeSetHumanOpenings)( JNIEnv* env, jobject thiz, int enable )
+{
+	s_human_opening = enable;
+	//toggle_human_openings(s_human_opening);
+}
+
+JNIEXPORT void
+JNIFn(droidzebra,ZebraEngine,zeSetForcedOpening)( JNIEnv* env, jobject thiz, jobject opening_name )
+{
+	int i;
+	const char* str = NULL;
+
+	s_forced_opening_seq = NULL;
+	if( !opening_name ) return;
+	str = (*env)->GetStringUTFChars(env, opening_name, NULL);
+	if( !str ) return;
+	for(i=0; i<OPENING_COUNT; i++) {
+		if( strcmp(opening_list[i].name, str)==0 ) {
+			s_forced_opening_seq = opening_list[i].sequence;
+			break;
+		}
+	}
+	(*env)->ReleaseStringUTFChars(env, opening_name, str);
+}
+
+JNIEXPORT jboolean
+JNIFn(droidzebra,ZebraEngine,zeGameInProgress)( JNIEnv* env, jobject thiz )
+{
+	return game_in_progress()? JNI_TRUE : JNI_FALSE;
+}
 
 JNIEXPORT void
 JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
@@ -286,6 +349,7 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 	int black_hash1, black_hash2, white_hash1, white_hash2;
 	char move_vec[121];
 	char json_buffer[256];
+	ui_event_t evt;
 
 	DROIDZEBRA_JNI_SETUP;
 
@@ -299,8 +363,11 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 	game_init( NULL, &side_to_move );
 	setup_hash( TRUE );
 	clear_stored_game();
-	set_slack( floor( DEFAULT_SLACK * 128.0 ) );
-	toggle_human_openings( FALSE );
+	set_slack( floor( s_slack * 128.0 ) );
+	set_perturbation( floor( s_perturbation * 128.0 ) );
+	toggle_human_openings( s_human_opening );
+	set_forced_opening( s_forced_opening_seq );
+
 	reset_book_search();
 	set_deviation_value(0, 0, 0.0);
 
@@ -332,6 +399,7 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 
 	droidzebra_message(MSG_GAME_START, NULL);
 
+AGAIN:
 	while ( game_in_progress() && !force_exit ) {
 		force_return = 0;
 
@@ -375,8 +443,6 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 			move_start = get_real_timer();
 			clear_panic_abort();
 			if ( skill[side_to_move] == 0 ) {
-				ui_event_t evt;
-				memset(&evt, 0, sizeof(evt));
 				curr_move = -1;
 
 				if( auto_make_forced_moves && move_count[disks_played]==1 ) {
@@ -389,39 +455,13 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 					} else if( evt.type==UI_EVENT_MOVE ) {
 						curr_move = evt.evt_move.move;
 					} else if( evt.type==UI_EVENT_UNDO ) {
-						int done = 0;
-						/* continue until current side can make a move */
-						while(score_sheet_row>0 && !done) {
-							done = 1;
-							if ( side_to_move == BLACKSQ ) {
-								score_sheet_row--;
-								if(white_moves[score_sheet_row]!=PASS)
-									unmake_move(WHITESQ, white_moves[score_sheet_row] );
-								white_moves[score_sheet_row] = PASS;
-								if(black_moves[score_sheet_row]!=PASS)
-									unmake_move(BLACKSQ, black_moves[score_sheet_row] );
-								else
-									done = 0;
-								black_moves[score_sheet_row] = PASS;
-							} else {
-								if(black_moves[score_sheet_row]!=PASS)
-									unmake_move(BLACKSQ, black_moves[score_sheet_row] );
-								black_moves[score_sheet_row] = PASS;
-								score_sheet_row--;
-								if(white_moves[score_sheet_row]!=PASS)
-									unmake_move(WHITESQ, white_moves[score_sheet_row] );
-								else
-									done = 0;
-								white_moves[score_sheet_row] = PASS;
-							}
-							droidzebra_message_debug("undo: score_sheet_row %d, disks_played %d, move_count %d", score_sheet_row, disks_played, move_count[disks_played]);
-						}
+						_droidzebra_undo_turn(&side_to_move);
 						// adjust for increment at the beginning of the game loop
 						if ( side_to_move == BLACKSQ )
 							score_sheet_row--;
-						clear_endgame_performed();
 						continue;
 					} else if( evt.type==UI_EVENT_SETTINGS_CHANGE ) {
+						_droidzebra_on_settings_change();
 						// repeat move on settings change
 						if ( side_to_move == BLACKSQ )
 							score_sheet_row--; // adjust for increment at the beginning of the game loop
@@ -513,6 +553,23 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 
 	if( !force_exit )
 		droidzebra_message(MSG_GAME_OVER, NULL);
+
+	// loop here until we are told to exit so the user has a chance to undo
+	while( !force_exit ) {
+		_droidzebra_get_ui_event( side_to_move, &evt );
+		if( evt.type== UI_EVENT_EXIT ) {
+			force_exit = 1;
+			break;
+		} else if( evt.type==UI_EVENT_UNDO ) {
+			_droidzebra_undo_turn(&side_to_move);
+			// adjust for increment at the beginning of the game loop
+			if ( side_to_move == BLACKSQ )
+				score_sheet_row--;
+			goto AGAIN;
+		} else if( evt.type==UI_EVENT_SETTINGS_CHANGE ) {
+			_droidzebra_on_settings_change();
+		}
+	}
 }
 
 jobject
@@ -568,6 +625,8 @@ _droidzebra_get_ui_event( int side_to_move, ui_event_t* ui_event )
 
 	DROIDZEBRA_CHECK_JNI;
 
+	memset(ui_event, 0, sizeof(ui_event_t));
+
 	while ( !ready && !force_exit ) {
 		ready = 1;
 
@@ -587,4 +646,103 @@ _droidzebra_get_ui_event( int side_to_move, ui_event_t* ui_event )
 	}
 
 	return 0;
+}
+
+// undo moves until player is a human and he can make a move
+void _droidzebra_undo_turn(int* side_to_move)
+{
+	int human_can_move = 0;
+
+	if(score_sheet_row==0 && *side_to_move==BLACKSQ) return;
+
+	do {
+		*side_to_move = OPP(*side_to_move);
+
+		if ( *side_to_move == WHITESQ )
+			score_sheet_row--;
+
+		human_can_move =
+				skill[*side_to_move]==0 &&
+				!(
+					(auto_make_forced_moves && move_count[disks_played-1]==1)
+					|| (*side_to_move==WHITESQ && white_moves[score_sheet_row]==PASS)
+					|| (*side_to_move==BLACKSQ && black_moves[score_sheet_row]==PASS)
+				);
+
+		if ( *side_to_move == WHITESQ ) {
+			if(white_moves[score_sheet_row]!=PASS)
+				unmake_move(WHITESQ, white_moves[score_sheet_row] );
+			white_moves[score_sheet_row] = PASS;
+		} else {
+			if(black_moves[score_sheet_row]!=PASS)
+				unmake_move(BLACKSQ, black_moves[score_sheet_row] );
+			black_moves[score_sheet_row] = PASS;
+		}
+
+		droidzebra_message_debug("undo: score_sheet_row %d, disks_played %d, move_count %d", score_sheet_row, disks_played, move_count[disks_played]);
+	} while( !(score_sheet_row==0 && *side_to_move==BLACKSQ) && !human_can_move );
+	clear_endgame_performed();
+}
+
+#if 0
+void _droidzebra_undo_turn(int* side_to_move)
+{
+	int done = 0;
+
+	/* continue until current side can make a move */
+	while(score_sheet_row>0 && !done) {
+		done = 1;
+		if ( *side_to_move == BLACKSQ ) {
+			score_sheet_row--;
+			if(white_moves[score_sheet_row]!=PASS)
+				unmake_move(WHITESQ, white_moves[score_sheet_row] );
+			white_moves[score_sheet_row] = PASS;
+
+			if( skill[WHITESQ] == 0 ) { // we just undid a humans turn - stop
+				*side_to_move = OPP(*side_to_move);
+				done = 1;
+			} else {
+				if(black_moves[score_sheet_row]!=PASS) {
+					// if automatic forced moves is checked - undo until there is a choice in moves
+					if(move_count[disks_played]==1 && auto_make_forced_moves)
+						done = 0;
+					unmake_move(BLACKSQ, black_moves[score_sheet_row] );
+				} else {
+					done = 0;
+				}
+				black_moves[score_sheet_row] = PASS;
+			}
+		} else {
+			if(black_moves[score_sheet_row]!=PASS)
+				unmake_move(BLACKSQ, black_moves[score_sheet_row] );
+			black_moves[score_sheet_row] = PASS;
+			score_sheet_row--;
+
+			if( skill[BLACKSQ] == 0 ) { // we just undid a humans turn - stop
+				*side_to_move = OPP(*side_to_move);
+				break;
+			} else {
+				if(white_moves[score_sheet_row]!=PASS) {
+					// if automatic forced moves is checked - undo until there is a choice in moves
+					if(move_count[disks_played]==1 && auto_make_forced_moves)
+						done = 0;
+					unmake_move(WHITESQ, white_moves[score_sheet_row] );
+				} else {
+					done = 0;
+				}
+				white_moves[score_sheet_row] = PASS;
+			}
+		}
+		droidzebra_message_debug("undo: score_sheet_row %d, disks_played %d, move_count %d", score_sheet_row, disks_played, move_count[disks_played]);
+	}
+	clear_endgame_performed();
+}
+#endif
+
+void _droidzebra_on_settings_change(void)
+{
+	set_slack( floor( s_slack * 128.0 ) );
+	set_perturbation( floor( s_perturbation * 128.0 ) );
+	toggle_human_openings( s_human_opening );
+	set_forced_opening( s_forced_opening_seq );
 }

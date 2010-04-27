@@ -56,11 +56,21 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	FUNCTION_ZEBRA_BLACK = 2,
 	FUNCTION_ZEBRA_VS_ZEBRA = 3;
 
+	private static final int
+	RANDOMNESS_NONE = 0,
+	RANDOMNESS_SMALL = 1,
+	RANDOMNESS_MEDIUM = 2,
+	RANDOMNESS_LARGE = 3,
+	RANDOMNESS_HUGE = 4;
+	
 	public ZebraEngine mZebraThread;
 
 	public static final int DEFAULT_SETTING_FUNCTION = FUNCTION_ZEBRA_WHITE;
 	public static final String DEFAULT_SETTING_STRENGTH  = "1|1|1";
 	public static final boolean DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES  = false;
+	public static final int DEFAULT_SETTING_RANDOMNESS = RANDOMNESS_NONE;
+	public static final String DEFAULT_SETTING_FORCE_OPENING = "None";
+	public static final boolean DEFAULT_SETTING_HUMAN_OPENINGS = false;
 	public static final boolean DEFAULT_SETTING_DISPLAY_PV = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_MOVES = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_LAST_MOVE = true;
@@ -69,6 +79,9 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	SETTINGS_KEY_FUNCTION = "settings_engine_function",
 	SETTINGS_KEY_STRENGTH = "settings_engine_strength",
 	SETTINGS_KEY_AUTO_MAKE_FORCED_MOVES = "settings_engine_auto_make_moves",
+	SETTINGS_KEY_RANDOMNESS = "settings_engine_randomness",
+	SETTINGS_KEY_FORCE_OPENING = "settings_engine_force_opening",
+	SETTINGS_KEY_HUMAN_OPENINGS = "settings_engine_human_openings",
 	SETTINGS_KEY_DISPLAY_PV = "settings_ui_display_pv",
 	SETTINGS_KEY_DISPLAY_MOVES = "settings_ui_display_moves",
 	SETTINGS_KEY_DISPLAY_LAST_MOVE = "settings_ui_display_last_move"
@@ -94,6 +107,9 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	private int mSettingZebraDepthExact = 1;
 	private int mSettingZebraDepthWLD = 1;
 	public boolean mSettingAutoMakeForcedMoves = DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES;
+	private int mSettingZebraRandomness = DEFAULT_SETTING_RANDOMNESS;
+	private String mSettingZebraForceOpening = DEFAULT_SETTING_FORCE_OPENING;
+	private boolean mSettingZebraHumanOpenings = DEFAULT_SETTING_HUMAN_OPENINGS;
 	private boolean mSettingDisplayPV = DEFAULT_SETTING_DISPLAY_PV;
 	public boolean mSettingDisplayMoves = DEFAULT_SETTING_DISPLAY_MOVES;
 	public boolean mSettingDisplayLastMove = DEFAULT_SETTING_DISPLAY_LAST_MOVE;
@@ -311,7 +327,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 				}
 			} break;
 			case ZebraEngine.MSG_DEBUG: {
-				// Log.d("DroidZebra", m.getData().getString("message"));
+				//Log.d("DroidZebra", m.getData().getString("message"));
 			} break;
 			}
 		}
@@ -397,7 +413,10 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 
 	private void loadSettings() {
 		int settingsFunction, settingZebraDepth, settingZebraDepthExact, settingZebraDepthWLD;
+		int settingRandomness;
 		boolean settingAutoMakeForcedMoves;
+		String settingZebraForceOpening;
+		boolean settingZebraHumanOpenings;
 		
 		SharedPreferences settings = getSharedPreferences(SHARED_PREFS_NAME, 0);
 
@@ -415,12 +434,22 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 
 		settingAutoMakeForcedMoves = settings.getBoolean(SETTINGS_KEY_AUTO_MAKE_FORCED_MOVES, DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES);
 		
+		settingRandomness = Integer.parseInt(settings.getString(SETTINGS_KEY_RANDOMNESS, String.format("%d", DEFAULT_SETTING_RANDOMNESS)));
+
+		settingZebraForceOpening = settings.getString(SETTINGS_KEY_FORCE_OPENING, DEFAULT_SETTING_FORCE_OPENING);
+			
+		settingZebraHumanOpenings = settings.getBoolean(SETTINGS_KEY_HUMAN_OPENINGS, DEFAULT_SETTING_HUMAN_OPENINGS);
+
+		
 		boolean bZebraSettingChanged = (
 			mSettingFunction != settingsFunction 
 			|| mSettingZebraDepth != settingZebraDepth
 			|| mSettingZebraDepthExact != settingZebraDepthExact
 			|| mSettingZebraDepthWLD != settingZebraDepthWLD
 			|| mSettingAutoMakeForcedMoves != settingAutoMakeForcedMoves
+			|| mSettingZebraRandomness != settingRandomness
+			|| mSettingZebraForceOpening != settingZebraForceOpening
+			|| mSettingZebraHumanOpenings != settingZebraHumanOpenings
 			);
 		
 		mSettingFunction = settingsFunction;
@@ -428,9 +457,15 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		mSettingZebraDepthExact = settingZebraDepthExact;
 		mSettingZebraDepthWLD = settingZebraDepthWLD;
 		mSettingAutoMakeForcedMoves = settingAutoMakeForcedMoves;
+		mSettingZebraRandomness = settingRandomness;
+		mSettingZebraForceOpening = settingZebraForceOpening;
+		mSettingZebraHumanOpenings = settingZebraHumanOpenings;
 		
 		try {
 			mZebraThread.setAutoMakeMoves(mSettingAutoMakeForcedMoves);
+			mZebraThread.setForcedOpening(mSettingZebraForceOpening);
+			mZebraThread.setHumanOpenings(mSettingZebraHumanOpenings);
+			
 			switch( mSettingFunction ) {
 			case FUNCTION_HUMAN_VS_HUMAN:
 				mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
@@ -448,6 +483,30 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			default:
 				mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
 				mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, mSettingZebraDepth, mSettingZebraDepthExact, mSettingZebraDepthWLD, ZebraEngine.INFINIT_TIME, 0));
+				break;
+			}
+			
+			switch(mSettingZebraRandomness) {
+			case RANDOMNESS_SMALL:
+				mZebraThread.setSlack(1.5f);
+				mZebraThread.setPerturbation(1.0f);
+				break;
+			case RANDOMNESS_MEDIUM:
+				mZebraThread.setSlack(4.0f);
+				mZebraThread.setPerturbation(2.5f);
+				break;
+			case RANDOMNESS_LARGE:
+				mZebraThread.setSlack(6.0f);
+				mZebraThread.setPerturbation(6.0f);
+				break;
+			case RANDOMNESS_HUGE:
+				mZebraThread.setSlack(10.0f);
+				mZebraThread.setPerturbation(16.0f);
+				break;
+			case RANDOMNESS_NONE:
+			default:
+				mZebraThread.setSlack(0.0f);
+				mZebraThread.setPerturbation(0.0f);
 				break;
 			}
 		} catch (EngineError e) {
@@ -490,7 +549,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		loadSettings();
 		
 		// start a new game if not playing
-		if( mZebraThread.getEngineState()==ZebraEngine.ES_READY2PLAY )
+		if( !mZebraThread.gameInProgress() )
 			newGame();
 	}
 	

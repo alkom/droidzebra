@@ -24,6 +24,7 @@ public class ZebraEngine extends Thread {
 
 	static public String PATTERNS_FILE = "coeffs2.bin"; 
 	static public String BOOK_FILE = "book.bin";
+	static public String BOOK_FILE_COMPRESSED = "book.cmp.z";
 	
 	// board colors
 	static public final int PLAYER_BLACK = 0;
@@ -70,8 +71,8 @@ public class ZebraEngine extends Thread {
 	;
 
 	private static final String[] coeffAssets = { "coeffs2.bin" };
-	private static final String[] bookAssets = { "book.bin.0", "book.bin.1", "book.bin.2", "book.bin.3", "book.bin.4", "book.bin.5", "book.bin.6", "book.bin.7", "book.bin.8",};
-	//private static final String[] bookAssets = { "book.bin",};
+	//private static final String[] bookAssets = { "book.bin.0", "book.bin.1", "book.bin.2", "book.bin.3", "book.bin.4", "book.bin.5", "book.bin.6", "book.bin.7", "book.bin.8",};
+	private static final String[] bookCompressedAssets = { "book.cmp.z",};
 
 	// player info
 	public static class PlayerInfo {
@@ -235,6 +236,10 @@ public class ZebraEngine extends Thread {
 		return mEngineState;
 	}
 
+	public boolean gameInProgress() {
+		return zeGameInProgress();
+	}
+	
 	public void setRunning(boolean b) {
 		boolean oldRun = mRun;
 		mRun = b;
@@ -319,11 +324,30 @@ public class ZebraEngine extends Thread {
 		}
 	}
 
-	public void setAutoMakeMoves(boolean mSettingAutoMakeForcedMoves) {
-		if(mSettingAutoMakeForcedMoves)
+	public void setAutoMakeMoves(boolean _settingAutoMakeForcedMoves) {
+		if(_settingAutoMakeForcedMoves)
 			zeSetAutoMakeMoves(1);
 		else
 			zeSetAutoMakeMoves(0);
+	}
+
+	public void setSlack(float _slack) {
+		zeSetSlack(_slack);
+	}
+
+	public void setPerturbation(float _perturbation) {
+		zeSetPerturbation(_perturbation);
+	}
+
+	public void setForcedOpening(String _openingName) {
+		zeSetForcedOpening(_openingName);
+	}
+
+	public void setHumanOpenings(boolean _enable) {
+		if(_enable)
+			zeSetHumanOpenings(1);
+		else
+			zeSetHumanOpenings(0);
 	}
 
 	@Override
@@ -339,7 +363,6 @@ public class ZebraEngine extends Thread {
 			zeGlobalInit(mFilesDir.getAbsolutePath());
 			zeSetPlayerInfo(PLAYER_BLACK, 0, 0, 0, INFINIT_TIME, 0);
 			zeSetPlayerInfo(PLAYER_WHITE, 0, 0, 0, INFINIT_TIME, 0);
-
 		}
 
 		setEngineState(ES_READY2PLAY);
@@ -406,12 +429,13 @@ public class ZebraEngine extends Thread {
 		// Log.d("ZebraEngine", String.format("Callback(%d,%s)", msgcode, data.toString()));
 		try {
 			switch(msgcode) {
-			case MSG_ERROR: {
+			case MSG_ERROR: { 
 				b.putString("error", data.getString("error"));
 				if(getEngineState()==ES_INITIAL) {
 					// delete .bin files
 					new File(mFilesDir, PATTERNS_FILE).delete();
 					new File(mFilesDir, BOOK_FILE).delete();
+					new File(mFilesDir, BOOK_FILE_COMPRESSED).delete();
 				}
 				mHandler.sendMessage(msg);
 			} break;
@@ -568,8 +592,7 @@ public class ZebraEngine extends Thread {
 
 				// if self-playing make sure there is enough delay to see that the game is being played :)
 				long moveEnd = android.os.SystemClock.uptimeMillis();
-				if( mPlayerInfo[PLAYER_BLACK].skill>0 
-					&& mPlayerInfo[PLAYER_WHITE].skill>0 
+				if( mPlayerInfo[mSideToMove].skill>0 
 					&& (moveEnd - mMoveStartTime)<SELFPLAY_MOVE_DELAY ) {
 					android.os.SystemClock.sleep(SELFPLAY_MOVE_DELAY - (moveEnd - mMoveStartTime));
 				}
@@ -613,6 +636,7 @@ public class ZebraEngine extends Thread {
 	{
 		File pattern = new File(dir, PATTERNS_FILE);
 		File book = new File(dir, BOOK_FILE);
+		File bookCompressed = new File(dir, BOOK_FILE_COMPRESSED);
 		
 		if( pattern.exists() && book.exists() )
 			return;
@@ -623,10 +647,11 @@ public class ZebraEngine extends Thread {
 		
 		try {
 			_asset2File(coeffAssets, pattern);
-			_asset2File(bookAssets, book);
+			_asset2File(bookCompressedAssets, bookCompressed);
 		} catch (IOException e) {
 			pattern.delete();
 			book.delete();
+			bookCompressed.delete();
 			throw e;
 		}
 	}
@@ -687,7 +712,12 @@ public class ZebraEngine extends Thread {
 	);    
 	private native void zePlay();
 	private native void zeSetAutoMakeMoves(int auto_make_moves);
-
+	private native void zeSetSlack(float slack);
+	private native void zeSetPerturbation(float perturbation);
+	private native void zeSetForcedOpening(String opening_name);
+	private native void zeSetHumanOpenings(int enable);
+	private native boolean zeGameInProgress();
+	
 	public native void zeJsonTest(JSONObject json);
 
 	static {
