@@ -36,6 +36,7 @@ public class ZebraEngine extends Thread {
 
 	static private final int SELFPLAY_MOVE_DELAY = 500; // ms
 	private long mMoveStartTime = 0; //ms
+	private int mMovesWithoutInput = 0;
 	
 	// messages
 	static public final int 
@@ -518,6 +519,8 @@ public class ZebraEngine extends Thread {
 			} break;
 
 			case MSG_GET_USER_INPUT: {
+				mMovesWithoutInput = 0;
+				
 				setEngineState(ES_USER_INPUT_WAIT);
 
 				waitForEngineState(ES_USER_INPUT_RESUME);
@@ -590,12 +593,18 @@ public class ZebraEngine extends Thread {
 			case MSG_MOVE_END: {
 				mHandler.sendMessage(msg);
 
-				// if self-playing make sure there is enough delay to see that the game is being played :)
-				long moveEnd = android.os.SystemClock.uptimeMillis();
-				if( mPlayerInfo[mSideToMove].skill>0 
-					&& (moveEnd - mMoveStartTime)<SELFPLAY_MOVE_DELAY ) {
-					android.os.SystemClock.sleep(SELFPLAY_MOVE_DELAY - (moveEnd - mMoveStartTime));
+				// introduce delay between moves made by the computer without user input 
+				// so we can actually to see that the game is being played :)
+				if( mMovesWithoutInput>1 ) {
+					long moveEnd = android.os.SystemClock.uptimeMillis();
+					if( mPlayerInfo[mSideToMove].skill>0 
+						&& (moveEnd - mMoveStartTime)<SELFPLAY_MOVE_DELAY ) {
+						android.os.SystemClock.sleep(SELFPLAY_MOVE_DELAY - (moveEnd - mMoveStartTime));
+					}
 				}
+				
+				// this counter is reset by user input
+				mMovesWithoutInput += 1;
 			} break;			
 
 			case MSG_EVAL_TEXT: {
