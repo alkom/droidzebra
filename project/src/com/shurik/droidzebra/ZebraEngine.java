@@ -28,8 +28,10 @@ public class ZebraEngine extends Thread {
 	
 	// board colors
 	static public final int PLAYER_BLACK = 0;
-	static public final int PLAYER_EMPTY = 1;
+	static public final int PLAYER_EMPTY = 1; // for board color
 	static public final int PLAYER_WHITE = 2;
+
+	static public final int PLAYER_ZEBRA = 1; // for zebra skill in PlayerInfo
 
 	// default parameters
 	static public final int INFINIT_TIME = 10000000;
@@ -53,6 +55,7 @@ public class ZebraEngine extends Thread {
 	MSG_MOVE_END = 10,
 	MSG_EVAL_TEXT = 11,
 	MSG_PV = 12,
+	MSG_CANDIDATE_EVALS = 13,
 	MSG_DEBUG = 65535;
 
 	// engine state
@@ -78,7 +81,7 @@ public class ZebraEngine extends Thread {
 	// player info
 	public static class PlayerInfo {
 		public PlayerInfo(int _player, int _skill, int _exact_skill, int _wld_skill, int _player_time, int _increment) {
-			assert(_player==PLAYER_BLACK || _player==PLAYER_WHITE);
+			assert(_player==PLAYER_BLACK || _player==PLAYER_WHITE || _player==PLAYER_ZEBRA);
 			playerColor = _player;
 			skill = _skill;
 			exactSolvingSkill = _exact_skill;
@@ -121,10 +124,22 @@ public class ZebraEngine extends Thread {
 
 	public class CandidateMove {
 		public Move mMove;
-		public float mScore;  
-		public CandidateMove(Move move, float score) {
+		public boolean mHasEval;
+		public String mEvalShort;  
+		public String mEvalLong;
+		public boolean mBest;
+		
+		public CandidateMove(Move move) {
 			mMove = move;
-			mScore = score;
+			mHasEval = false;
+		}
+		
+		public CandidateMove(Move move, String evalShort, String evalLong, boolean best) {
+			mMove = move;
+			mEvalShort = evalShort;
+			mEvalLong = evalLong;
+			mBest = best;
+			mHasEval = true;
 		}
 	}
 
@@ -135,11 +150,11 @@ public class ZebraEngine extends Thread {
 	// player info
 	private PlayerInfo[] mPlayerInfo = {
 			new PlayerInfo(PLAYER_BLACK, 0, 0, 0, INFINIT_TIME, 0),
-			null,
+			new PlayerInfo(PLAYER_ZEBRA, 4, 12, 12, INFINIT_TIME, 0),
 			new PlayerInfo(PLAYER_WHITE, 0, 0, 0, INFINIT_TIME, 0)
 	};
 	private boolean mPlayerInfoChanged = false;
-	private int mSideToMove = PLAYER_EMPTY;
+	private int mSideToMove = PLAYER_ZEBRA;
 
 	// context
 	private Context mContext;
@@ -158,6 +173,8 @@ public class ZebraEngine extends Thread {
 	private int mEngineState = ES_INITIAL;
 
 	private boolean mRun = false;
+	
+	private boolean bInCallback = false;
 
 	public ZebraEngine(Context context, Handler handler)
 	{
@@ -268,21 +285,20 @@ public class ZebraEngine extends Thread {
 
 	public void makeMove(Move move) throws InvalidMove, EngineError
 	{
+		if(!isValidMove(move))
+			throw new InvalidMove();
+
+		// if thinking on human time - stop
+		if( mPlayerInfo[mSideToMove].skill==0
+			&& getEngineState()==ZebraEngine.ES_PLAYINPROGRESS ) {
+			stopMove();
+			waitForEngineState(ES_USER_INPUT_WAIT, 1000);
+		}
+		
 		if( getEngineState()!=ES_USER_INPUT_WAIT) {
 			// Log.d("ZebraEngine", "Invalid Engine State");
 			return;
 		}
-
-		if(mValidMoves==null) 
-			throw new InvalidMove();
-
-		boolean valid = false;
-		for(int m : mValidMoves) 
-			if(m==move.mMove) {
-				valid = true;
-				break;
-			}
-		if(!valid) throw new InvalidMove();
 
 		mPendingEvent = new JSONObject();
 		try {
@@ -350,7 +366,14 @@ public class ZebraEngine extends Thread {
 		else
 			zeSetHumanOpenings(0);
 	}
-
+	
+	public void setPracticeMode(boolean _enable) {
+		if(_enable)
+			zeSetPracticeMode(1);
+		else
+			zeSetPracticeMode(0);
+	}
+	
 	@Override
 	public void run() {
 		setRunning(true);
@@ -392,6 +415,14 @@ public class ZebraEngine extends Thread {
 						mPlayerInfo[PLAYER_WHITE].playerTime,
 						mPlayerInfo[PLAYER_WHITE].playerTimeIncrement
 				);
+				zeSetPlayerInfo(
+						PLAYER_ZEBRA, 
+						mPlayerInfo[PLAYER_ZEBRA].skill, 
+						mPlayerInfo[PLAYER_ZEBRA].exactSolvingSkill, 
+						mPlayerInfo[PLAYER_ZEBRA].wldSolvingSkill,
+						mPlayerInfo[PLAYER_ZEBRA].playerTime,
+						mPlayerInfo[PLAYER_ZEBRA].playerTimeIncrement
+				);
 				zePlay();
 			}
 
@@ -407,7 +438,7 @@ public class ZebraEngine extends Thread {
 
 	public void setPlayerInfo(PlayerInfo playerInfo)  throws EngineError
 	{
-		if( playerInfo.playerColor!=PLAYER_BLACK && playerInfo.playerColor!=PLAYER_WHITE )
+		if( playerInfo.playerColor!=PLAYER_BLACK && playerInfo.playerColor!=PLAYER_WHITE && playerInfo.playerColor!=PLAYER_ZEBRA)
 			throw new EngineError(String.format("Invalid player type %d", playerInfo.playerColor));
 
 		mPlayerInfo[playerInfo.playerColor] = playerInfo;
@@ -428,7 +459,10 @@ public class ZebraEngine extends Thread {
 		Bundle b = new Bundle();
 		msg.setData(b);
 		// Log.d("ZebraEngine", String.format("Callback(%d,%s)", msgcode, data.toString()));
+		if( bInCallback )
+			fatalError("Recursive vallback call");
 		try {
+			bInCallback = true;
 			switch(msgcode) {
 			case MSG_ERROR: { 
 				b.putString("error", data.getString("error"));
@@ -509,10 +543,7 @@ public class ZebraEngine extends Thread {
 				for( int i=0; i<jscmoves.length(); i++ ) {
 					JSONObject jscmove = jscmoves.getJSONObject(i);
 					mValidMoves[i] = jscmoves.getJSONObject(i).getInt("move");
-					cmoves[i] = new CandidateMove(
-							new Move(jscmove.getInt("move")),
-							(float)jscmove.getDouble("score")
-					);
+					cmoves[i] = new CandidateMove(new Move(jscmove.getInt("move")));
 				}
 				msg.obj = cmoves;
 				mHandler.sendMessage(msg);
@@ -586,6 +617,14 @@ public class ZebraEngine extends Thread {
 							mPlayerInfo[PLAYER_WHITE].playerTime,
 							mPlayerInfo[PLAYER_WHITE].playerTimeIncrement
 					);
+					zeSetPlayerInfo(
+							PLAYER_ZEBRA, 
+							mPlayerInfo[PLAYER_ZEBRA].skill, 
+							mPlayerInfo[PLAYER_ZEBRA].exactSolvingSkill, 
+							mPlayerInfo[PLAYER_ZEBRA].wldSolvingSkill,
+							mPlayerInfo[PLAYER_ZEBRA].playerTime,
+							mPlayerInfo[PLAYER_ZEBRA].playerTimeIncrement
+					);
 				}
 				mHandler.sendMessage(msg);
 			} break;
@@ -622,6 +661,23 @@ public class ZebraEngine extends Thread {
 				mHandler.sendMessage(msg);
 			} break;
 			
+			case MSG_CANDIDATE_EVALS: {
+				JSONArray jscevals = data.getJSONArray("evals");
+				CandidateMove cmoves[] = new CandidateMove[jscevals.length()];
+				for( int i=0; i<jscevals.length(); i++ ) {
+					JSONObject jsceval = jscevals.getJSONObject(i);
+					cmoves[i] = new CandidateMove(
+							new Move(jsceval.getInt("move")),
+							jsceval.getString("eval_s"),
+							jsceval.getString("eval_l"),
+							(jsceval.getInt("best")!=0)
+						);
+				}
+				msg.obj = cmoves;
+				mHandler.sendMessage(msg);
+				
+			} break;
+			
 			default: {
 				b.putString( "error", String.format("Unkown message ID %d", msgcode) );
 				msg.setData(b);
@@ -633,6 +689,8 @@ public class ZebraEngine extends Thread {
 			b.putString( "error", "JSONException:" + e.getMessage());
 			msg.setData(b);
 			mHandler.sendMessage(msg);
+		} finally {
+			bInCallback = false;
 		}
 		return retval;
 	}
@@ -641,6 +699,23 @@ public class ZebraEngine extends Thread {
 		return getEngineState()==ZebraEngine.ES_PLAYINPROGRESS;
 	}
 
+	public boolean isValidMove(Move move) {
+		if(mValidMoves==null)
+			return false;
+
+		boolean valid = false;
+		for(int m : mValidMoves) 
+			if(m==move.mMove) {
+				valid = true;
+				break;
+			}
+		return valid;
+	}
+	
+	public boolean isHumanToMove() {
+		return mPlayerInfo[mSideToMove].skill==0;
+	}
+	
 	private void _prepareZebraFolder(File dir) throws IOException
 	{
 		File pattern = new File(dir, PATTERNS_FILE);
@@ -725,6 +800,7 @@ public class ZebraEngine extends Thread {
 	private native void zeSetPerturbation(float perturbation);
 	private native void zeSetForcedOpening(String opening_name);
 	private native void zeSetHumanOpenings(int enable);
+	private native void zeSetPracticeMode(int enable);
 	private native boolean zeGameInProgress();
 	
 	public native void zeJsonTest(JSONObject json);

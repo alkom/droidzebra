@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="settings_engine_practice_mode_summary">Show evaluations on the board</string>
+    <string name="settings_engine_practice_mode_title">Practice Mode</string>
     <string name="settings_engine_human_openings_summary">Play human-style openings</string>
     <string name="settings_engine_human_openings_title">Human openings</string>
     <string name="settings_engine_force_opening_summary">Set forced opening name</string>

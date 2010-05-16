@@ -904,6 +904,7 @@ extended_compute_move( int side_to_move, int book_only,
 		evaluated_list[j + 1] = temp;
 	      }
 	  } while ( changed );
+	  display_status(stdout, FALSE);
       }
 
       first_iteration = FALSE;
@@ -931,7 +932,6 @@ extended_compute_move( int side_to_move, int book_only,
 	}
 	unsearched_move[0] = this_move;
       }
-
     } while ( !force_return &&
 	      ((current_mid != mid) ||
 	       (current_exact != exact) || (current_wld != wld)) );
@@ -1126,6 +1126,11 @@ get_evaluated_count( void ) {
 EvaluatedMove
 get_evaluated( int index ) {
   return evaluated_list[index];
+}
+
+void
+clear_evaluated( void ) {
+	game_evaluated_count = 0;
 }
 
 
@@ -1523,6 +1528,8 @@ compute_move( int side_to_move,
 
   /* Write the principal variation, if available, to the log file
      and, optionally, to screen. */
+  if(curr_move!=pv[0][0])
+	  clear_pv();
 
   if ( !get_ponder_move() ) {
     complete_pv( side_to_move );

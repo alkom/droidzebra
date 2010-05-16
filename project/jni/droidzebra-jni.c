@@ -26,6 +26,7 @@
 
 #include "droidzebra.h"
 #include "droidzebra-json.h"
+#include "droidzebra-msg.h"
 
 /*--------- zebra ----------*/
 #include "zebra/globals.h"
@@ -64,6 +65,7 @@ static int auto_make_forced_moves = 0;
 static float s_slack = DEFAULT_SLACK;
 static float s_perturbation = DEFAULT_PERTURBATION;
 static int s_human_opening = FALSE;
+static int s_practice_mode = FALSE;
 static const char* s_forced_opening_seq = NULL;
 // --
 
@@ -80,12 +82,15 @@ static jmp_buf s_err_jmp;
 
 char android_files_dir[256];
 
-static jobject _droidzebra_RPC_callback(jint message, jobject json);
-static int _droidzebra_get_ui_event( int side_to_move,ui_event_t* ui_event );
-static jobject _droidzebra_helper_fill_move_list( int side_to_move );
-static void _droidzebra_send_move_list( int side_to_move );
 static void _droidzebra_undo_turn(int* side_to_move);
 static void _droidzebra_on_settings_change(void);
+static void _droidzebra_compute_evals(int side_to_move);
+
+JNIEnv* droidzebra_jnienv(void)
+{
+	DROIDZEBRA_CHECK_JNI;
+	return s_env;
+}
 
 JNIEXPORT void
 JNIFn(droidzebra,ZebraEngine,zeJsonTest)( JNIEnv* env, jobject thiz, jobject json )
@@ -183,7 +188,7 @@ fatal_error( const char *format, ... ) {
 	json = droidzebra_json_create(s_env, NULL);
 	if( !json ) exit( EXIT_FAILURE );
 	droidzebra_json_put_string(s_env, json, "error", errmsg);
-	json = _droidzebra_RPC_callback(MSG_ERROR, json);
+	json = droidzebra_RPC_callback(MSG_ERROR, json);
 	(*s_env)->DeleteLocalRef(s_env, json);
 	DROIDZEBRA_JNI_BREAK;
 
@@ -191,7 +196,7 @@ fatal_error( const char *format, ... ) {
 	exit( EXIT_FAILURE );
 }
 
-jobject _droidzebra_RPC_callback(jint message, jobject json)
+jobject droidzebra_RPC_callback(jint message, jobject json)
 {
 	DROIDZEBRA_CHECK_JNI;
 
@@ -202,6 +207,16 @@ jobject _droidzebra_RPC_callback(jint message, jobject json)
 		DROIDZEBRA_JNI_BREAK;
 		exit( EXIT_FAILURE ); // not reached
 	}
+
+	// create empty json object is not specified
+	if(!json) {
+		json = droidzebra_json_create(s_env, NULL);
+		if( !json ) {
+			DROIDZEBRA_JNI_BREAK;
+			exit( EXIT_FAILURE ); // not reached
+		}
+	}
+
 	out = (*s_env)->CallObjectMethod(s_env, s_thiz, mid, message, json);
 	if ((*s_env)->ExceptionCheck(s_env)) {
 		DROIDZEBRA_JNI_BREAK;
@@ -211,7 +226,6 @@ jobject _droidzebra_RPC_callback(jint message, jobject json)
 	(*s_env)->DeleteLocalRef(s_env, cls);
 	return out;
 }
-
 
 void droidzebra_message(int category, const char* json_str)
 {
@@ -224,7 +238,7 @@ void droidzebra_message(int category, const char* json_str)
 		fatal_error("failed to create JSON object");
 		return; // not reached
 	}
-	json = _droidzebra_RPC_callback(category, json);
+	json = droidzebra_RPC_callback(category, json);
 	(*s_env)->DeleteLocalRef(s_env, json);
 }
 
@@ -249,12 +263,11 @@ int droidzebra_message_debug(const char* format, ...)
 		return -1; // not reached
 	}
 	droidzebra_json_put_string(s_env, json, "message", errmsg);
-	json = _droidzebra_RPC_callback(MSG_DEBUG, json);
+	json = droidzebra_RPC_callback(MSG_DEBUG, json);
 	(*s_env)->DeleteLocalRef(s_env, json);
 
 	return retval;
 }
-
 
 JNIEXPORT void
 JNIFn(droidzebra,ZebraEngine,zeSetPlayerInfo)(
@@ -270,7 +283,7 @@ JNIFn(droidzebra,ZebraEngine,zeSetPlayerInfo)(
 {
 	DROIDZEBRA_JNI_SETUP;
 
-	if( _player!=BLACKSQ && _player!=WHITESQ ) {
+	if( _player!=BLACKSQ && _player!=WHITESQ && _player!=EMPTY ) {
 		fatal_error("Invalid player ID: %d", _player);
 	}
 
@@ -307,6 +320,12 @@ JNIFn(droidzebra,ZebraEngine,zeSetHumanOpenings)( JNIEnv* env, jobject thiz, int
 {
 	s_human_opening = enable;
 	//toggle_human_openings(s_human_opening);
+}
+
+JNIEXPORT void
+JNIFn(droidzebra,ZebraEngine,zeSetPracticeMode)( JNIEnv* env, jobject thiz, int enable )
+{
+	s_practice_mode = enable;
 }
 
 JNIEXPORT void
@@ -348,7 +367,6 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 	int timed_search;
 	int black_hash1, black_hash2, white_hash1, white_hash2;
 	char move_vec[121];
-	char json_buffer[256];
 	ui_event_t evt;
 
 	DROIDZEBRA_JNI_SETUP;
@@ -397,16 +415,16 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 	white_hash1 = my_random();
 	white_hash2 = my_random();
 
-	droidzebra_message(MSG_GAME_START, NULL);
+	droidzebra_msg_game_start();
 
 AGAIN:
 	while ( game_in_progress() && !force_exit ) {
 		force_return = 0;
 
-		sprintf(json_buffer, "{\"side_to_move\":%d}", side_to_move);
-		droidzebra_message(MSG_MOVE_START, json_buffer);
+		droidzebra_msg_move_start(side_to_move);
 
 		remove_coeffs( disks_played );
+		clear_evaluated();
 
 		if ( SEPARATE_TABLES ) {  /* Computer players won't share hash tables */
 			if ( side_to_move == BLACKSQ ) {
@@ -424,7 +442,7 @@ AGAIN:
 		if ( side_to_move == BLACKSQ )
 			score_sheet_row++;
 
-		_droidzebra_send_move_list(side_to_move);
+		droidzebra_msg_candidate_moves();
 
 		// echo
 		set_move_list( black_moves, white_moves, score_sheet_row );
@@ -432,9 +450,7 @@ AGAIN:
 				floor( player_time[WHITESQ] ) );
 		opening_name = find_opening_name();
 		if ( opening_name != NULL ) {
-			char buffer[256];
-			sprintf(buffer, "{ \"opening\":\"%s\" }", opening_name);
-			droidzebra_message(MSG_OPENING_NAME, buffer);
+			droidzebra_msg_opening_name(opening_name);
 		}
 		display_board( stdout, board, side_to_move, TRUE, TRUE, TRUE );
 		// echo
@@ -448,7 +464,15 @@ AGAIN:
 				if( auto_make_forced_moves && move_count[disks_played]==1 ) {
 					curr_move = move_list[disks_played][0];
 				} else {
-					_droidzebra_get_ui_event( side_to_move, &evt );
+					// compute evaluations
+					if( s_practice_mode ) {
+						_droidzebra_compute_evals(side_to_move);
+						if(force_exit) break;
+						if(force_return) force_return = 0; // interrupted by user input
+					}
+
+					// wait for user event
+					droidzebra_msg_get_user_input( side_to_move, &evt );
 					if( evt.type== UI_EVENT_EXIT ) {
 						force_exit = 1;
 						break;
@@ -510,8 +534,7 @@ AGAIN:
 				white_moves[score_sheet_row] = curr_move;
 			}
 
-			sprintf(json_buffer, "{\"move\":%d}", curr_move);
-			droidzebra_message(MSG_LAST_MOVE, json_buffer);
+			droidzebra_msg_last_move(curr_move);
 		}
 		else {
 			if ( side_to_move == BLACKSQ )
@@ -519,12 +542,11 @@ AGAIN:
 			else
 				white_moves[score_sheet_row] = PASS;
 			if ( !auto_make_forced_moves && skill[side_to_move] == 0 ) {
-				droidzebra_message(MSG_PASS, NULL);
+				droidzebra_msg_pass();
 			}
 		}
 
-		sprintf(json_buffer, "{\"side_to_move\":%d}", side_to_move);
-		droidzebra_message(MSG_MOVE_END, json_buffer);
+		droidzebra_msg_move_end(side_to_move);
 
 		side_to_move = OPP( side_to_move );
 	}
@@ -552,11 +574,11 @@ AGAIN:
 	*/
 
 	if( !force_exit )
-		droidzebra_message(MSG_GAME_OVER, NULL);
+		droidzebra_msg_game_over();
 
 	// loop here until we are told to exit so the user has a chance to undo
 	while( !force_exit ) {
-		_droidzebra_get_ui_event( side_to_move, &evt );
+		droidzebra_msg_get_user_input( side_to_move, &evt );
 		if( evt.type== UI_EVENT_EXIT ) {
 			force_exit = 1;
 			break;
@@ -571,83 +593,6 @@ AGAIN:
 		}
 	}
 }
-
-jobject
-_droidzebra_helper_fill_move_list(int side_to_move)
-{
-	int i;
-	char buffer[64*60];
-	int buffer_pos = 0;
-	jobject json_candidates;
-
-	DROIDZEBRA_CHECK_JNI;
-
-	/* build list of alternative moves */
-	/* TODO: score needs work */
-	buffer_pos = sprintf(buffer, "{\"moves\":[ " );
-	for( i=0; i<move_count[disks_played]; i++ ) {
-		buffer_pos += sprintf(buffer+buffer_pos,
-				"{\"move\":%d,\"score\":%6.2f},",
-				move_list[disks_played][i],
-				evals[disks_played][move_list[disks_played][i]] / 128.0
-		);
-	}
-	buffer_pos--; // erase last comma
-	buffer_pos += sprintf(buffer+buffer_pos, "] }" );
-
-	json_candidates = droidzebra_json_create(s_env, buffer);
-	if( !json_candidates ) {
-		fatal_error("failed to create JSON object");
-	}
-	return json_candidates;
-}
-
-void
-_droidzebra_send_move_list(int side_to_move)
-{
-	jobject json;
-
-	DROIDZEBRA_CHECK_JNI;
-
-	json = _droidzebra_helper_fill_move_list(side_to_move);
-	json = _droidzebra_RPC_callback(MSG_CANDIDATE_MOVES, json);
-	(*s_env)->DeleteLocalRef(s_env, json);
-}
-
-int
-_droidzebra_get_ui_event( int side_to_move, ui_event_t* ui_event )
-{
-	int type;
-	int move;
-	jobject json_candidates;
-	jobject json_move;
-	int ready = 0;
-
-	DROIDZEBRA_CHECK_JNI;
-
-	memset(ui_event, 0, sizeof(ui_event_t));
-
-	while ( !ready && !force_exit ) {
-		ready = 1;
-
-		json_candidates = _droidzebra_helper_fill_move_list(side_to_move);
-		json_move = _droidzebra_RPC_callback(MSG_GET_USER_INPUT, json_candidates);
-		assert(json_move!=NULL);
-		type = droidzebra_json_get_int(s_env, json_move, "type");
-		ui_event->type = type;
-		switch(type) {
-		case UI_EVENT_MOVE:
-			move = droidzebra_json_get_int(s_env, json_move, "move");
-			ui_event->evt_move.move = move;
-			ready = valid_move( move, side_to_move );
-			break;
-		}
-		(*s_env)->DeleteLocalRef(s_env, json_move);
-	}
-
-	return 0;
-}
-
 // undo moves until player is a human and he can make a move
 void _droidzebra_undo_turn(int* side_to_move)
 {
@@ -684,65 +629,34 @@ void _droidzebra_undo_turn(int* side_to_move)
 	clear_endgame_performed();
 }
 
-#if 0
-void _droidzebra_undo_turn(int* side_to_move)
-{
-	int done = 0;
-
-	/* continue until current side can make a move */
-	while(score_sheet_row>0 && !done) {
-		done = 1;
-		if ( *side_to_move == BLACKSQ ) {
-			score_sheet_row--;
-			if(white_moves[score_sheet_row]!=PASS)
-				unmake_move(WHITESQ, white_moves[score_sheet_row] );
-			white_moves[score_sheet_row] = PASS;
-
-			if( skill[WHITESQ] == 0 ) { // we just undid a humans turn - stop
-				*side_to_move = OPP(*side_to_move);
-				done = 1;
-			} else {
-				if(black_moves[score_sheet_row]!=PASS) {
-					// if automatic forced moves is checked - undo until there is a choice in moves
-					if(move_count[disks_played]==1 && auto_make_forced_moves)
-						done = 0;
-					unmake_move(BLACKSQ, black_moves[score_sheet_row] );
-				} else {
-					done = 0;
-				}
-				black_moves[score_sheet_row] = PASS;
-			}
-		} else {
-			if(black_moves[score_sheet_row]!=PASS)
-				unmake_move(BLACKSQ, black_moves[score_sheet_row] );
-			black_moves[score_sheet_row] = PASS;
-			score_sheet_row--;
-
-			if( skill[BLACKSQ] == 0 ) { // we just undid a humans turn - stop
-				*side_to_move = OPP(*side_to_move);
-				break;
-			} else {
-				if(white_moves[score_sheet_row]!=PASS) {
-					// if automatic forced moves is checked - undo until there is a choice in moves
-					if(move_count[disks_played]==1 && auto_make_forced_moves)
-						done = 0;
-					unmake_move(WHITESQ, white_moves[score_sheet_row] );
-				} else {
-					done = 0;
-				}
-				white_moves[score_sheet_row] = PASS;
-			}
-		}
-		droidzebra_message_debug("undo: score_sheet_row %d, disks_played %d, move_count %d", score_sheet_row, disks_played, move_count[disks_played]);
-	}
-	clear_endgame_performed();
-}
-#endif
-
 void _droidzebra_on_settings_change(void)
 {
 	set_slack( floor( s_slack * 128.0 ) );
 	set_perturbation( floor( s_perturbation * 128.0 ) );
 	toggle_human_openings( s_human_opening );
 	set_forced_opening( s_forced_opening_seq );
+}
+
+void _droidzebra_compute_evals(int side_to_move)
+{
+	int stored_pv[sizeof(full_pv)/sizeof(full_pv[0])];
+	int stored_pv_depth = 0;
+
+	set_slack(0);
+	set_perturbation(0);
+	toggle_human_openings(FALSE);
+	set_forced_opening( NULL );
+	memcpy(stored_pv, full_pv, sizeof(stored_pv));
+	stored_pv_depth = full_pv_depth;
+
+	extended_compute_move(side_to_move, FALSE, TRUE, skill[EMPTY], exact_skill[EMPTY], wld_skill[EMPTY]);
+
+	memcpy(full_pv, stored_pv, sizeof(full_pv));
+	full_pv_depth = stored_pv_depth;
+	set_slack( floor( s_slack * 128.0 ) );
+	set_perturbation( floor( s_perturbation * 128.0 ) );
+	toggle_human_openings( s_human_opening );
+	set_forced_opening( s_forced_opening_seq );
+
+	display_status(stdout, FALSE);
 }

@@ -93,6 +93,9 @@ get_evaluated_count( void );
 EvaluatedMove
 get_evaluated( int index );
 
+void
+clear_evaluated( void );
+
 int
 compute_move( int side_to_move,
 	      int update_all,

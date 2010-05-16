@@ -21,6 +21,7 @@ LOCAL_SRC_FILES := droidzebra-jni.c \
 		droidzebra-autop.c \
 		droidzebra-display.c \
 		droidzebra-json.c \
+		droidzebra-msg.c \
         zebra/bitbcnt.c \
         zebra/bitbmob.c \
         zebra/bitboard.c \

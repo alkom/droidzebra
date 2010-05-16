@@ -71,6 +71,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	public static final int DEFAULT_SETTING_RANDOMNESS = RANDOMNESS_NONE;
 	public static final String DEFAULT_SETTING_FORCE_OPENING = "None";
 	public static final boolean DEFAULT_SETTING_HUMAN_OPENINGS = false;
+	public static final boolean DEFAULT_SETTING_PRACTICE_MODE = false;
 	public static final boolean DEFAULT_SETTING_DISPLAY_PV = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_MOVES = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_LAST_MOVE = true;
@@ -82,6 +83,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	SETTINGS_KEY_RANDOMNESS = "settings_engine_randomness",
 	SETTINGS_KEY_FORCE_OPENING = "settings_engine_force_opening",
 	SETTINGS_KEY_HUMAN_OPENINGS = "settings_engine_human_openings",
+	SETTINGS_KEY_PRACTICE_MODE = "settings_engine_practice_mode",
 	SETTINGS_KEY_DISPLAY_PV = "settings_ui_display_pv",
 	SETTINGS_KEY_DISPLAY_MOVES = "settings_ui_display_moves",
 	SETTINGS_KEY_DISPLAY_LAST_MOVE = "settings_ui_display_last_move"
@@ -110,6 +112,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	private int mSettingZebraRandomness = DEFAULT_SETTING_RANDOMNESS;
 	private String mSettingZebraForceOpening = DEFAULT_SETTING_FORCE_OPENING;
 	private boolean mSettingZebraHumanOpenings = DEFAULT_SETTING_HUMAN_OPENINGS;
+	private boolean mSettingZebraPracticeMode = DEFAULT_SETTING_PRACTICE_MODE;
 	private boolean mSettingDisplayPV = DEFAULT_SETTING_DISPLAY_PV;
 	public boolean mSettingDisplayMoves = DEFAULT_SETTING_DISPLAY_MOVES;
 	public boolean mSettingDisplayLastMove = DEFAULT_SETTING_DISPLAY_LAST_MOVE;
@@ -281,12 +284,15 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 						);
 				}
 			} break;
+			
 			case ZebraEngine.MSG_CANDIDATE_MOVES: {
 				setCandidateMoves((CandidateMove[]) m.obj);
 			} break;
+			
 			case ZebraEngine.MSG_PASS: {
 				showDialog(DIALOG_PASS_ID);
 			} break;
+			
 			case ZebraEngine.MSG_OPENING_NAME: {
 				mOpeningName = m.getData().getString("opening");
 				mStatusView.setTextForID(
@@ -294,18 +300,22 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 						mOpeningName
 					);
 			} break;
+			
 			case ZebraEngine.MSG_LAST_MOVE: {
 				setLastMove(new Move(m.getData().getInt("move")));
 			} break;
+			
 			case ZebraEngine.MSG_GAME_OVER: {
 				showDialog(DIALOG_GAME_OVER);
 			} break;
+			
 			case ZebraEngine.MSG_EVAL_TEXT: {
 				mStatusView.setTextForID(
 						StatusView.ID_STATUS_EVAL, 
 						m.getData().getString("eval")
 					);
 			} break;
+			
 			case ZebraEngine.MSG_PV: {
 				if( mSettingDisplayPV ) {
 					byte[] pv = m.getData().getByteArray("pv");
@@ -320,12 +330,27 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 						);
 				}
 			} break;
+			
 			case ZebraEngine.MSG_MOVE_END: {
 				if( mBusyDialogUp ) {
 					dismissDialog(DIALOG_BUSY);
 					mBusyDialogUp = false;
 				}
 			} break;
+			
+			case ZebraEngine.MSG_CANDIDATE_EVALS: {
+				CandidateMove[] evals = (CandidateMove[]) m.obj;
+				for(CandidateMove eval:evals) {
+					for(int i=0; i<mCandidateMoves.length; i++) {
+						if(mCandidateMoves[i].mMove.mMove == eval.mMove.mMove) {
+							mCandidateMoves[i] = eval;
+							break;
+						}
+					}
+				}
+				mBoardView.invalidate();
+			} break;
+			
 			case ZebraEngine.MSG_DEBUG: {
 				//Log.d("DroidZebra", m.getData().getString("message"));
 			} break;
@@ -417,6 +442,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		boolean settingAutoMakeForcedMoves;
 		String settingZebraForceOpening;
 		boolean settingZebraHumanOpenings;
+		boolean settingZebraPracticeMode;
 		
 		SharedPreferences settings = getSharedPreferences(SHARED_PREFS_NAME, 0);
 
@@ -433,12 +459,10 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		//);
 
 		settingAutoMakeForcedMoves = settings.getBoolean(SETTINGS_KEY_AUTO_MAKE_FORCED_MOVES, DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES);
-		
 		settingRandomness = Integer.parseInt(settings.getString(SETTINGS_KEY_RANDOMNESS, String.format("%d", DEFAULT_SETTING_RANDOMNESS)));
-
 		settingZebraForceOpening = settings.getString(SETTINGS_KEY_FORCE_OPENING, DEFAULT_SETTING_FORCE_OPENING);
-			
 		settingZebraHumanOpenings = settings.getBoolean(SETTINGS_KEY_HUMAN_OPENINGS, DEFAULT_SETTING_HUMAN_OPENINGS);
+		settingZebraPracticeMode = settings.getBoolean(SETTINGS_KEY_PRACTICE_MODE, DEFAULT_SETTING_PRACTICE_MODE);
 
 		
 		boolean bZebraSettingChanged = (
@@ -450,6 +474,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			|| mSettingZebraRandomness != settingRandomness
 			|| mSettingZebraForceOpening != settingZebraForceOpening
 			|| mSettingZebraHumanOpenings != settingZebraHumanOpenings
+			|| mSettingZebraPracticeMode != settingZebraPracticeMode
 			);
 		
 		mSettingFunction = settingsFunction;
@@ -460,11 +485,13 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		mSettingZebraRandomness = settingRandomness;
 		mSettingZebraForceOpening = settingZebraForceOpening;
 		mSettingZebraHumanOpenings = settingZebraHumanOpenings;
+		mSettingZebraPracticeMode = settingZebraPracticeMode;
 		
 		try {
 			mZebraThread.setAutoMakeMoves(mSettingAutoMakeForcedMoves);
 			mZebraThread.setForcedOpening(mSettingZebraForceOpening);
 			mZebraThread.setHumanOpenings(mSettingZebraHumanOpenings);
+			mZebraThread.setPracticeMode(mSettingZebraPracticeMode);
 			
 			switch( mSettingFunction ) {
 			case FUNCTION_HUMAN_VS_HUMAN:
@@ -485,6 +512,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 				mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, mSettingZebraDepth, mSettingZebraDepthExact, mSettingZebraDepthWLD, ZebraEngine.INFINIT_TIME, 0));
 				break;
 			}
+			mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_ZEBRA, mSettingZebraDepth+1, mSettingZebraDepthExact+1, mSettingZebraDepthWLD+1, ZebraEngine.INFINIT_TIME, 0));
 			
 			switch(mSettingZebraRandomness) {
 			case RANDOMNESS_SMALL:

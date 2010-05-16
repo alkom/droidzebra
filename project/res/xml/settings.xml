@@ -13,7 +13,7 @@
 			android:entries="@array/settings_engine_strengh_preferences"
 			android:summary="@string/setting_strength_preference_summary"
 			android:key="settings_engine_strength" android:defaultValue="1|1|1"></ListPreference>
-		<CheckBoxPreference android:key="settings_engine_auto_make_moves"
+		<CheckBoxPreference android:key="settings_engine_practice_mode" android:title="@string/settings_engine_practice_mode_title" android:summary="@string/settings_engine_practice_mode_summary" android:defaultValue="false"></CheckBoxPreference><CheckBoxPreference android:key="settings_engine_auto_make_moves"
 			android:summary="@string/settings_engine_auto_make_moves_summary"
 			android:title="@string/settings_engine_auto_make_moves_title"
 			android:defaultValue="false"></CheckBoxPreference>
@@ -25,6 +25,7 @@
 			android:summary="@string/settings_engine_randomness_summary"></ListPreference>
 	<ListPreference android:title="@string/settings_engine_force_opening_title" android:key="settings_engine_force_opening" android:entryValues="@array/settings_engine_opening" android:entries="@array/settings_engine_opening" android:summary="@string/settings_engine_force_opening_summary" android:defaultValue="None"></ListPreference>
 <CheckBoxPreference android:summary="@string/settings_engine_human_openings_summary" android:title="@string/settings_engine_human_openings_title" android:key="settings_engine_human_openings" android:defaultValue="false"></CheckBoxPreference>
+
 </PreferenceCategory>
 	<PreferenceCategory android:title="@string/settings_ui_preferences">
 		<CheckBoxPreference android:key="settings_ui_display_moves"

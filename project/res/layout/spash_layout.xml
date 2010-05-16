@@ -10,22 +10,18 @@
 
 	<TextView android:visibility="visible" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:gravity="center_vertical|center_horizontal"
-		android:textColor="#CFB53B" android:textSize="24sp"
-		android:textStyle="bold"
+		android:textColor="#CFB53B" android:textSize="24sp" android:textStyle="bold"
 		android:typeface="normal" android:text="@string/spash_layout_message"
 		android:layout_below="@+id/splash_logo" android:layout_centerInParent="false"
-		android:layout_centerHorizontal="true"
-		android:paddingTop="30sp" android:id="@+id/splash_text"
-		 />
+		android:layout_centerHorizontal="true" android:paddingTop="30sp"
+		android:id="@+id/splash_text" />
 
 	<TextView android:visibility="visible" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:gravity="center_vertical|center_horizontal"
 		android:textColor="#CFB53B" android:textSize="14sp" android:textStyle="bold"
 		android:typeface="normal" android:text="@string/spash_layout_message_2"
-		android:layout_centerInParent="false"
-		android:layout_centerHorizontal="true"
-		android:id="@+id/splash_text_2"
-		android:paddingBottom="30sp"
+		android:layout_centerInParent="false" android:layout_centerHorizontal="true"
+		android:id="@+id/splash_text_2" android:paddingBottom="30sp"
 		android:layout_below="@+id/splash_text" />
 
 	<ProgressBar android:layout_width="wrap_content"

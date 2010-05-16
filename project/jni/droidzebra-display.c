@@ -30,6 +30,7 @@
 #include "zebra/timer.h"
 
 #include "droidzebra.h"
+#include "droidzebra-msg.h"
 
 
 #define fputs(s, stream) droidzebra_message_debug(s)
@@ -112,69 +113,14 @@ set_move_list( int *black, int *white, int row ) {
 void
 display_board( FILE *stream, int *board, int side_to_move,
 		int give_game_score, int give_time, int give_evals ) {
-	char buffer[1024];
-	int buffer_pos = 0;
-	int i, j;
-
-	buffer_pos = sprintf(buffer, "{ \"board\":[" );
-	for ( i = 1; i <= 8; i++ ) {
-		buffer_pos += sprintf(buffer+buffer_pos, "[" );
-		for ( j = 1; j <= 8; j++ ) {
-			switch ( board[10 * i + j] ) {
-			case BLACKSQ:
-				buffer_pos += sprintf(buffer+buffer_pos, "%d,", BLACKSQ );
-				break;
-			case WHITESQ:
-				buffer_pos += sprintf(buffer+buffer_pos, "%d,", WHITESQ );
-				break;
-			default:
-				buffer_pos += sprintf(buffer+buffer_pos, "%d,", EMPTY );
-				break;
-			}
-		}
-		// eat last comma
-		buffer_pos--;
-		buffer_pos += sprintf(buffer+buffer_pos, "]," );
-	}
-	buffer_pos--; // eat last comma
-	buffer_pos += sprintf(buffer+buffer_pos, "]," );
-
-	// side to move
-	buffer_pos += sprintf(buffer+buffer_pos, "\"side_to_move\":%d,", side_to_move );
-
-	// black player info
-	buffer_pos += sprintf(buffer+buffer_pos, "\"black\":{" );
-	buffer_pos += sprintf(buffer+buffer_pos, "\"time\":\"%02d:%02d\",",
-			black_time / 60, black_time % 60 );
-	buffer_pos += sprintf(buffer+buffer_pos, "\"eval\":%6.2f,", black_eval );
-	buffer_pos += sprintf(buffer+buffer_pos, "\"disc_count\":%d,", disc_count( BLACKSQ ));
-	buffer_pos += sprintf(buffer+buffer_pos, "\"moves\":[ "); //space is important
-	for(i=0; i<score_sheet_row; i++)
-		buffer_pos += sprintf(buffer+buffer_pos, "%d,", black_moves[i]);
-	buffer_pos--; // eat last comma (oe space if empty)
-	buffer_pos += sprintf(buffer+buffer_pos, "],");
-	buffer_pos--; // eat last comma
-	buffer_pos += sprintf(buffer+buffer_pos, "}," );
-
-
-	buffer_pos += sprintf(buffer+buffer_pos, "\"white\":{" );
-	buffer_pos += sprintf(buffer+buffer_pos, "\"time\":\"%02d:%02d\",",
-			white_time / 60, white_time % 60 );
-	buffer_pos += sprintf(buffer+buffer_pos, "\"eval\":%6.2f,", white_eval );
-	buffer_pos += sprintf(buffer+buffer_pos, "\"disc_count\":%d,", disc_count( WHITESQ ));
-	buffer_pos += sprintf(buffer+buffer_pos, "\"moves\":[ "); //space is important
-	for(i=0; i<score_sheet_row; i++) {
-		buffer_pos += sprintf(buffer+buffer_pos, "%d,", white_moves[i]);
-	}
-	buffer_pos--; // eat last comma or space
-	buffer_pos += sprintf(buffer+buffer_pos, "],");
-	buffer_pos--; // eat last comma
-	buffer_pos += sprintf(buffer+buffer_pos, "}," );
-
-	buffer_pos--; // eat last comma
-	buffer_pos += sprintf(buffer+buffer_pos, "}" );
-
-	droidzebra_message(MSG_BOARD, buffer);
+	droidzebra_msg_board(
+		board,
+		side_to_move,
+		black_eval,
+		white_eval,
+		black_time,
+		white_time
+	);
 }
 
 
@@ -199,17 +145,7 @@ display_move( FILE *stream, int move ) {
 
 void
 display_optimal_line( FILE *stream ) {
-	char buffer[256];
-	int buffer_pos = 0;
-	int i;
-
-	buffer_pos = sprintf(buffer, "{\"pv\":[ ");
-	for ( i = 0; i < full_pv_depth; i++ )
-		buffer_pos += sprintf(buffer+buffer_pos, "%d,", full_pv[i]);
-	buffer_pos --; // kill last comma (or space)
-	buffer_pos += sprintf(buffer+buffer_pos, "]}");
-
-	droidzebra_message(MSG_PV, buffer);
+	droidzebra_msg_pv();
 }
 
 
@@ -311,15 +247,19 @@ clear_status( void ) {
 
 void
 display_status( FILE *stream, int allow_repeat ) {
+	// original
 	if ( ((status_pos != 0) || allow_repeat ) &&
 			(strlen( status_buffer ) > 0) ) {
-#ifndef TEXT_BASED
-		if ( stream != stdout )
-#endif
-			fprintf( stream, "status: %s\n", status_buffer );
+		droidzebra_message_debug( "status: %s\n", status_buffer );
 		strcpy( stored_status_buffer, status_buffer );
 	}
 	status_pos = 0;
+	// end - orginal
+
+	//send eval
+	droidzebra_msg_eval();
+	droidzebra_msg_pv();
+	droidzebra_msg_candidate_evals();
 }
 
 
@@ -448,7 +388,6 @@ produce_eval_text( EvaluationType eval_info, int short_output ) {
 	double disk_diff;
 	int len;
 	int int_confidence;
-	char json_buffer[128+MAX_STRING_LEN];
 
 	// force short output
 	short_output = TRUE;
@@ -598,9 +537,6 @@ produce_eval_text( EvaluationType eval_info, int short_output ) {
 	}
 	if ( !short_output && eval_info.is_book )
 		len += sprintf( buffer + len, " (%s)", BOOK_TEXT );
-
-	sprintf(json_buffer, "{ \"eval\":\"%s\" }", buffer);
-	droidzebra_message(MSG_EVAL_TEXT, json_buffer);
 
 	return buffer;
 }

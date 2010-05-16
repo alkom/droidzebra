@@ -34,6 +34,8 @@ public class BoardView extends View {
 	private int mColorSelectionInvalid;
 	private int mColorLine;
 	private int mColorNumbers;
+	private int mColorEvals;
+	private int mColorEvalsBest;
 	
 	private DroidZebra mDroidZebra = null;
 	
@@ -43,7 +45,10 @@ public class BoardView extends View {
 	private RectF mBoardRect = null;
 	private Paint mPaint = null;
 	private FontMetrics mFontMetrics = null; 
-    private BitmapShader mShaderV = null;
+	private Paint mPaintEvalText = null;
+	private FontMetrics mEvalFontMetrics = null;
+
+	private BitmapShader mShaderV = null;
     private BitmapShader mShaderH = null;
     
     private Move mMoveSelection = new Move(0,0);
@@ -71,6 +76,8 @@ public class BoardView extends View {
     	mColorHelpersInvalid = r.getColor(R.color.board_color_helpers_invalid);
     	mColorSelectionValid = r.getColor(R.color.board_color_selection_valid);
     	mColorSelectionInvalid = r.getColor(R.color.board_color_selection_invalid);
+    	mColorEvals = Color.YELLOW;
+    	mColorEvalsBest = Color.CYAN;
     	mColorLine = r.getColor(R.color.board_line);
     	mColorNumbers = r.getColor(R.color.board_numbers);
         
@@ -163,6 +170,7 @@ public class BoardView extends View {
 		canvas.drawCircle(mBoardRect.left+6*mSizeCell, mBoardRect.top+6*mSizeCell, 2, mPaint);
 
         for(int i = 0; i<DroidZebra.boardSize; i++ ) {
+    		mPaint.setTextSize(mSizeCell*0.3f);
 			mPaint.setColor(Color.BLACK);
 			canvas.drawText(String.valueOf(i+1), mBoardRect.left/2 + 1, mBoardRect.top + i*mSizeCell + mSizeCell/2 - (mFontMetrics.ascent+mFontMetrics.descent)/2 + 1, mPaint);
 			canvas.drawText(Character.toString((char) ('A'+i)), mBoardRect.left + i*mSizeCell + mSizeCell/2 + 1, mBoardRect.top/2-(mFontMetrics.ascent+mFontMetrics.descent)/2 + 1, mPaint);
@@ -223,23 +231,31 @@ public class BoardView extends View {
 		}
 
 		if( getDroidZebra().mSettingDisplayMoves && getDroidZebra().getCandidateMoves()!=null ) {
-			mPaint.setColor(Color.RED);
 			mPaint.setStrokeWidth(1.0f);
 			float lineLength = mSizeCell/4;
 			for( CandidateMove m : getDroidZebra().getCandidateMoves() ) {
 				RectF cr = getCellRect(m.mMove.getX(), m.mMove.getY());
-				float pts[] =
-				{ 
-					cr.centerX() - lineLength/2,
-					cr.centerY() - lineLength/2,
-					cr.centerX() + lineLength/2,
-					cr.centerY() + lineLength/2,
-					cr.centerX() + lineLength/2,
-					cr.centerY() - lineLength/2,
-					cr.centerX() - lineLength/2,
-					cr.centerY() + lineLength/2,
-				};
-				canvas.drawLines(pts, 0, 8, mPaint);
+				if(m.mHasEval) {
+					if(m.mBest)
+						mPaintEvalText.setColor(mColorEvalsBest);
+					else
+						mPaintEvalText.setColor(mColorEvals);
+					canvas.drawText(m.mEvalShort, cr.centerX(), cr.centerY() - (mEvalFontMetrics.ascent+mEvalFontMetrics.descent)/2, mPaintEvalText);
+				} else {
+					float pts[] =
+					{ 
+						cr.centerX() - lineLength/2,
+						cr.centerY() - lineLength/2,
+						cr.centerX() + lineLength/2,
+						cr.centerY() + lineLength/2,
+						cr.centerX() + lineLength/2,
+						cr.centerY() - lineLength/2,
+						cr.centerX() - lineLength/2,
+						cr.centerY() + lineLength/2,
+					};
+					mPaint.setColor(Color.RED);
+					canvas.drawLines(pts, 0, 8, mPaint);
+				}
 			}
 		}
 
@@ -247,7 +263,7 @@ public class BoardView extends View {
 			Move lm = getDroidZebra().getLastMove();
 			RectF cellRT = getCellRect(lm.getX(), lm.getY());
 			mPaint.setColor(Color.BLUE);
-			canvas.drawCircle(cellRT.left+2, cellRT.bottom-2, 2, mPaint);			
+			canvas.drawCircle(cellRT.left+mSizeCell/10, cellRT.bottom-mSizeCell/10, mSizeCell/10, mPaint);			
 		}
 	}
 
@@ -274,7 +290,18 @@ public class BoardView extends View {
 		mPaint.setTextSize(mSizeCell*0.3f);
 		mPaint.setStrokeWidth(lineWidth);
 		mFontMetrics = mPaint.getFontMetrics();
-		
+
+		mPaintEvalText = new Paint();
+		mPaintEvalText.setStyle(Paint.Style.FILL);
+		font = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
+		mPaintEvalText.setTypeface( font );
+		mPaintEvalText.setAntiAlias(true); 
+		mPaintEvalText.setTextAlign(Paint.Align.CENTER);
+		mPaintEvalText.setTextScaleX(1.0f);
+		mPaintEvalText.setTextSize(mSizeCell*0.5f);
+		mPaintEvalText.setStrokeWidth(lineWidth);
+		mEvalFontMetrics = mPaintEvalText.getFontMetrics();
+
 		setMeasuredDimension((int)mSizeX, (int)mSizeY);
 	}
 
@@ -392,11 +419,11 @@ public class BoardView extends View {
         	bInvalidate = true;
 			mShowSelectionHelpers = false;
 			
-			// if zebra is still thinking - no move is possible yet - throw a busy dialog
-			if( mDroidZebra.mZebraThread.isThinking()) {
-				mDroidZebra.busyDialog();
-			} else {
-				if( getDroidZebra().mZebraThread.getEngineState()==ZebraEngine.ES_USER_INPUT_WAIT) {
+			if( getDroidZebra().mZebraThread.isValidMove(mMoveSelection) ) {
+				// if zebra is still thinking - no move is possible yet - throw a busy dialog
+				if( mDroidZebra.mZebraThread.isThinking() && !mDroidZebra.mZebraThread.isHumanToMove()) {
+					mDroidZebra.busyDialog();
+				} else {
 		        	try {
 						getDroidZebra().mZebraThread.makeMove(mMoveSelection);
 					} catch (InvalidMove e) {
