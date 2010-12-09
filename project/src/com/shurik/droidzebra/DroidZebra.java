@@ -68,7 +68,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	public static final int DEFAULT_SETTING_FUNCTION = FUNCTION_ZEBRA_WHITE;
 	public static final String DEFAULT_SETTING_STRENGTH  = "1|1|1";
 	public static final boolean DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES  = false;
-	public static final int DEFAULT_SETTING_RANDOMNESS = RANDOMNESS_NONE;
+	public static final int DEFAULT_SETTING_RANDOMNESS = RANDOMNESS_LARGE;
 	public static final String DEFAULT_SETTING_FORCE_OPENING = "None";
 	public static final boolean DEFAULT_SETTING_HUMAN_OPENINGS = false;
 	public static final boolean DEFAULT_SETTING_PRACTICE_MODE = false;
@@ -104,16 +104,16 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	private boolean mBusyDialogUp = false;
 	
 	private SharedPreferences mSettings;
-	private int mSettingFunction = DEFAULT_SETTING_FUNCTION;
+	public int mSettingFunction = DEFAULT_SETTING_FUNCTION;
 	private int mSettingZebraDepth = 1;
 	private int mSettingZebraDepthExact = 1;
 	private int mSettingZebraDepthWLD = 1;
 	public boolean mSettingAutoMakeForcedMoves = DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES;
-	private int mSettingZebraRandomness = DEFAULT_SETTING_RANDOMNESS;
-	private String mSettingZebraForceOpening = DEFAULT_SETTING_FORCE_OPENING;
-	private boolean mSettingZebraHumanOpenings = DEFAULT_SETTING_HUMAN_OPENINGS;
-	private boolean mSettingZebraPracticeMode = DEFAULT_SETTING_PRACTICE_MODE;
-	private boolean mSettingDisplayPV = DEFAULT_SETTING_DISPLAY_PV;
+	public int mSettingZebraRandomness = DEFAULT_SETTING_RANDOMNESS;
+	public String mSettingZebraForceOpening = DEFAULT_SETTING_FORCE_OPENING;
+	public boolean mSettingZebraHumanOpenings = DEFAULT_SETTING_HUMAN_OPENINGS;
+	public boolean mSettingZebraPracticeMode = DEFAULT_SETTING_PRACTICE_MODE;
+	public boolean mSettingDisplayPV = DEFAULT_SETTING_DISPLAY_PV;
 	public boolean mSettingDisplayMoves = DEFAULT_SETTING_DISPLAY_MOVES;
 	public boolean mSettingDisplayLastMove = DEFAULT_SETTING_DISPLAY_LAST_MOVE;
 
@@ -302,7 +302,8 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			} break;
 			
 			case ZebraEngine.MSG_LAST_MOVE: {
-				setLastMove(new Move(m.getData().getInt("move")));
+				byte move =  (byte)m.getData().getInt("move");
+				setLastMove(new Move(move));
 			} break;
 			
 			case ZebraEngine.MSG_GAME_OVER: {
@@ -417,6 +418,15 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		mSettings = getSharedPreferences(SHARED_PREFS_NAME, 0);
 		mSettings.registerOnSharedPreferenceChangeListener(this);
 
+		if( savedInstanceState != null 
+			&& savedInstanceState.containsKey("moves_played_count") ) {
+			mZebraThread.setInitialGameState(savedInstanceState.getInt("moves_played_count"), savedInstanceState.getByteArray("moves_played"));
+		} 
+		//else {
+			//byte[] init = {56,66,65,46,35,64,47,34,33,36,57,24,43,25,37,23,63,26,16,15,14,13,12,53, 52, 62, 75, 41, 42, 74, 51, 31, 32, 61, 83, 84, 73, 82, 17, 21, 72, 68, 58, 85, 76, 67, 86, 87, 78, 38, 48, 88, 27, 77 };
+			//mZebraThread.setInitialGameState(init.length, init);
+		//}
+		
 		mZebraThread.start();
 
 		newCompletionPort(
@@ -731,7 +741,8 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	}
 	
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-		loadSettings();
+		if(mZebraThread!=null) 
+			loadSettings();
 	}
 
 	public void FatalError(String msg) {
@@ -786,6 +797,16 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	public void onConfigurationChanged(Configuration newConfig) {
 		// TODO Auto-generated method stub
 		super.onConfigurationChanged(newConfig);
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		ZebraEngine.GameState gs = mZebraThread.getGameState(); 
+		if( gs != null ) {
+			outState.putByteArray("moves_played", gs.mMoveSequence);
+			outState.putInt("moves_played_count", gs.mDisksPlayed);
+			outState.putInt("version", 1);
+		}
 	}
 
 

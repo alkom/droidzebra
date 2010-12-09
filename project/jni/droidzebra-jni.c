@@ -67,6 +67,7 @@ static float s_perturbation = DEFAULT_PERTURBATION;
 static int s_human_opening = FALSE;
 static int s_practice_mode = FALSE;
 static const char* s_forced_opening_seq = NULL;
+static int s_enable_msg = TRUE;
 // --
 
 #define JNIFn(Package, Class, Fname) JNICALL Java_com_shurik_##Package##_##Class##_##Fname
@@ -227,9 +228,19 @@ jobject droidzebra_RPC_callback(jint message, jobject json)
 	return out;
 }
 
+// enable/disable sending messsage to the java app
+int droidzebra_enable_messaging(int enable)
+{
+	int prev = s_enable_msg;
+	s_enable_msg = enable;
+	return prev;
+}
+
 void droidzebra_message(int category, const char* json_str)
 {
 	jobject json;
+
+	if(!s_enable_msg) return;
 
 	DROIDZEBRA_CHECK_JNI;
 
@@ -354,20 +365,24 @@ JNIFn(droidzebra,ZebraEngine,zeGameInProgress)( JNIEnv* env, jobject thiz )
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
+JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz, jint providedMoveCount, jbyteArray providedMoves )
 {
 	EvaluationType eval_info;
 	const char *black_name;
 	const char *white_name;
 	const char *opening_name;
+	const char *op;
 	double move_start, move_stop;
 	int i;
 	int side_to_move;
 	int curr_move;
 	int timed_search;
 	int black_hash1, black_hash2, white_hash1, white_hash2;
-	char move_vec[121];
 	ui_event_t evt;
+	int provided_move_count;
+	int provided_move_index;
+	int provided_move[65];
+	int silent = FALSE;
 
 	DROIDZEBRA_JNI_SETUP;
 
@@ -375,6 +390,26 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 
 	if(skill[BLACKSQ]<0  || skill[WHITESQ]<0 ) {
 		fatal_error("Set Player Info first");
+	}
+
+	/* copy provided moves */
+	provided_move_index = 0;
+	provided_move_count = 0;
+	if( providedMoveCount>0 && providedMoves ) {
+		jbyte* providedMovesJNI;
+		provided_move_count = providedMoveCount;
+		i = (*env)->GetArrayLength(env, providedMoves);
+		if( provided_move_count>i )
+			fatal_error("Provided move count is greater than array size %d>%d", provided_move_count, i);
+		if(provided_move_count>64)
+			fatal_error("Provided move count is greater that 64: %d", provided_move_count);
+		providedMovesJNI = (*env)->GetByteArrayElements(env, providedMoves, 0);
+		if( !providedMovesJNI )
+			fatal_error("failed to get provide moves (jni)");
+		for(i=0; i<provided_move_count; i++) {
+			provided_move[i] = providedMovesJNI[i];
+		}
+		(*env)->ReleaseByteArrayElements(env, providedMoves, providedMovesJNI, 0);
 	}
 
 	/* Set up the position and the search engine */
@@ -385,6 +420,7 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 	set_perturbation( floor( s_perturbation * 128.0 ) );
 	toggle_human_openings( s_human_opening );
 	set_forced_opening( s_forced_opening_seq );
+	opening_name = NULL;
 
 	reset_book_search();
 	set_deviation_value(0, 0, 0.0);
@@ -408,8 +444,6 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 		white_moves[i] = PASS;
 	}
 
-	move_vec[0] = 0;
-
 	black_hash1 = my_random();
 	black_hash2 = my_random();
 	white_hash1 = my_random();
@@ -420,6 +454,9 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz )
 AGAIN:
 	while ( game_in_progress() && !force_exit ) {
 		force_return = 0;
+		silent = (provided_move_index < provided_move_count);
+
+		droidzebra_enable_messaging(!silent);
 
 		droidzebra_msg_move_start(side_to_move);
 
@@ -442,80 +479,87 @@ AGAIN:
 		if ( side_to_move == BLACKSQ )
 			score_sheet_row++;
 
-		droidzebra_msg_candidate_moves();
-
 		// echo
+		droidzebra_msg_candidate_moves();
 		set_move_list( black_moves, white_moves, score_sheet_row );
 		set_times( floor( player_time[BLACKSQ] ),
 				floor( player_time[WHITESQ] ) );
-		opening_name = find_opening_name();
-		if ( opening_name != NULL ) {
-			droidzebra_msg_opening_name(opening_name);
+		op = find_opening_name();
+		if ( op != NULL && (!opening_name || strcmp(op, opening_name)) ) {
+			opening_name = op;
 		}
+		droidzebra_msg_opening_name(opening_name);
 		display_board( stdout, board, side_to_move, TRUE, TRUE, TRUE );
 		// echo
 
 		if ( move_count[disks_played] != 0 ) {
 			move_start = get_real_timer();
 			clear_panic_abort();
-			if ( skill[side_to_move] == 0 ) {
-				curr_move = -1;
 
-				if( auto_make_forced_moves && move_count[disks_played]==1 ) {
-					curr_move = move_list[disks_played][0];
-				} else {
-					// compute evaluations
-					if( s_practice_mode ) {
-						_droidzebra_compute_evals(side_to_move);
-						if(force_exit) break;
-						if(force_return) force_return = 0; // interrupted by user input
-					}
+			if ( provided_move_index >= provided_move_count ) {
+				if ( skill[side_to_move] == 0 ) {
+					curr_move = -1;
 
-					// wait for user event
-					droidzebra_msg_get_user_input( side_to_move, &evt );
-					if( evt.type== UI_EVENT_EXIT ) {
-						force_exit = 1;
-						break;
-					} else if( evt.type==UI_EVENT_MOVE ) {
-						curr_move = evt.evt_move.move;
-					} else if( evt.type==UI_EVENT_UNDO ) {
-						_droidzebra_undo_turn(&side_to_move);
-						// adjust for increment at the beginning of the game loop
-						if ( side_to_move == BLACKSQ )
-							score_sheet_row--;
-						continue;
-					} else if( evt.type==UI_EVENT_SETTINGS_CHANGE ) {
-						_droidzebra_on_settings_change();
-						// repeat move on settings change
-						if ( side_to_move == BLACKSQ )
-							score_sheet_row--; // adjust for increment at the beginning of the game loop
-						continue;
+					if( auto_make_forced_moves && move_count[disks_played]==1 ) {
+						curr_move = move_list[disks_played][0];
 					} else {
-						fatal_error("Unsupported UI event: %d", evt.type);
-					}
-				}
-				assert(curr_move>=0);
-			}
-			else {
-				start_move( player_time[side_to_move],
-						player_increment[side_to_move],
-						disks_played + 4 );
-				determine_move_time( player_time[side_to_move],
-						player_increment[side_to_move],
-						disks_played + 4 );
-				timed_search = (skill[side_to_move] >= 60);
-				toggle_experimental( FALSE );
+						// compute evaluations
+						if( s_practice_mode ) {
+							_droidzebra_compute_evals(side_to_move);
+							if(force_exit) break;
+							if(force_return) force_return = 0; // interrupted by user input
+						}
 
-				curr_move =
-						compute_move( side_to_move, TRUE, player_time[side_to_move],
-								player_increment[side_to_move], timed_search,
-								TRUE, skill[side_to_move],
-								exact_skill[side_to_move], wld_skill[side_to_move],
-								FALSE, &eval_info );
-				if ( side_to_move == BLACKSQ )
-					set_evals( produce_compact_eval( eval_info ), 0.0 );
-				else
-					set_evals( 0.0, produce_compact_eval( eval_info ) );
+						// wait for user event
+						droidzebra_msg_get_user_input( side_to_move, &evt );
+						if( evt.type== UI_EVENT_EXIT ) {
+							force_exit = 1;
+							break;
+						} else if( evt.type==UI_EVENT_MOVE ) {
+							curr_move = evt.evt_move.move;
+						} else if( evt.type==UI_EVENT_UNDO ) {
+							_droidzebra_undo_turn(&side_to_move);
+							// adjust for increment at the beginning of the game loop
+							if ( side_to_move == BLACKSQ )
+								score_sheet_row--;
+							continue;
+						} else if( evt.type==UI_EVENT_SETTINGS_CHANGE ) {
+							_droidzebra_on_settings_change();
+							// repeat move on settings change
+							if ( side_to_move == BLACKSQ )
+								score_sheet_row--; // adjust for increment at the beginning of the game loop
+							continue;
+						} else {
+							fatal_error("Unsupported UI event: %d", evt.type);
+						}
+					}
+					assert(curr_move>=0);
+				}
+				else {
+					start_move( player_time[side_to_move],
+							player_increment[side_to_move],
+							disks_played + 4 );
+					determine_move_time( player_time[side_to_move],
+							player_increment[side_to_move],
+							disks_played + 4 );
+					timed_search = (skill[side_to_move] >= 60);
+					toggle_experimental( FALSE );
+
+					curr_move =
+							compute_move( side_to_move, TRUE, player_time[side_to_move],
+									player_increment[side_to_move], timed_search,
+									TRUE, skill[side_to_move],
+									exact_skill[side_to_move], wld_skill[side_to_move],
+									FALSE, &eval_info );
+					if ( side_to_move == BLACKSQ )
+						set_evals( produce_compact_eval( eval_info ), 0.0 );
+					else
+						set_evals( 0.0, produce_compact_eval( eval_info ) );
+				}
+			} else {
+				curr_move = provided_move[provided_move_index];
+				if ( !valid_move( curr_move, side_to_move ) )
+					fatal_error( "Invalid move %c%c in move sequence", TO_SQUARE( curr_move ));
 			}
 
 			move_stop = get_real_timer();
@@ -524,19 +568,17 @@ AGAIN:
 
 			store_move( disks_played, curr_move );
 
-			sprintf( move_vec + 2 * disks_played, "%c%c", TO_SQUARE( curr_move ) );
 			(void) make_move( side_to_move, curr_move, TRUE );
 			if ( side_to_move == BLACKSQ )
 				black_moves[score_sheet_row] = curr_move;
 			else {
-				//if ( white_moves[score_sheet_row] != PASS )
-				//	score_sheet_row++;
 				white_moves[score_sheet_row] = curr_move;
 			}
 
 			droidzebra_msg_last_move(curr_move);
 		}
 		else {
+			// this is where we pass
 			if ( side_to_move == BLACKSQ )
 				black_moves[score_sheet_row] = PASS;
 			else
@@ -549,13 +591,18 @@ AGAIN:
 		droidzebra_msg_move_end(side_to_move);
 
 		side_to_move = OPP( side_to_move );
+
+		provided_move_index ++;
 	}
+
+	droidzebra_enable_messaging(TRUE);
 
 	if ( side_to_move == BLACKSQ )
 		score_sheet_row++;
 
 	set_move_list( black_moves, white_moves, score_sheet_row );
 	set_times( floor( player_time[BLACKSQ] ), floor( player_time[WHITESQ] ) );
+	droidzebra_msg_opening_name(opening_name);
 	display_board( stdout, board, side_to_move, TRUE, TRUE, TRUE );
 
 	/*

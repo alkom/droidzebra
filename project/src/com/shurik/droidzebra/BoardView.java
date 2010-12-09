@@ -230,12 +230,13 @@ public class BoardView extends View {
 			}
 		}
 
-		if( getDroidZebra().mSettingDisplayMoves && getDroidZebra().getCandidateMoves()!=null ) {
+		if( (getDroidZebra().mSettingDisplayMoves || getDroidZebra().mSettingZebraPracticeMode)
+			&& getDroidZebra().getCandidateMoves()!=null ) {
 			mPaint.setStrokeWidth(1.0f);
 			float lineLength = mSizeCell/4;
 			for( CandidateMove m : getDroidZebra().getCandidateMoves() ) {
 				RectF cr = getCellRect(m.mMove.getX(), m.mMove.getY());
-				if(m.mHasEval) {
+				if(m.mHasEval && getDroidZebra().mSettingZebraPracticeMode) {
 					if(m.mBest)
 						mPaintEvalText.setColor(mColorEvalsBest);
 					else

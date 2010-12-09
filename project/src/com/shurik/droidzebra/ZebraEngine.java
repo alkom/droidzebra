@@ -17,7 +17,6 @@ import android.os.Handler;
 import android.os.Message;
 //import android.util.Log;
 
-
 public class ZebraEngine extends Thread {
 
 	static public final int BOARD_SIZE = 8;
@@ -103,6 +102,7 @@ public class ZebraEngine extends Thread {
 	};
 
 	public static class Move {
+		public static int PASS = -1;
 		public int mMove;
 		public Move(int move) {
 			mMove = move;
@@ -113,7 +113,7 @@ public class ZebraEngine extends Thread {
 		public int getY() { return mMove%10-1; }
 		public int getX() { return mMove/10-1; }
 		public String getText() {
-			if (mMove == -1) return "--";
+			if (mMove == PASS) return "--";
 			
 			byte m[] = new byte[2];
 			m[0] = (byte) ('a' + getX());
@@ -143,6 +143,13 @@ public class ZebraEngine extends Thread {
 		}
 	}
 
+	class GameState {
+		public int mDisksPlayed;
+		public byte[] mMoveSequence;
+	};
+	private GameState mInitialGameState;
+	private GameState mCurrentGameState;
+	
 	// current move
 	private JSONObject mPendingEvent= null;
 	private int mValidMoves[] = null;
@@ -165,7 +172,7 @@ public class ZebraEngine extends Thread {
 	// files folder
 	private File mFilesDir;
 
-	// syncronization
+	// synchronization
 	static private final Object  mJNILock = new Object();
 
 	private Object mEngineStateEvent = new Object();
@@ -374,6 +381,19 @@ public class ZebraEngine extends Thread {
 			zeSetPracticeMode(0);
 	}
 	
+	public void setInitialGameState(int moveCount, byte[] moves) {
+		mInitialGameState = new GameState();
+		mInitialGameState.mDisksPlayed = moveCount; 
+		mInitialGameState.mMoveSequence = new byte[moveCount];
+		for(int i=0; i<moveCount; i++) {
+			mInitialGameState.mMoveSequence[i] = moves[i];
+		}
+	}
+	
+	public GameState getGameState() {
+		return mCurrentGameState;
+	}
+	
 	@Override
 	public void run() {
 		setRunning(true);
@@ -423,7 +443,17 @@ public class ZebraEngine extends Thread {
 						mPlayerInfo[PLAYER_ZEBRA].playerTime,
 						mPlayerInfo[PLAYER_ZEBRA].playerTimeIncrement
 				);
-				zePlay();
+				
+				mCurrentGameState = new GameState();
+				mCurrentGameState.mDisksPlayed = 0;
+				mCurrentGameState.mMoveSequence = new byte[BOARD_SIZE*BOARD_SIZE];
+				
+				if( mInitialGameState != null )
+					zePlay(mInitialGameState.mDisksPlayed, mInitialGameState.mMoveSequence);
+				else
+					zePlay(0, null);
+				
+				mInitialGameState = null;
 			}
 
 			setEngineState(ES_READY2PLAY);
@@ -458,7 +488,7 @@ public class ZebraEngine extends Thread {
 		Message msg = mHandler.obtainMessage(msgcode);
 		Bundle b = new Bundle();
 		msg.setData(b);
-		// Log.d("ZebraEngine", String.format("Callback(%d,%s)", msgcode, data.toString()));
+		//Log.d("ZebraEngine", String.format("Callback(%d,%s)", msgcode, data.toString()));
 		if( bInCallback )
 			fatalError("Recursive vallback call");
 		try {
@@ -496,6 +526,7 @@ public class ZebraEngine extends Thread {
 				}
 				b.putByteArray("board", newBoard);
 				b.putInt("side_to_move", data.getInt("side_to_move"));
+				mCurrentGameState.mDisksPlayed = data.getInt("disks_played");
 				
 				// black info
 				{
@@ -509,8 +540,10 @@ public class ZebraEngine extends Thread {
 					zeArray = info.getJSONArray("moves");
 					len = zeArray.length();
 					moves = new byte[len];
-					for( int i=0; i<len; i++)
+					for( int i=0; i<len; i++) {
 						moves[i] = (byte)zeArray.getInt(i);
+						mCurrentGameState.mMoveSequence[2*i] = moves[i];
+					}
 					black.putByteArray("moves", moves);
 					b.putBundle("black", black);
 				}
@@ -527,8 +560,10 @@ public class ZebraEngine extends Thread {
 					zeArray = info.getJSONArray("moves");
 					len = zeArray.length();
 					moves = new byte[len];
-					for( int i=0; i<len; i++)
+					for( int i=0; i<len; i++) {
 						moves[i] = (byte)zeArray.getInt(i);
+						mCurrentGameState.mMoveSequence[2*i+1] = moves[i];
+					}
 					white.putByteArray("moves", moves);
 					b.putBundle("white", white);
 				}
@@ -794,7 +829,7 @@ public class ZebraEngine extends Thread {
 			int time,
 			int timeIncrement
 	);    
-	private native void zePlay();
+	private native void zePlay(int providedMoveCount, byte[] providedMoves);
 	private native void zeSetAutoMakeMoves(int auto_make_moves);
 	private native void zeSetSlack(float slack);
 	private native void zeSetPerturbation(float perturbation);
