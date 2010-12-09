@@ -13,7 +13,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    	<activity android:name="SettingsPreferences" android:label="SettingsPreferences" android:screenOrientation="portrait"></activity>
+    	<activity android:name="SettingsPreferences" android:label="SettingsPreferences" android:screenOrientation="portrait" android:multiprocess="false" android:launchMode="standard"></activity>
 	</application>
 
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />

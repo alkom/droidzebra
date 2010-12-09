@@ -654,6 +654,19 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 							dismissDialog(DIALOG_GAME_OVER);
 						}
 					});
+
+			button = (Button)dialog.findViewById(R.id.gameover_choice_options);
+			button.setOnClickListener(
+					new View.OnClickListener() {
+						public void onClick(View v) {
+							// close the dialog
+							dismissDialog(DIALOG_GAME_OVER);
+							
+							// start settings
+							Intent i = new Intent(DroidZebra.this, SettingsPreferences.class);
+							startActivity(i);
+						}
+					});
 			
 		} break;
 		case DIALOG_QUIT: {

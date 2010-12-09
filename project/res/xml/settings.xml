@@ -21,8 +21,8 @@
 			android:entryValues="@array/settings_engine_randomness_values"
 			android:entries="@array/settings_engine_randomness_preferences"
 			android:title="@string/settings_engine_randomness_title"
-			android:defaultValue="0" android:dialogTitle="@string/settings_engine_randomness_title"
-			android:summary="@string/settings_engine_randomness_summary"></ListPreference>
+			android:dialogTitle="@string/settings_engine_randomness_title"
+			android:summary="@string/settings_engine_randomness_summary" android:defaultValue="3"></ListPreference>
 	<ListPreference android:title="@string/settings_engine_force_opening_title" android:key="settings_engine_force_opening" android:entryValues="@array/settings_engine_opening" android:entries="@array/settings_engine_opening" android:summary="@string/settings_engine_force_opening_summary" android:defaultValue="None"></ListPreference>
 <CheckBoxPreference android:summary="@string/settings_engine_human_openings_summary" android:title="@string/settings_engine_human_openings_title" android:key="settings_engine_human_openings" android:defaultValue="false"></CheckBoxPreference>
 
