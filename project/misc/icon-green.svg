@@ -1386,14 +1386,14 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.34303779"
-     inkscape:cx="-539.76796"
-     inkscape:cy="421.52749"
+     inkscape:zoom="0.97620228"
+     inkscape:cx="199.69223"
+     inkscape:cy="199.69223"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g3822"
      showgrid="false"
-     inkscape:window-width="1280"
-     inkscape:window-height="968"
+     inkscape:window-width="1024"
+     inkscape:window-height="712"
      inkscape:window-x="-4"
      inkscape:window-y="-4"
      inkscape:window-maximized="1" />
@@ -1424,9 +1424,9 @@
        transform="matrix(0,-1,1,0,0,0)" />
     <g
        id="g3822"
-       inkscape:export-filename="C:\bin\android-ndk-r3\apps\droidzebra\project\res\drawable\logo.png"
-       inkscape:export-xdpi="26.181816"
-       inkscape:export-ydpi="26.181816">
+       inkscape:export-filename="c:\temp\droidzebra_512x512.png"
+       inkscape:export-xdpi="104.72726"
+       inkscape:export-ydpi="104.72726">
       <rect
          ry="85.485458"
          rx="77.705833"
@@ -1444,16 +1444,6 @@
          id="path3844"
          d="M 3.345456,853.01673 C 396.65454,851.70764 396.65454,851.70764 396.65454,851.70764"
          style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-      <path
-         transform="matrix(0.00407616,0,0,0.92784879,20.049067,-218.37717)"
-         d="m -119.92047,1052.9679 a 92.665817,89.03186 0 1 1 -185.33164,0 92.665817,89.03186 0 1 1 185.33164,0 z"
-         sodipodi:ry="89.03186"
-         sodipodi:rx="92.665817"
-         sodipodi:cy="1052.9679"
-         sodipodi:cx="-212.58629"
-         id="path3778"
-         style="fill:#404040;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;filter:url(#filter3780)"
-         sodipodi:type="arc" />
       <path
          transform="matrix(1.6353473,0,0,1.7425832,1415.7155,-107.78565)"
          d="m -638.41361,497.75858 a 47.370872,44.455742 0 1 1 -94.74175,0 47.370872,44.455742 0 1 1 94.74175,0 z"

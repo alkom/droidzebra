@@ -67,6 +67,7 @@ static float s_perturbation = DEFAULT_PERTURBATION;
 static int s_human_opening = FALSE;
 static int s_practice_mode = FALSE;
 static const char* s_forced_opening_seq = NULL;
+static int s_use_book = TRUE;
 static int s_enable_msg = TRUE;
 // --
 
@@ -340,6 +341,12 @@ JNIFn(droidzebra,ZebraEngine,zeSetPracticeMode)( JNIEnv* env, jobject thiz, int 
 }
 
 JNIEXPORT void
+JNIFn(droidzebra,ZebraEngine,zeSetUseBook)( JNIEnv* env, jobject thiz, int enable )
+{
+	s_use_book = enable;
+}
+
+JNIEXPORT void
 JNIFn(droidzebra,ZebraEngine,zeSetForcedOpening)( JNIEnv* env, jobject thiz, jobject opening_name )
 {
 	int i;
@@ -383,6 +390,7 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz, jint providedMo
 	int provided_move_index;
 	int provided_move[65];
 	int silent = FALSE;
+	int use_book = s_use_book;
 
 	DROIDZEBRA_JNI_SETUP;
 
@@ -548,7 +556,7 @@ AGAIN:
 					curr_move =
 							compute_move( side_to_move, TRUE, player_time[side_to_move],
 									player_increment[side_to_move], timed_search,
-									TRUE, skill[side_to_move],
+									use_book, skill[side_to_move],
 									exact_skill[side_to_move], wld_skill[side_to_move],
 									FALSE, &eval_info );
 					if ( side_to_move == BLACKSQ )

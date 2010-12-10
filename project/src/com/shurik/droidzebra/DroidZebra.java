@@ -72,6 +72,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	public static final String DEFAULT_SETTING_FORCE_OPENING = "None";
 	public static final boolean DEFAULT_SETTING_HUMAN_OPENINGS = false;
 	public static final boolean DEFAULT_SETTING_PRACTICE_MODE = false;
+	public static final boolean DEFAULT_SETTING_USE_BOOK = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_PV = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_MOVES = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_LAST_MOVE = true;
@@ -84,6 +85,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	SETTINGS_KEY_FORCE_OPENING = "settings_engine_force_opening",
 	SETTINGS_KEY_HUMAN_OPENINGS = "settings_engine_human_openings",
 	SETTINGS_KEY_PRACTICE_MODE = "settings_engine_practice_mode",
+	SETTINGS_KEY_USE_BOOK = "settings_engine_use_book",
 	SETTINGS_KEY_DISPLAY_PV = "settings_ui_display_pv",
 	SETTINGS_KEY_DISPLAY_MOVES = "settings_ui_display_moves",
 	SETTINGS_KEY_DISPLAY_LAST_MOVE = "settings_ui_display_last_move"
@@ -113,6 +115,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	public String mSettingZebraForceOpening = DEFAULT_SETTING_FORCE_OPENING;
 	public boolean mSettingZebraHumanOpenings = DEFAULT_SETTING_HUMAN_OPENINGS;
 	public boolean mSettingZebraPracticeMode = DEFAULT_SETTING_PRACTICE_MODE;
+	public boolean mSettingZebraUseBook = DEFAULT_SETTING_USE_BOOK;
 	public boolean mSettingDisplayPV = DEFAULT_SETTING_DISPLAY_PV;
 	public boolean mSettingDisplayMoves = DEFAULT_SETTING_DISPLAY_MOVES;
 	public boolean mSettingDisplayLastMove = DEFAULT_SETTING_DISPLAY_LAST_MOVE;
@@ -453,6 +456,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		String settingZebraForceOpening;
 		boolean settingZebraHumanOpenings;
 		boolean settingZebraPracticeMode;
+		boolean settingZebraUseBook;
 		
 		SharedPreferences settings = getSharedPreferences(SHARED_PREFS_NAME, 0);
 
@@ -473,6 +477,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		settingZebraForceOpening = settings.getString(SETTINGS_KEY_FORCE_OPENING, DEFAULT_SETTING_FORCE_OPENING);
 		settingZebraHumanOpenings = settings.getBoolean(SETTINGS_KEY_HUMAN_OPENINGS, DEFAULT_SETTING_HUMAN_OPENINGS);
 		settingZebraPracticeMode = settings.getBoolean(SETTINGS_KEY_PRACTICE_MODE, DEFAULT_SETTING_PRACTICE_MODE);
+		settingZebraUseBook = settings.getBoolean(SETTINGS_KEY_USE_BOOK, DEFAULT_SETTING_USE_BOOK);
 
 		
 		boolean bZebraSettingChanged = (
@@ -485,6 +490,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			|| mSettingZebraForceOpening != settingZebraForceOpening
 			|| mSettingZebraHumanOpenings != settingZebraHumanOpenings
 			|| mSettingZebraPracticeMode != settingZebraPracticeMode
+			|| mSettingZebraUseBook != settingZebraUseBook
 			);
 		
 		mSettingFunction = settingsFunction;
@@ -496,12 +502,14 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		mSettingZebraForceOpening = settingZebraForceOpening;
 		mSettingZebraHumanOpenings = settingZebraHumanOpenings;
 		mSettingZebraPracticeMode = settingZebraPracticeMode;
+		mSettingZebraUseBook = settingZebraUseBook;
 		
 		try {
 			mZebraThread.setAutoMakeMoves(mSettingAutoMakeForcedMoves);
 			mZebraThread.setForcedOpening(mSettingZebraForceOpening);
 			mZebraThread.setHumanOpenings(mSettingZebraHumanOpenings);
 			mZebraThread.setPracticeMode(mSettingZebraPracticeMode);
+			mZebraThread.setUseBook(mSettingZebraUseBook);
 			
 			switch( mSettingFunction ) {
 			case FUNCTION_HUMAN_VS_HUMAN:

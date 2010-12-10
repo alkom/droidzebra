@@ -380,7 +380,14 @@ public class ZebraEngine extends Thread {
 		else
 			zeSetPracticeMode(0);
 	}
-	
+
+	public void setUseBook(boolean _enable) {
+		if(_enable)
+			zeSetUseBook(1);
+		else
+			zeSetUseBook(0);
+	}
+
 	public void setInitialGameState(int moveCount, byte[] moves) {
 		mInitialGameState = new GameState();
 		mInitialGameState.mDisksPlayed = moveCount; 
@@ -836,6 +843,7 @@ public class ZebraEngine extends Thread {
 	private native void zeSetForcedOpening(String opening_name);
 	private native void zeSetHumanOpenings(int enable);
 	private native void zeSetPracticeMode(int enable);
+	private native void zeSetUseBook(int enable);
 	private native boolean zeGameInProgress();
 	
 	public native void zeJsonTest(JSONObject json);
