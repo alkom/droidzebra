@@ -495,7 +495,7 @@ public class ZebraEngine extends Thread {
 		Message msg = mHandler.obtainMessage(msgcode);
 		Bundle b = new Bundle();
 		msg.setData(b);
-		//Log.d("ZebraEngine", String.format("Callback(%d,%s)", msgcode, data.toString()));
+		// Log.d("ZebraEngine", String.format("Callback(%d,%s)", msgcode, data.toString()));
 		if( bInCallback )
 			fatalError("Recursive vallback call");
 		try {
@@ -770,7 +770,6 @@ public class ZebraEngine extends Thread {
 		if( !dir.exists() && !dir.mkdirs() )
 			throw new IOException(String.format("Unable to create %s", dir));
 			
-		
 		try {
 			_asset2File(coeffAssets, pattern);
 			_asset2File(bookCompressedAssets, bookCompressed);

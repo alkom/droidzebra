@@ -425,10 +425,16 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			&& savedInstanceState.containsKey("moves_played_count") ) {
 			mZebraThread.setInitialGameState(savedInstanceState.getInt("moves_played_count"), savedInstanceState.getByteArray("moves_played"));
 		} 
-		//else {
+		/*else {
 			//byte[] init = {56,66,65,46,35,64,47,34,33,36,57,24,43,25,37,23,63,26,16,15,14,13,12,53, 52, 62, 75, 41, 42, 74, 51, 31, 32, 61, 83, 84, 73, 82, 17, 21, 72, 68, 58, 85, 76, 67, 86, 87, 78, 38, 48, 88, 27, 77 };
-			//mZebraThread.setInitialGameState(init.length, init);
-		//}
+			byte[] init = {
+					65 , 46 , 35 , 64 , 53 , 36 , 56 , 24 , 27 , 34 , 26 , 43 , 33 , 25 , 47 , 18 ,
+					15 , 14 , 37 , 16 , 17 , 62 , 23 , 52 , 13 , 66 , 74 , 12 , 63 , 42 , 32 , 41 ,
+					31 , 51 , 22 , 21 , 72 , 11 , 67 , 28 , 38 , 58 , 48 , 61 , 68 , 57 , -1 , 71 ,
+					-1 , 81 , 82 , 78 , -1 , 77 , -1 , 83 , 84 , 73 , 75 , 86 , 76 , 87 
+			};
+			mZebraThread.setInitialGameState(init.length, init);
+		}*/
 		
 		mZebraThread.start();
 

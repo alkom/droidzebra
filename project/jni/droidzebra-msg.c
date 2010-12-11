@@ -49,6 +49,7 @@ droidzebra_msg_board(
 	char buffer[1024];
 	int buffer_pos = 0;
 	int i, j;
+	int len;
 
 	buffer_pos = sprintf(buffer, "{ \"board\":[" );
 	for ( i = 1; i <= 8; i++ ) {
@@ -84,9 +85,10 @@ droidzebra_msg_board(
 	buffer_pos += sprintf(buffer+buffer_pos, "\"eval\":%6.2f,", black_eval );
 	buffer_pos += sprintf(buffer+buffer_pos, "\"disc_count\":%d,", disc_count( BLACKSQ ));
 	buffer_pos += sprintf(buffer+buffer_pos, "\"moves\":[ "); //space is important
-	for(i=0; i<=score_sheet_row; i++)
+	len = (side_to_move==BLACKSQ? score_sheet_row : score_sheet_row+1); // if it is white move then current score_sheet_row has the black move so we need to look at it as well
+	for(i=0; i<len; i++)
 		buffer_pos += sprintf(buffer+buffer_pos, "%d,", black_moves[i]);
-	buffer_pos--; // eat last comma (oe space if empty)
+	buffer_pos--; // eat last comma (or space - see above)
 	buffer_pos += sprintf(buffer+buffer_pos, "],");
 	buffer_pos--; // eat last comma
 	buffer_pos += sprintf(buffer+buffer_pos, "}," );
@@ -98,7 +100,7 @@ droidzebra_msg_board(
 	buffer_pos += sprintf(buffer+buffer_pos, "\"eval\":%6.2f,", white_eval );
 	buffer_pos += sprintf(buffer+buffer_pos, "\"disc_count\":%d,", disc_count( WHITESQ ));
 	buffer_pos += sprintf(buffer+buffer_pos, "\"moves\":[ "); //space is important
-	for(i=0; i<=score_sheet_row; i++) {
+	for(i=0; i<score_sheet_row; i++) {
 		buffer_pos += sprintf(buffer+buffer_pos, "%d,", white_moves[i]);
 	}
 	buffer_pos--; // eat last comma or space
