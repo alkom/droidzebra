@@ -453,7 +453,7 @@ public class ZebraEngine extends Thread {
 				
 				mCurrentGameState = new GameState();
 				mCurrentGameState.mDisksPlayed = 0;
-				mCurrentGameState.mMoveSequence = new byte[BOARD_SIZE*BOARD_SIZE];
+				mCurrentGameState.mMoveSequence = new byte[2*BOARD_SIZE*BOARD_SIZE];
 				
 				if( mInitialGameState != null )
 					zePlay(mInitialGameState.mDisksPlayed, mInitialGameState.mMoveSequence);
@@ -547,6 +547,7 @@ public class ZebraEngine extends Thread {
 					zeArray = info.getJSONArray("moves");
 					len = zeArray.length();
 					moves = new byte[len];
+					assert( 2*len<=mCurrentGameState.mMoveSequence.length );
 					for( int i=0; i<len; i++) {
 						moves[i] = (byte)zeArray.getInt(i);
 						mCurrentGameState.mMoveSequence[2*i] = moves[i];
@@ -567,6 +568,7 @@ public class ZebraEngine extends Thread {
 					zeArray = info.getJSONArray("moves");
 					len = zeArray.length();
 					moves = new byte[len];
+					assert( (2*len+1)<=mCurrentGameState.mMoveSequence.length );
 					for( int i=0; i<len; i++) {
 						moves[i] = (byte)zeArray.getInt(i);
 						mCurrentGameState.mMoveSequence[2*i+1] = moves[i];
