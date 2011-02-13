@@ -319,6 +319,13 @@ public class ZebraEngine extends Thread {
 
 	public void undoMove() throws EngineError
 	{
+		// if thinking on human time - stop
+		if( mPlayerInfo[mSideToMove].skill==0
+			&& getEngineState()==ZebraEngine.ES_PLAYINPROGRESS ) {
+			stopMove();
+			waitForEngineState(ES_USER_INPUT_WAIT, 1000);
+		}
+
 		if( getEngineState()!=ES_USER_INPUT_WAIT) {
 			// Log.d("ZebraEngine", "Invalid Engine State");
 			return;
