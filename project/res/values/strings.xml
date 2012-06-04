@@ -58,5 +58,5 @@
 <string name="dialog_donate_cancel">No, thanks</string>
 <string name="donate_url">https://droidzebra.appspot.com/droidzebra/donate/</string>
 <string name="menu_item_donate">Donate</string>
-<string name="spash_layout_message_2">(this may take a few minutes)</string>
+<string name="spash_layout_message_2">(this may take a few moments)</string>
 </resources>
