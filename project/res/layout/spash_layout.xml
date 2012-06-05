@@ -6,7 +6,7 @@
 		android:id="@+id/splash_logo" android:layout_centerHorizontal="true"
 		android:layout_centerInParent="false" android:layout_centerVertical="false"
 		android:drawingCacheQuality="auto" android:layout_width="wrap_content"
-		android:paddingTop="50sp"></ImageView>
+		android:paddingTop="50sp" android:contentDescription="@string/app_name"></ImageView>
 
 	<TextView android:visibility="visible" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:gravity="center_vertical|center_horizontal"

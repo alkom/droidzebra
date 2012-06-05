@@ -49,7 +49,7 @@
 <string name="dialog_quit_title">Are you sure?</string>
 <string name="dialog_quit_button_quit">Quit</string>
 <string name="dialog_quit_button_cancel">Cancel</string>
-<string name="dialog_busy_message">&quot;Still thinking... Please touch or press any key to interrupt&quot;</string>
+<string name="dialog_busy_message">&quot;Still thinking&#8230; Please touch or press any key to interrupt&quot;</string>
 <string name="dialog_pass_text">You have to pass</string>
 <string name="dialog_ok">OK</string>
 <string name="dialog_donate_title">Support the project</string>
