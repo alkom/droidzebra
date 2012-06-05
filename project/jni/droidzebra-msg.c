@@ -1,15 +1,4 @@
-/*
-   File:           display.c
-
-   Created:        July 10, 1997
-
-   Modified:       November 23, 2001
-
-   Author:         Gunnar Andersson (gunnar@radagast.se)
-
-   Contents:       Some I/O routines.
- */
-
+/* Copyright (C) 2012 by Alex Kompel  */
 
 
 #include "zebra/porting.h"

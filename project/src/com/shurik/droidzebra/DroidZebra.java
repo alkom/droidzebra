@@ -1,3 +1,4 @@
+/* Copyright (C) 2012 by Alex Kompel  */
 package com.shurik.droidzebra;
 
 import com.shurik.droidzebra.ZebraEngine.CandidateMove;
@@ -229,7 +230,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 				mWhiteScore = m.getData().getBundle("white").getInt("disc_count");
 				
 				if(sideToMove==ZebraEngine.PLAYER_BLACK)
-					score = String.format("•%d", mBlackScore);
+					score = String.format("â€¢%d", mBlackScore);
 				else
 					score = String.format("%d", mBlackScore);
 				mStatusView.setTextForID(
@@ -238,7 +239,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 				);
 
 				if(sideToMove==ZebraEngine.PLAYER_WHITE)
-					score = String.format("•%d", mWhiteScore);
+					score = String.format("â€¢%d", mWhiteScore);
 				else
 					score = String.format("%d", mWhiteScore);
 				mStatusView.setTextForID(

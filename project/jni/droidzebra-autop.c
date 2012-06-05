@@ -1,4 +1,4 @@
-
+/* Copyright (C) 2012 by Alex Kompel  */
 #include "zebra/autoplay.h"
 
 void

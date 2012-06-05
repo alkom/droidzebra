@@ -1,3 +1,5 @@
+/* Copyright (C) 2012 by Alex Kompel  */
+
 #ifndef __DROIDZEBRA_JSON__
 #define __DROIDZEBRA_JSON__
 

@@ -1,3 +1,4 @@
+/* Copyright (C) 2012 by Alex Kompel  */
 package com.shurik.droidzebra;
 
 public class EngineError extends Exception {

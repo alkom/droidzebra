@@ -1,3 +1,4 @@
+/* Copyright (C) 2012 by Alex Kompel  */
 package com.shurik.droidzebra;
 
 import android.content.SharedPreferences;

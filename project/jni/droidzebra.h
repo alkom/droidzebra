@@ -1,3 +1,4 @@
+/* Copyright (C) 2012 by Alex Kompel  */
 #ifndef __DROIDZEBRA__
 #define __DROIDZEBRA__
 

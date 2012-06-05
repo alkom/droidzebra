@@ -1,3 +1,5 @@
+/* Copyright (C) 2012 by Alex Kompel  */
+
 #include <assert.h>
 #include <stdlib.h>
 #include "droidzebra-json.h"
