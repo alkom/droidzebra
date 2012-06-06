@@ -106,6 +106,10 @@ public class BoardView extends View {
         m.setRotate(90);
         mShaderH.setLocalMatrix(m);
         mPath = new Path();
+
+		mPaint = new Paint();
+		mPaintEvalText = new Paint();
+		mBoardRect = new RectF();
 	}
 
 	public void setDroidZebra(DroidZebra activity) {
@@ -299,14 +303,14 @@ public class BoardView extends View {
 
 		mSizeX = mSizeY = Math.min(getMeasuredWidth(), getMeasuredHeight());
 		mSizeCell = Math.min(mSizeX/(DroidZebra.boardSize+1), mSizeY/(DroidZebra.boardSize+1));
-		mBoardRect = new RectF(
+		mBoardRect.set(
 				mSizeX-mSizeCell/2-mSizeCell*DroidZebra.boardSize,
 				mSizeY-mSizeCell/2-mSizeCell*DroidZebra.boardSize,
 				mSizeX-mSizeCell/2,
 				mSizeY-mSizeCell/2
 			);
 
-		mPaint = new Paint();
+		mPaint.reset();
 		mPaint.setStyle(Paint.Style.FILL);
 		Typeface font = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD);
 		mPaint.setTypeface( font );
@@ -317,7 +321,7 @@ public class BoardView extends View {
 		mPaint.setStrokeWidth(lineWidth);
 		mFontMetrics = mPaint.getFontMetrics();
 
-		mPaintEvalText = new Paint();
+		mPaintEvalText.reset();
 		mPaintEvalText.setStyle(Paint.Style.FILL);
 		font = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
 		mPaintEvalText.setTypeface( font );

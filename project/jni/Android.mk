@@ -51,9 +51,7 @@ LOCAL_SRC_FILES := droidzebra-jni.c \
         zebra/thordb.c \
         zebra/timer.c \
         zebra/unflip.c
-        
-#zebra/display.c 
-
+     
 #DEFS =          -DINCLUDE_BOOKTOOL -DTEXT_BASED -DZLIB_STATIC -D__linux__ -D__CYGWIN__ -DANDROID
 DEFS =          -DZLIB_STATIC -D__linux__ -D__CYGWIN__ -DANDROID
 WARNINGS =      -Wall -Wcast-align -Wwrite-strings -Wstrict-prototypes -Winline
