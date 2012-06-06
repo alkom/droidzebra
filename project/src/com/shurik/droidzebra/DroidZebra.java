@@ -584,7 +584,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		
 		mStatusView.setTextForID(
 			StatusView.ID_SCORE_SKILL, 
-			String.format("Mid: %d  Exact: %d  W/L: %d", mSettingZebraDepth, mSettingZebraDepthExact, mSettingZebraDepthWLD)
+			String.format(getString(R.string.display_depth), mSettingZebraDepth, mSettingZebraDepthExact, mSettingZebraDepthWLD)
 			);
 
 		mSettingDisplayPV = settings.getBoolean(SETTINGS_KEY_DISPLAY_PV, DEFAULT_SETTING_DISPLAY_PV);

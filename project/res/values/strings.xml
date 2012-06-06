@@ -59,4 +59,6 @@
 <string name="donate_url">https://droidzebra.appspot.com/droidzebra/donate/</string>
 <string name="menu_item_donate">Donate</string>
 <string name="spash_layout_message_2">(this may take a few moments)</string>
+<string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
+<string name="settings_title">Settings</string>
 </resources>

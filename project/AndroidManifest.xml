@@ -2,10 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="com.shurik.droidzebra"
       android:versionName="1.3" 
-      android:versionCode="9" 
+      android:versionCode="10" 
       android:installLocation="auto">
     <uses-sdk android:minSdkVersion="4" />
-    <application android:label="@string/app_name" android:icon="@drawable/icon" android:debuggable="false">
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-feature android:required="false" android:name="android.hardware.touchscreen"></uses-feature>
+	<application android:label="@string/app_name" android:icon="@drawable/icon">
         <activity android:name=".DroidZebra"
         		  android:label="@string/app_name" android:configChanges="keyboardHidden|orientation" android:screenOrientation="portrait" android:multiprocess="false" android:launchMode="singleTask">
             <intent-filter>
@@ -13,9 +15,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    	<activity android:name="SettingsPreferences" android:label="SettingsPreferences" android:screenOrientation="portrait" android:multiprocess="false" android:launchMode="standard"></activity>
+    	<activity android:name=".SettingsPreferences" android:label="@string/settings_title" android:screenOrientation="portrait" android:multiprocess="false" android:launchMode="standard" android:stateNotNeeded="true" android:noHistory="false" android:allowTaskReparenting="false"></activity>
 	</application>
-
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-<uses-feature android:required="false" android:name="android.hardware.touchscreen"></uses-feature>
 </manifest> 

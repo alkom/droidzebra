@@ -118,6 +118,7 @@ public class ZebraEngine extends Thread {
 		private static final long serialVersionUID = 8970579827351672330L;
 	};
 
+	// Zebra move representation
 	public static class Move {
 		public static int PASS = -1;
 		public int mMove;
@@ -139,6 +140,7 @@ public class ZebraEngine extends Thread {
 		} 
 	};
 
+	// candidate move with evals
 	public class CandidateMove {
 		public Move mMove;
 		public boolean mHasEval;
@@ -288,10 +290,12 @@ public class ZebraEngine extends Thread {
 		if( oldRun && !mRun ) stopGame();
 	}
 
+	// tell zebra to stop thinking
 	public void stopMove() {
 		zeForceReturn();
 	}
 
+	// tell zebra to end current game
 	public void stopGame() {
 		zeForceExit();
 		// if waiting for move - get back into the engine
@@ -324,6 +328,7 @@ public class ZebraEngine extends Thread {
 			return;
 		}
 
+		// add move the the pending event and tell zebra to pick it up
 		mPendingEvent = new JSONObject();
 		try {
 			mPendingEvent.put("type", UI_EVENT_MOVE);
@@ -348,6 +353,7 @@ public class ZebraEngine extends Thread {
 			return;
 		}
 
+		// create pending event and tell zebra to pick it up
 		mPendingEvent = new JSONObject();
 		try {
 			mPendingEvent.put("type", UI_EVENT_UNDO);
@@ -372,6 +378,7 @@ public class ZebraEngine extends Thread {
 		}
 	}
 
+	// settings helpers
 	public void setAutoMakeMoves(boolean _settingAutoMakeForcedMoves) {
 		if(_settingAutoMakeForcedMoves)
 			zeSetAutoMakeMoves(1);
@@ -412,6 +419,17 @@ public class ZebraEngine extends Thread {
 			zeSetUseBook(0);
 	}
 
+	public void setPlayerInfo(PlayerInfo playerInfo)  throws EngineError
+	{
+		if( playerInfo.playerColor!=PLAYER_BLACK && playerInfo.playerColor!=PLAYER_WHITE && playerInfo.playerColor!=PLAYER_ZEBRA)
+			throw new EngineError(String.format("Invalid player type %d", playerInfo.playerColor));
+
+		mPlayerInfo[playerInfo.playerColor] = playerInfo;
+
+		mPlayerInfoChanged = true;
+	}
+
+	// gamestate manipulators
 	public void setInitialGameState(int moveCount, byte[] moves) {
 		mInitialGameState = new GameState();
 		mInitialGameState.mDisksPlayed = moveCount; 
@@ -425,6 +443,7 @@ public class ZebraEngine extends Thread {
 		return mCurrentGameState;
 	}
 	
+	// zebra thread
 	@Override
 	public void run() {
 		setRunning(true);
@@ -497,23 +516,13 @@ public class ZebraEngine extends Thread {
 	}
 
 
-	public void setPlayerInfo(PlayerInfo playerInfo)  throws EngineError
-	{
-		if( playerInfo.playerColor!=PLAYER_BLACK && playerInfo.playerColor!=PLAYER_WHITE && playerInfo.playerColor!=PLAYER_ZEBRA)
-			throw new EngineError(String.format("Invalid player type %d", playerInfo.playerColor));
-
-		mPlayerInfo[playerInfo.playerColor] = playerInfo;
-
-		mPlayerInfoChanged = true;
-	}
-
 	// called by native code
 	//public void Error(String msg) throws EngineError
 	//{
 	//	throw new EngineError(msg); 
 	//}
 
-	// called by native code
+	// called by native code - see droidzebra-msg.c
 	private JSONObject Callback(int msgcode, JSONObject data) {
 		JSONObject retval = null;
 		Message msg = mHandler.obtainMessage(msgcode);
@@ -528,7 +537,8 @@ public class ZebraEngine extends Thread {
 			case MSG_ERROR: { 
 				b.putString("error", data.getString("error"));
 				if(getEngineState()==ES_INITIAL) {
-					// delete .bin files
+					// delete .bin files if initialization failed 
+					// will be recreated from resources
 					new File(mFilesDir, PATTERNS_FILE).delete();
 					new File(mFilesDir, BOOK_FILE).delete();
 					new File(mFilesDir, BOOK_FILE_COMPRESSED).delete();

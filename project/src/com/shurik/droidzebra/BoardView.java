@@ -38,6 +38,7 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.util.FloatMath;
 //import android.util.Log;
 
 public class BoardView extends View {
@@ -66,6 +67,7 @@ public class BoardView extends View {
 
 	private BitmapShader mShaderV = null;
     private BitmapShader mShaderH = null;
+    private Path mPath = null;
     
     private Move mMoveSelection = new Move(0,0);
     private boolean mShowSelection = false; // highlight selection rectangle
@@ -103,6 +105,7 @@ public class BoardView extends View {
         Matrix m = new Matrix();
         m.setRotate(90);
         mShaderH.setLocalMatrix(m);
+        mPath = new Path();
 	}
 
 	public void setDroidZebra(DroidZebra activity) {
@@ -123,8 +126,8 @@ public class BoardView extends View {
 	}
 
 	public Move getMoveFromCoord(float x, float y) throws InvalidMove {
-    	int bx = (int)Math.floor((x - mBoardRect.left)/mSizeCell);
-    	int by = (int)Math.floor((y - mBoardRect.top)/mSizeCell);
+    	int bx = (int)FloatMath.floor((x - mBoardRect.left)/mSizeCell);
+    	int by = (int)FloatMath.floor((y - mBoardRect.top)/mSizeCell);
     	if(bx<0 || bx>=DroidZebra.boardSize || by<0 || by>=DroidZebra.boardSize) {
     		throw new InvalidMove();
     	}
@@ -134,46 +137,46 @@ public class BoardView extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 
-		Path path;
-		
+		// draw borders
         mPaint.setShader(mShaderV);
 
-        path = new Path(); 
-        path.moveTo(0, 0); 
-        path.lineTo(0, mSizeY); 
-        path.lineTo(mBoardRect.left, mBoardRect.bottom);
-        path.lineTo(mBoardRect.left, mBoardRect.top);
-        path.lineTo(0, 0);
-        canvas.drawPath(path, mPaint);
+        mPath.reset(); 
+        mPath.moveTo(0, 0); 
+        mPath.lineTo(0, mSizeY); 
+        mPath.lineTo(mBoardRect.left, mBoardRect.bottom);
+        mPath.lineTo(mBoardRect.left, mBoardRect.top);
+        mPath.lineTo(0, 0);
+        canvas.drawPath(mPath, mPaint);
 
-        path = new Path(); 
-        path.moveTo(mSizeX, 0); 
-        path.lineTo(mSizeX, mSizeY); 
-        path.lineTo(mBoardRect.right, mBoardRect.bottom);
-        path.lineTo(mBoardRect.right, mBoardRect.top);
-        path.lineTo(mSizeX, 0);
-        canvas.drawPath(path, mPaint);        
+        mPath.reset(); 
+        mPath.moveTo(mSizeX, 0); 
+        mPath.lineTo(mSizeX, mSizeY); 
+        mPath.lineTo(mBoardRect.right, mBoardRect.bottom);
+        mPath.lineTo(mBoardRect.right, mBoardRect.top);
+        mPath.lineTo(mSizeX, 0);
+        canvas.drawPath(mPath, mPaint);        
         
         mPaint.setShader(mShaderH);
 
-        path = new Path(); 
-        path.moveTo(0, 0); 
-        path.lineTo(mSizeX, 0); 
-        path.lineTo(mBoardRect.right, mBoardRect.top);
-        path.lineTo(mBoardRect.left, mBoardRect.top);
-        path.lineTo(0, 0);
-        canvas.drawPath(path, mPaint);
+        mPath.reset(); 
+        mPath.moveTo(0, 0); 
+        mPath.lineTo(mSizeX, 0); 
+        mPath.lineTo(mBoardRect.right, mBoardRect.top);
+        mPath.lineTo(mBoardRect.left, mBoardRect.top);
+        mPath.lineTo(0, 0);
+        canvas.drawPath(mPath, mPaint);
 
-        path = new Path(); 
-        path.moveTo(0, mSizeY); 
-        path.lineTo(mSizeX, mSizeY); 
-        path.lineTo(mBoardRect.right, mBoardRect.bottom);
-        path.lineTo(mBoardRect.left, mBoardRect.bottom);
-        path.lineTo(0, mSizeY);
-        canvas.drawPath(path, mPaint);        
+        mPath.reset(); 
+        mPath.moveTo(0, mSizeY); 
+        mPath.lineTo(mSizeX, mSizeY); 
+        mPath.lineTo(mBoardRect.right, mBoardRect.bottom);
+        mPath.lineTo(mBoardRect.left, mBoardRect.bottom);
+        mPath.lineTo(0, mSizeY);
+        canvas.drawPath(mPath, mPaint);        
 
         mPaint.setShader(null);
         
+        // draw the board
 		mPaint.setStrokeWidth(lineWidth);
 		for(int i = 0; i<=DroidZebra.boardSize; i++ ) {
 			mPaint.setColor(mColorLine);
@@ -185,6 +188,7 @@ public class BoardView extends View {
 		canvas.drawCircle(mBoardRect.left+6*mSizeCell, mBoardRect.top+2*mSizeCell, 2, mPaint);
 		canvas.drawCircle(mBoardRect.left+6*mSizeCell, mBoardRect.top+6*mSizeCell, 2, mPaint);
 
+		// draw guides
         for(int i = 0; i<DroidZebra.boardSize; i++ ) {
     		mPaint.setTextSize(mSizeCell*0.3f);
 			mPaint.setColor(Color.BLACK);
@@ -195,6 +199,7 @@ public class BoardView extends View {
 			canvas.drawText(Character.toString((char) ('A'+i)), mBoardRect.left + i*mSizeCell + mSizeCell/2, mBoardRect.top/2-(mFontMetrics.ascent+mFontMetrics.descent)/2, mPaint);
 		}
 
+        // draw helpers for move selector
         if( mMoveSelection != null ) {
         	if( mShowSelectionHelpers ) {
             	if( mDroidZebra.isValidMove(mMoveSelection) )
@@ -232,9 +237,11 @@ public class BoardView extends View {
         	}
         }
         
+        // if we are not playing we are done (designer only)
         if( getDroidZebra()==null ) 
         	return;
         
+        // draw moves
 		for(int i = 0; i<DroidZebra.boardSize; i++ ) {
 			for(int j=0; j<DroidZebra.boardSize; j++) {
 				if(getDroidZebra().getBoard()[i][j]==ZebraEngine.PLAYER_EMPTY) continue;
@@ -246,6 +253,7 @@ public class BoardView extends View {
 			}
 		}
 
+		// draw evals if in practive mode
 		if( (getDroidZebra().mSettingDisplayMoves || getDroidZebra().mSettingZebraPracticeMode)
 			&& getDroidZebra().getCandidateMoves()!=null ) {
 			mPaint.setStrokeWidth(1.0f);
@@ -276,6 +284,7 @@ public class BoardView extends View {
 			}
 		}
 
+		// draw last move marker
 		if( getDroidZebra().mSettingDisplayLastMove && getDroidZebra().getLastMove()!=null ) {
 			Move lm = getDroidZebra().getLastMove();
 			RectF cellRT = getCellRect(lm.getX(), lm.getY());
@@ -360,8 +369,8 @@ public class BoardView extends View {
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		int action = event.getAction();
-    	int bx = (int)Math.floor((event.getX() - mBoardRect.left)/mSizeCell);
-    	int by = (int)Math.floor((event.getY() - mBoardRect.top)/mSizeCell);
+    	int bx = (int)FloatMath.floor((event.getX() - mBoardRect.left)/mSizeCell);
+    	int by = (int)FloatMath.floor((event.getY() - mBoardRect.top)/mSizeCell);
 		switch (action) {
 		case MotionEvent.ACTION_DOWN:
 		case MotionEvent.ACTION_MOVE:
