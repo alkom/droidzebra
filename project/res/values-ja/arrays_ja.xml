@@ -46,6 +46,86 @@
 <item>変化大 (6–8 石損)</item>
 <item>変化最大 (10–16 石損)</item>
 </string-array>
+<string-array name="settings_engine_opening_values"> 
+<!--  !!!do not translate values - only settings_engine_opening_names below!!! -->
+<item>None</item>
+<item>Aircraft / Feldborg</item>
+<item>Aubrey (Feldborg continuation)</item>
+<item>Aubrey / Tanaka</item>
+<item>Bat (Kling Alternative)</item>
+<item>Bat (Kling Continuation)</item>
+<item>Bat (Piau Continuation 2)</item>
+<item>Bent ganglion</item>
+<item>Berner</item>
+<item>Bhagat</item>
+<item>Brightstein</item>
+<item>Brightwell</item>
+<item>Buffalo / Kenichi Variation</item>
+<item>Cat</item>
+<item>Central Rose-Bill / Dead draw</item>
+<item>Chimney</item>
+<item>Comp\'Oth</item>
+<item>Cow</item>
+<item>Cow Bat / Bat / Cambridge</item>
+<item>Diagonal Opening</item>
+<item>F.A.T. draw</item>
+<item>Flat</item>
+<item>Ganglion / No-Cat</item>
+<item>Greenberg / Dawg</item>
+<item>Hamilton</item>
+<item>Heath / Tobidashi</item>
+<item>Heath-Bat</item>
+<item>Heath-Chimney</item>
+<item>Hokuriku Buffalo</item>
+<item>Horse</item>
+<item>Iago</item>
+<item>Inoue</item>
+<item>Ishii</item>
+<item>Italian</item>
+<item>Iwasaki variation</item>
+<item>Kung</item>
+<item>Landau</item>
+<item>Leader\'s Tiger</item>
+<item>Lightning bolt</item>
+<item>Lollipop</item>
+<item>Lysons</item>
+<item>Mainline Tiger</item>
+<item>Maruoka</item>
+<item>Maruoka Buffalo</item>
+<item>Melnikov / Bat (Piau Continuation 1)</item>
+<item>Mimura variation II</item>
+<item>Murakami Variation</item>
+<item>No-Cat (Continuation)</item>
+<item>No-Kung</item>
+<item>No-Kung (Continuation)</item>
+<item>Parallel Opening</item>
+<item>Perpendicular Opening</item>
+<item>Pyramid / Checkerboarding Peasant</item>
+<item>Raccoon Dog</item>
+<item>Ralle</item>
+<item>Rocket</item>
+<item>Rose</item>
+<item>Rose-Bill</item>
+<item>Rose-Birth</item>
+<item>Rose-Tamenori-Kling</item>
+<item>Rose-birdie / Rose-Tamenori</item>
+<item>Rose-v-Toth</item>
+<item>Rotating Flat</item>
+<item>Rotating Flat (Kling Continuation)</item>
+<item>Sailboat</item>
+<item>Sakaguchi</item>
+<item>Semi-Wing Variation</item>
+<item>Shaman / Danish</item>
+<item>Snake / Peasant</item>
+<item>Stephenson</item>
+<item>Swallow</item>
+<item>Tamenori</item>
+<item>Tanida</item>
+<item>Tanida Buffalo</item>
+<item>Tiger</item>
+<item>Wing Variation</item>
+<item>X-square Opening</item>
+</string-array>
 <string-array name="settings_engine_opening_names">
 <item>指定なし</item>
 <item>Aircraft / Feldborg</item>

@@ -52,7 +52,8 @@
 <item>Large (6–8 discs)</item>
 <item>Huge (10–16 discs)</item>
 </string-array>
-<string-array name="settings_engine_opening_values"> <!--  !!!do not translate!!! -->
+<string-array name="settings_engine_opening_values"> 
+<!--  !!!do not translate values!!! -->
 <item>None</item>
 <item>Aircraft / Feldborg</item>
 <item>Aubrey (Feldborg continuation)</item>
