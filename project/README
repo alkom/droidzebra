@@ -1,0 +1,35 @@
+DroidZebra Reversi for Android
+---------------------------------------------------------------
+
+DroidZebra is a graphical front-end for well-known Zebra Othello 
+Engine written by Gunnar Andersson. It is one of the strongest 
+othello-playing programs in the world. More info on Zebra engine 
+can be found here: http://radagast.se/othello/ 
+
+The game requires 10MB of storage (external or internal) to play.
+
+Info about Reversi: http://en.wikipedia.org/wiki/Reversi
+
+DroidZebra is a graphical interface for Zebra Othello Engine 
+written by Gunnar Andersson ported to Android OS (by myself).
+
+You will need approximately 15mb of storage space to install 
+and play the game. 
+
+assets/ - compressed book and coeffs2.bin
+jni/ - C code Zebra + mods
+src/ - Java code
+res/ - resource files
+
+
+Current features:
+- Zebra engine
+- play human vs human, hunam vs computer, computer vs computer
+- multiple levels of play
+- practice mode
+- unlimited undo
+
+TODO:
+- timed play
+- remote player vs player
+
