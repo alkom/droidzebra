@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="settings_engine_use_book_summary">Использовать библиотеку дебютов</string>
-    <string name="settings_engine_use_book_title">Использовать библиотеку дебютов</string>
+    <string name="settings_engine_use_book_summary">Библиотека дебютов</string>
+    <string name="settings_engine_use_book_title">Использовать библиотеку дебютов (book.bin)</string>
     <string name="gameover_choices_options">Изменить настройки</string>
     <string name="settings_engine_practice_mode_summary">Показывать предсказаннй программой "вес" для каждого возможного хода</string>
     <string name="settings_engine_practice_mode_title">Тренировочный режим</string>
     <string name="settings_engine_human_openings_summary">Играть дебюты привычные людям</string>
     <string name="settings_engine_human_openings_title">Дебюты по-человечески</string>
-    <string name="settings_engine_force_opening_summary">Название предпочитаемого дебютного начала</string>
+    <string name="settings_engine_force_opening_summary">Выбрать название предпочитаемого дебютного начала</string>
     <string name="settings_engine_force_opening_title">Дебютное начало</string>
     <string name="settings_engine_randomness_dialog_message">Разрешить программе делать неоптимальные ходы. Более разнообразная игра с ошибками как в игре с людьми.</string>
     <string name="settings_engine_randomness_summary">Разрешить неоптимальные ходы</string>
