@@ -47,7 +47,7 @@
 <item>変化最大 (10–16 石損)</item>
 </string-array>
 <string-array name="settings_engine_opening_values"> 
-<!--  !!!do not translate values - only settings_engine_opening_names below!!! -->
+<!--  !!!DO NOT TRANSLATE _values arrays - only settings_engine_opening_names below!!! -->
 <item>None</item>
 <item>Aircraft / Feldborg</item>
 <item>Aubrey (Feldborg continuation)</item>
@@ -125,7 +125,9 @@
 <item>Tiger</item>
 <item>Wing Variation</item>
 <item>X-square Opening</item>
+<!--  !!!DO NOT TRANSLATE _values arrays - only settings_engine_opening_names below!!! -->
 </string-array>
+
 <string-array name="settings_engine_opening_names">
 <item>指定なし</item>
 <item>Aircraft / Feldborg</item>

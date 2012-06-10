@@ -53,7 +53,7 @@
 <item>Huge (10–16 discs)</item>
 </string-array>
 <string-array name="settings_engine_opening_values"> 
-<!--  !!!do not translate values!!! -->
+<!--  !!!DO NOT TRANSLATE _values arrays!!! -->
 <item>None</item>
 <item>Aircraft / Feldborg</item>
 <item>Aubrey (Feldborg continuation)</item>
@@ -131,7 +131,9 @@
 <item>Tiger</item>
 <item>Wing Variation</item>
 <item>X-square Opening</item>
+<!--  !!!DO NOT TRANSLATE _values  arrays!!! -->
 </string-array>
+
 <string-array name="settings_engine_opening_names">
 <item>None</item>
 <item>Aircraft / Feldborg</item>
