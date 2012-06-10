@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 by Alex Kompel  */
+/* Copyright (C) 2010 by Alex Kompel  */
 /* This file is part of DroidZebra.
 
     DroidZebra is free software: you can redistribute it and/or modify
