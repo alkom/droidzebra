@@ -75,20 +75,34 @@ static int s_enable_msg = TRUE;
 
 #define JNIFn(Package, Class, Fname) JNICALL Java_com_shurik_##Package##_##Class##_##Fname
 
+// these are only for callback function:
+// first outer JNI call stores the environment that will be used by callback function
+// from deep within zebra code (with the context of outer JNI call)
+// if JNI function does not need to call "Callback" (like simple setters/getters)
+// then it should not use it. Nesting is explicitly disabled.
 static JNIEnv* s_env = NULL;
 static jobject s_thiz = NULL;
 static jmp_buf s_err_jmp;
-#define DROIDZEBRA_JNI_SETUP if( setjmp(s_err_jmp) ) return; \
-		s_env = env; \
-		s_thiz = thiz;
+#define DROIDZEBRA_JNI_SETUP \
+	assert(s_env==NULL && s_thiz==NULL); \
+	if( setjmp(s_err_jmp) ) return; \
+	s_env = env; \
+	s_thiz = thiz;
+#define DROIDZEBRA_JNI_CLEAN \
+	s_env = NULL; \
+	s_thiz = NULL;
 #define DROIDZEBRA_JNI_BREAK longjmp(s_err_jmp, -1);
 #define DROIDZEBRA_CHECK_JNI { assert(s_env!=NULL); if(!s_env) exit( EXIT_FAILURE ); }
+
+#define DROIDZEBRA_JNI_THROW(msg) \
+	{ _droidzebra_throw_engine_error(env, (msg)); return; }
 
 char android_files_dir[256];
 
 static void _droidzebra_undo_turn(int* side_to_move);
 static void _droidzebra_on_settings_change(void);
 static void _droidzebra_compute_evals(int side_to_move);
+static void _droidzebra_throw_engine_error(JNIEnv* env, const char* msg);
 
 JNIEnv* droidzebra_jnienv(void)
 {
@@ -104,6 +118,7 @@ JNIFn(droidzebra,ZebraEngine,zeJsonTest)( JNIEnv* env, jobject thiz, jobject jso
 	char* str = droidzebra_json_get_string(env, json, "testin", buf, 500000);
 	if(str) droidzebra_json_put_string(env, json, "testout", str );
 	free(buf);
+	DROIDZEBRA_JNI_CLEAN;
 }
 
 JNIEXPORT void
@@ -128,6 +143,7 @@ JNIFn(droidzebra,ZebraEngine,zeGlobalInit)(
 	const char* str;
 	str = (*env)->GetStringUTFChars(env, files_dir, NULL);
 	if (str == NULL) {
+		DROIDZEBRA_JNI_CLEAN;
 		return; /* OutOfMemoryError already thrown */
 	}
 	strncpy(android_files_dir, str, sizeof(android_files_dir)-1);
@@ -150,6 +166,7 @@ JNIFn(droidzebra,ZebraEngine,zeGlobalInit)(
 
 	time(&timer);
 	my_srandom(timer);
+	DROIDZEBRA_JNI_CLEAN;
 }
 
 JNIEXPORT void
@@ -159,8 +176,7 @@ JNIFn(droidzebra,ZebraEngine,zeGlobalTerminate)( JNIEnv* env, jobject thiz )
 
 	global_terminate();
 
-	s_env = NULL;
-	s_thiz = NULL;
+	DROIDZEBRA_JNI_CLEAN;
 }
 
 JNIEXPORT void
@@ -295,10 +311,10 @@ JNIFn(droidzebra,ZebraEngine,zeSetPlayerInfo)(
 		jint _time_increment
 )
 {
-	DROIDZEBRA_JNI_SETUP;
-
 	if( _player!=BLACKSQ && _player!=WHITESQ && _player!=EMPTY ) {
-		fatal_error("Invalid player ID: %d", _player);
+		char errmsg[128];
+		sprintf(errmsg, "Invalid player ID: %d", _player);
+		DROIDZEBRA_JNI_THROW(errmsg);
 	}
 
 	skill[_player] = _skill;
@@ -649,7 +665,10 @@ AGAIN:
 			_droidzebra_on_settings_change();
 		}
 	}
+
+	DROIDZEBRA_JNI_CLEAN;
 }
+
 // undo moves until player is a human and he can make a move
 void _droidzebra_undo_turn(int* side_to_move)
 {
@@ -716,4 +735,10 @@ void _droidzebra_compute_evals(int side_to_move)
 	set_forced_opening( s_forced_opening_seq );
 
 	display_status(stdout, FALSE);
+}
+
+void _droidzebra_throw_engine_error(JNIEnv* env, const char* msg)
+{
+    jclass exc = (*env)->FindClass(env, "com/shurik/droidzebra/EngineError");
+    if(exc) (*env)->ThrowNew(env, exc, msg);
 }
