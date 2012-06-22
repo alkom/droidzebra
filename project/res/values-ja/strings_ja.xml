@@ -54,11 +54,13 @@
 <string name="dialog_ok">OK</string>
 <string name="dialog_donate_title">プロジェクトサポート</string>
 <string name="dialog_donate_message">DroidZebraはフリーウェアです。もしあなたが楽しめたら、少しプロジェクトに貢献してくれませんか？　下記のボタンで選択できます。ご協力おねがいします。</string>
-<string name="dialog_donate_doit">協力する。</string>
+<string name="dialog_donate_doit">Paypal</string>
 <string name="dialog_donate_cancel">協力しない。</string>
 <string name="donate_url">https://droidzebra.appspot.com/droidzebra/donate/</string>
 <string name="menu_item_donate">サポート</string>
 <string name="spash_layout_message_2">(しばらくお待ちください)</string>
 <string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
 <string name="settings_title">設定</string>
+<string name="dialog_donate_share">友達とシェア</string>
+<string name="donate_share_text">DroidZebra Reversi for Android - https://play.google.com/store/apps/details?id=com.shurik.droidzebra</string>
 </resources>

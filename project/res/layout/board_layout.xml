@@ -19,7 +19,6 @@
 	android:layout_height="fill_parent"
 	android:focusable="false"
 	android:layout_below="@+id/board"
-	android:padding="2px"
 	android:background="@color/board_color" 
 	android:orientation="vertical" 
 	android:gravity="bottom"

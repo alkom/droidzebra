@@ -754,6 +754,16 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 				}
 			}
 			)
+			.setNeutralButton(R.string.dialog_donate_share, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					String shareText = getResources().getString(R.string.donate_share_text);
+					String shareTitle = getResources().getString(R.string.dialog_donate_share);
+					Intent intent = new Intent(Intent.ACTION_SEND);
+					intent.setType("text/plain");
+					intent.putExtra(Intent.EXTRA_TEXT, shareText);
+					startActivity(Intent.createChooser(intent, shareTitle));				}
+			}
+			)
 			.setNegativeButton(R.string.dialog_donate_cancel, null);
 			dialog = builder.create();
 		} break;
