@@ -22,13 +22,14 @@
     <string name="gameover_choices_cancel">Показать позицию</string>
     <string name="gameover_choices_switch">Поменять цвет</string>
     <string name="gameover_choices_new_game">Новая игра</string>
+    <string name="gameover_choices_email">e-Mail</string>
     <string name="settings_ui_display_pv_summary">Показывать оптимальную последовательность ходов, просчитанную программой для указанной глубины поиска.</string>
     <string name="settings_ui_display_pv_title">Строка главного изменение (PV)</string>
     <string name="settings_ui_preferences">Интерфейс пользователя</string>
     <string name="settings_engine_function_summary">Выбрать кто играет каким цветом</string>
     <string name="settings_engine_function_title">Выбор цвета</string>
     <string name="settings_engine_function_dialog_title">Выбор цвета</string>
-    
+    <string name="settings_sendmail_title">e-mail адрес</string>
     <string name="setting_strength_preference_summary">Максимальная глубина поиска при анализе позиции. Определяет силу игры программы. </string>
     <string name="settings_strength_preference_title">Глубина поиска</string>
     <string name="settings_strength_dialog_title">Глубина поиска</string>
@@ -42,6 +43,7 @@
 <string name="menu_item_new_game">Новая игра</string>
 <string name="menu_item_switch_sides">Поменять цвет</string>
 <string name="menu_item_undo">Отмена</string>
+<string name="menu_item_redo">Повторить</string>
 <string name="menu_item_quit">Выход</string>
 <string name="menu_item_about">О программе</string>
 <string name="menu_item_settings">Настройки</string>
@@ -58,9 +60,16 @@
 <string name="dialog_donate_cancel">Нет, в другой раз</string>
 <string name="donate_url">https://droidzebra.appspot.com/droidzebra/donate/</string>
 <string name="menu_item_donate">Фонд поддержки</string>
+<string name="menu_item_mail">e-Mail</string>
 <string name="spash_layout_message_2">(это займет немного времени)</string>
 <string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
 <string name="settings_title">Настройки</string>
 <string name="dialog_donate_share">Пошли другу</string>
 <string name="donate_share_text">DroidZebra Reversi for Android - https://play.google.com/store/apps/details?id=com.shurik.droidzebra</string>
+<string name="mail_generated">Сгенерировано с помощью DroidZebra (https://play.google.com/store/apps/details?id=com.shurik.droidzebra)</string>
+<string name="mail_date">Дата:</string>
+<string name="mail_move">Последовательность ходов:</string>
+<string name="mail_url">Веб-страница:</string>
+<string name="mail_viewer_url">http://droidzebra.appspot.com/viewer/?</string>
+
 </resources>

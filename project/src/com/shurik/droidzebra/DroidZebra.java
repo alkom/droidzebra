@@ -17,7 +17,11 @@
 
 package com.shurik.droidzebra;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import com.shurik.droidzebra.ZebraEngine.CandidateMove;
+import com.shurik.droidzebra.ZebraEngine.InvalidMove;
 import com.shurik.droidzebra.ZebraEngine.Move;
 import com.shurik.droidzebra.ZebraEngine.PlayerInfo;
 
@@ -56,7 +60,9 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	MENU_TAKE_BACK = 3,
 	MENU_SETTINGS = 4,
 	MENU_SWITCH_SIDES = 5,
-	MENU_DONATE = 6
+	MENU_DONATE = 6,
+	MENU_MAIL = 7,
+	MENU_TAKE_REDO = 8
 	;
 
 	private static final int
@@ -93,6 +99,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	public static final boolean DEFAULT_SETTING_DISPLAY_PV = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_MOVES = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_LAST_MOVE = true;
+	public static final String DEFAULT_SETTING_SENDMAIL = "";
 
 	public static final String 
 	SETTINGS_KEY_FUNCTION = "settings_engine_function",
@@ -105,7 +112,8 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	SETTINGS_KEY_USE_BOOK = "settings_engine_use_book",
 	SETTINGS_KEY_DISPLAY_PV = "settings_ui_display_pv",
 	SETTINGS_KEY_DISPLAY_MOVES = "settings_ui_display_moves",
-	SETTINGS_KEY_DISPLAY_LAST_MOVE = "settings_ui_display_last_move"
+	SETTINGS_KEY_DISPLAY_LAST_MOVE = "settings_ui_display_last_move",
+	SETTINGS_KEY_SENDMAIL = "settings_sendmail"
 	;
 
 	private byte mBoard[][] = new byte[boardSize][boardSize];
@@ -384,11 +392,13 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, MENU_NEW_GAME, 0, R.string.menu_item_new_game).setIcon(R.drawable.ic_menu_play);
-		menu.add(0, MENU_SWITCH_SIDES, 0, R.string.menu_item_switch_sides).setIcon(R.drawable.ic_menu_switch_sides);
 		menu.add(0, MENU_TAKE_BACK, 0, R.string.menu_item_undo).setIcon(android.R.drawable.ic_menu_revert);
+		menu.add(0, MENU_TAKE_REDO, 0, R.string.menu_item_redo).setIcon(android.R.drawable.ic_menu_rotate);
 		menu.add(0, MENU_SETTINGS, 0, R.string.menu_item_settings).setIcon(android.R.drawable.ic_menu_preferences);
-		menu.add(0, MENU_DONATE, 0, R.string.menu_item_donate).setIcon(android.R.drawable.ic_menu_send);
 		menu.add(0, MENU_QUIT, 0, R.string.menu_item_quit).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
+		menu.add(0, MENU_SWITCH_SIDES, 0, R.string.menu_item_switch_sides).setIcon(R.drawable.ic_menu_switch_sides);
+		menu.add(0, MENU_DONATE, 0, R.string.menu_item_donate).setIcon(android.R.drawable.ic_menu_send);		
+		menu.add(0, MENU_MAIL, 0, R.string.menu_item_mail).setIcon(android.R.drawable.ic_menu_send);
 		return true;
 	}	
 
@@ -405,6 +415,9 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			case MENU_TAKE_BACK:
 				mZebraThread.undoMove();
 				return true;
+			case MENU_TAKE_REDO:
+				redoGame();
+				return true;
 			case MENU_SETTINGS: {
 				// Launch Preference activity
 				Intent i = new Intent(this, SettingsPreferences.class);
@@ -415,6 +428,9 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			} break;
 			case MENU_DONATE: {
 				showDialog(DIALOG_DONATE);
+			} return true;
+			case MENU_MAIL: {
+				sendMail();
 			} return true;
 			}
 		} catch (EngineError e) {
@@ -599,7 +615,139 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			mZebraThread.sendSettingsChanged();
 		}
 	}
-
+	private void redoGame(){
+		ZebraEngine.GameState gs = mZebraThread.getGameState(); 
+		byte[] moves = null;
+		if( gs != null ) {
+			moves = gs.mMoveSequence;
+		}
+		int countPlayed = mWhiteScore + mBlackScore -4;
+		if(countPlayed < 0){
+			return;
+		}
+		Move move = new Move(moves[countPlayed]);
+		if(moves[countPlayed] == 0x00){
+			return;
+		}
+		move = new Move(moves[countPlayed]);
+    	try {
+			mZebraThread.makeMove(move);
+		} catch (InvalidMove e) {
+		} catch (EngineError e) {
+			FatalError(e.msg);
+		}
+	}
+	private void sendMail(){
+		//GetNowTime
+		Calendar calendar = Calendar.getInstance();
+		Date nowTime = calendar.getTime(); 
+		StringBuffer sbBlackPlayer = new StringBuffer();
+		StringBuffer sbWhitePlayer = new StringBuffer();
+		ZebraEngine.GameState gs = mZebraThread.getGameState(); 
+		SharedPreferences settings = getSharedPreferences(SHARED_PREFS_NAME, 0);
+		byte[] moves = null;
+		if( gs != null ) {
+			moves = gs.mMoveSequence;
+		}
+	
+		Intent intent = new Intent();  
+		intent.setAction(Intent.ACTION_SEND);  
+		intent.setType("message/rfc822");  
+		intent.putExtra(
+				Intent.EXTRA_EMAIL,
+				new String[]{settings.getString(SETTINGS_KEY_SENDMAIL, DEFAULT_SETTING_SENDMAIL)});  
+		
+		intent.putExtra(Intent.EXTRA_SUBJECT, "DroidZebra");  
+	
+		//get BlackPlayer and WhitePlayer
+		switch( mSettingFunction ) {
+			case FUNCTION_HUMAN_VS_HUMAN:
+				sbBlackPlayer.append("Player");
+				sbWhitePlayer.append("Player");
+				break;
+			case FUNCTION_ZEBRA_BLACK:
+				sbBlackPlayer.append("DroidZebra-");
+				sbBlackPlayer.append(mSettingZebraDepth);
+				sbBlackPlayer.append("/");
+				sbBlackPlayer.append(mSettingZebraDepthExact);
+				sbBlackPlayer.append("/");
+				sbBlackPlayer.append(mSettingZebraDepthWLD );
+				
+				sbWhitePlayer.append("Player");
+				break;
+			case FUNCTION_ZEBRA_WHITE:
+				sbBlackPlayer.append("Player");
+				
+				sbWhitePlayer.append("DroidZebra-");
+				sbWhitePlayer.append(mSettingZebraDepth);
+				sbWhitePlayer.append("/");
+				sbWhitePlayer.append(mSettingZebraDepthExact);
+				sbWhitePlayer.append("/");
+				sbWhitePlayer.append(mSettingZebraDepthWLD );
+				break;
+			case FUNCTION_ZEBRA_VS_ZEBRA:
+				sbBlackPlayer.append("DroidZebra-");
+				sbBlackPlayer.append(mSettingZebraDepth);
+				sbBlackPlayer.append("/");
+				sbBlackPlayer.append(mSettingZebraDepthExact);
+				sbBlackPlayer.append("/");
+				sbBlackPlayer.append(mSettingZebraDepthWLD );
+				
+				sbWhitePlayer.append("DroidZebra-");
+				sbWhitePlayer.append(mSettingZebraDepth);
+				sbWhitePlayer.append("/");
+				sbWhitePlayer.append(mSettingZebraDepthExact);
+				sbWhitePlayer.append("/");
+				sbWhitePlayer.append(mSettingZebraDepthWLD );
+			default:
+		}
+		StringBuffer sb = new StringBuffer();
+		sb.append(getResources().getString(R.string.mail_generated));
+		sb.append("\r\n");
+		sb.append(getResources().getString(R.string.mail_date));
+		sb.append(" ");
+		sb.append(nowTime);
+		sb.append("\r\n\r\n");
+		sb.append(getResources().getString(R.string.mail_move));
+		sb.append(" ");
+		StringBuffer sbMoves = new StringBuffer();
+		if(moves != null){
+			
+			for(int i=0; i < moves.length; i++){
+				if(moves[i]!=0x00){
+					Move move = new Move(moves[i]);
+					sbMoves.append(move.getText());
+					if(mLastMove.getText().equals(move.getText())){
+						break;
+					}
+				}
+			}
+		}
+		sb.append(sbMoves);
+		sb.append("\r\n\r\n");
+		sb.append(sbBlackPlayer.toString());
+		sb.append("  (B)  ");
+		sb.append(mBlackScore);
+		sb.append(":");
+		sb.append(mWhiteScore);
+		sb.append("  (W)  ");
+		sb.append(sbWhitePlayer.toString());
+		sb.append("\r\n\r\n");
+		sb.append(getResources().getString(R.string.mail_url));
+		sb.append("\r\n");	
+		sb.append(getResources().getString(R.string.mail_viewer_url));
+		sb.append("lm=");
+		sb.append(sbMoves);
+		sb.append("&bp=");
+		sb.append(sbBlackPlayer.toString());
+		sb.append("&wp=");
+		sb.append(sbWhitePlayer.toString());
+		
+		intent.putExtra(Intent.EXTRA_TEXT, sb.toString());
+		// Intent 
+		this.startActivity(intent);  
+	}
+	
 	private void switchSides() {
 		int newFunction = -1;
 		
@@ -664,8 +812,8 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			button.setOnClickListener(
 					new View.OnClickListener() {
 						public void onClick(View v) {
-							newGame();
 							dismissDialog(DIALOG_GAME_OVER);
+							newGame();
 						}
 					});
 
@@ -673,8 +821,8 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			button.setOnClickListener(
 					new View.OnClickListener() {
 						public void onClick(View v) {
-							switchSides();
 							dismissDialog(DIALOG_GAME_OVER);
+							switchSides();
 						}
 					});
 
@@ -699,6 +847,14 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 						}
 					});
 			
+			button = (Button)dialog.findViewById(R.id.gameover_choice_email);
+			button.setOnClickListener(
+					new View.OnClickListener() {
+						public void onClick(View v) {
+							dismissDialog(DIALOG_GAME_OVER);
+							sendMail();
+						}
+					});
 		} break;
 		case DIALOG_QUIT: {
 			dialog = builder
