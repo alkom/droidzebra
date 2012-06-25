@@ -67,6 +67,16 @@ store_move( int disks_played, int move ) {
   game_move[disks_played] = move;
 }
 
+/*
+   GET_STORED_MOVE
+   get stored move
+*/
+
+int
+get_stored_move( int index ) {
+	if(index>60) return ILLEGAL;
+	return game_move[index];
+}
 
 
 /*

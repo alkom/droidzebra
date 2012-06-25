@@ -33,7 +33,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-//import android.util.Log;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -381,7 +381,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			} break;
 			
 			case ZebraEngine.MSG_DEBUG: {
-				//Log.d("DroidZebra", m.getData().getString("message"));
+				Log.d("DroidZebra", m.getData().getString("message"));
 			} break;
 			}
 		}
@@ -416,7 +416,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 				mZebraThread.undoMove();
 				return true;
 			case MENU_TAKE_REDO:
-				redoGame();
+				mZebraThread.redoMove();
 				return true;
 			case MENU_SETTINGS: {
 				// Launch Preference activity
@@ -615,28 +615,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			mZebraThread.sendSettingsChanged();
 		}
 	}
-	private void redoGame(){
-		ZebraEngine.GameState gs = mZebraThread.getGameState(); 
-		byte[] moves = null;
-		if( gs != null ) {
-			moves = gs.mMoveSequence;
-		}
-		int countPlayed = mWhiteScore + mBlackScore -4;
-		if(countPlayed < 0){
-			return;
-		}
-		Move move = new Move(moves[countPlayed]);
-		if(moves[countPlayed] == 0x00){
-			return;
-		}
-		move = new Move(moves[countPlayed]);
-    	try {
-			mZebraThread.makeMove(move);
-		} catch (InvalidMove e) {
-		} catch (EngineError e) {
-			FatalError(e.msg);
-		}
-	}
+
 	private void sendMail(){
 		//GetNowTime
 		Calendar calendar = Calendar.getInstance();

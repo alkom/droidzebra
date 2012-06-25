@@ -71,6 +71,8 @@ static int s_practice_mode = FALSE;
 static const char* s_forced_opening_seq = NULL;
 static int s_use_book = TRUE;
 static int s_enable_msg = TRUE;
+static int s_undo_stack[64];
+static int s_undo_stack_pointer = 0;
 // --
 
 #define JNIFn(Package, Class, Fname) JNICALL Java_com_shurik_##Package##_##Class##_##Fname
@@ -100,9 +102,16 @@ static jmp_buf s_err_jmp;
 char android_files_dir[256];
 
 static void _droidzebra_undo_turn(int* side_to_move);
+static void _droidzebra_redo_turn(int* side_to_move);
 static void _droidzebra_on_settings_change(void);
 static void _droidzebra_compute_evals(int side_to_move);
 static void _droidzebra_throw_engine_error(JNIEnv* env, const char* msg);
+
+// undo stack helpers
+static void _droidzebra_undo_stack_push(int val);
+static int _droidzebra_undo_stack_pop(void);
+static void _droidzebra_undo_stack_clear(void);
+static int _droidzebra_can_redo(void);
 
 JNIEnv* droidzebra_jnienv(void)
 {
@@ -543,8 +552,15 @@ AGAIN:
 							break;
 						} else if( evt.type==UI_EVENT_MOVE ) {
 							curr_move = evt.evt_move.move;
+							_droidzebra_undo_stack_clear(); // once player makes the move undo info is stale
 						} else if( evt.type==UI_EVENT_UNDO ) {
 							_droidzebra_undo_turn(&side_to_move);
+							// adjust for increment at the beginning of the game loop
+							if ( side_to_move == BLACKSQ )
+								score_sheet_row--;
+							continue;
+						} else if( evt.type==UI_EVENT_REDO ) {
+							_droidzebra_redo_turn(&side_to_move);
 							// adjust for increment at the beginning of the game loop
 							if ( side_to_move == BLACKSQ )
 								score_sheet_row--;
@@ -673,8 +689,11 @@ AGAIN:
 void _droidzebra_undo_turn(int* side_to_move)
 {
 	int human_can_move = 0;
+	int curr_move;
 
 	if(score_sheet_row==0 && *side_to_move==BLACKSQ) return;
+
+	_droidzebra_undo_stack_push(disks_played);
 
 	do {
 		*side_to_move = OPP(*side_to_move);
@@ -691,18 +710,53 @@ void _droidzebra_undo_turn(int* side_to_move)
 				);
 
 		if ( *side_to_move == WHITESQ ) {
+			curr_move = white_moves[score_sheet_row];
 			if(white_moves[score_sheet_row]!=PASS)
 				unmake_move(WHITESQ, white_moves[score_sheet_row] );
 			white_moves[score_sheet_row] = PASS;
 		} else {
+			curr_move = black_moves[score_sheet_row];
 			if(black_moves[score_sheet_row]!=PASS)
 				unmake_move(BLACKSQ, black_moves[score_sheet_row] );
 			black_moves[score_sheet_row] = PASS;
 		}
 
-		droidzebra_message_debug("undo: score_sheet_row %d, disks_played %d, move_count %d", score_sheet_row, disks_played, move_count[disks_played]);
+		droidzebra_message_debug("undo: side_to_move %d, undo_move %d, score_sheet_row %d, disks_played %d, move_count %d", *side_to_move, curr_move, score_sheet_row, disks_played, move_count[disks_played]);
 	} while( !(score_sheet_row==0 && *side_to_move==BLACKSQ) && !human_can_move );
 	clear_endgame_performed();
+}
+
+void _droidzebra_redo_turn(int* side_to_move)
+{
+	int target_disks_played = 0;
+	int curr_move;
+
+	if(!_droidzebra_can_redo()) return;
+
+	target_disks_played = _droidzebra_undo_stack_pop();
+	droidzebra_message_debug("redo: score_sheet_row %d, disks_played %d, new_disks_played %d", score_sheet_row, disks_played, target_disks_played);
+	while(disks_played<target_disks_played) {
+		curr_move = get_stored_move(disks_played);
+		droidzebra_message_debug("redo: score_sheet_row %d, curr_move %d, side_to_move %d, disks_played %d", score_sheet_row, curr_move, *side_to_move, disks_played);
+		if( curr_move==ILLEGAL || !valid_move(curr_move, *side_to_move) ) {
+			fatal_error( "Invalid move %c%c in redo sequence", TO_SQUARE( curr_move ));
+		}
+
+		if( curr_move!=PASS ) {
+			(void) make_move( *side_to_move, curr_move, TRUE );
+		}
+
+		if ( *side_to_move == BLACKSQ )
+			black_moves[score_sheet_row] = curr_move;
+		else {
+			white_moves[score_sheet_row] = curr_move;
+		}
+
+		*side_to_move = OPP(*side_to_move);
+
+		if ( *side_to_move == BLACKSQ )
+			score_sheet_row++;
+	}
 }
 
 void _droidzebra_on_settings_change(void)
@@ -742,3 +796,26 @@ void _droidzebra_throw_engine_error(JNIEnv* env, const char* msg)
     jclass exc = (*env)->FindClass(env, "com/shurik/droidzebra/EngineError");
     if(exc) (*env)->ThrowNew(env, exc, msg);
 }
+
+void _droidzebra_undo_stack_push(int val)
+{
+	assert(s_undo_stack_pointer<64);
+	s_undo_stack[s_undo_stack_pointer++] = val;
+}
+
+int _droidzebra_undo_stack_pop(void)
+{
+	assert(s_undo_stack_pointer>0);
+	return s_undo_stack[--s_undo_stack_pointer];
+}
+
+void _droidzebra_undo_stack_clear(void)
+{
+	s_undo_stack_pointer = 0;
+}
+
+int _droidzebra_can_redo(void)
+{
+	return s_undo_stack_pointer>0;
+}
+

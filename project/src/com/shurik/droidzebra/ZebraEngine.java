@@ -87,7 +87,8 @@ public class ZebraEngine extends Thread {
 	UI_EVENT_EXIT = 0,
 	UI_EVENT_MOVE = 1,
 	UI_EVENT_UNDO = 2,
-	UI_EVENT_SETTINGS_CHANGE = 3
+	UI_EVENT_SETTINGS_CHANGE = 3,
+	UI_EVENT_REDO = 4
 	;
 
 	private static final String[] coeffAssets = { "coeffs2.bin" };
@@ -363,6 +364,30 @@ public class ZebraEngine extends Thread {
 		setEngineState(ES_USER_INPUT_RESUME);
 	}
 
+	public void redoMove() throws EngineError
+	{
+		// if thinking on human time - stop
+		if( mPlayerInfo[mSideToMove].skill==0
+			&& getEngineState()==ZebraEngine.ES_PLAYINPROGRESS ) {
+			stopMove();
+			waitForEngineState(ES_USER_INPUT_WAIT, 1000);
+		}
+
+		if( getEngineState()!=ES_USER_INPUT_WAIT) {
+			// Log.d("ZebraEngine", "Invalid Engine State");
+			return;
+		}
+
+		// create pending event and tell zebra to pick it up
+		mPendingEvent = new JSONObject();
+		try {
+			mPendingEvent.put("type", UI_EVENT_REDO);
+		} catch (JSONException e) {
+			// Log.getStackTraceString(e);
+		}
+		setEngineState(ES_USER_INPUT_RESUME);
+	}
+	
 	// notifications that some settings have changes - see if we care
 	public void sendSettingsChanged()
 	{
