@@ -30,6 +30,7 @@
     <string name="settings_engine_function_title">Engine Function</string>
     <string name="settings_engine_function_dialog_title">Select Engine Function</string>
     <string name="settings_sendmail_title">e-mail Address</string>
+    <string name="settings_sendmail_summary">Default e-mail address for sending game transcripts</string>
     <string name="setting_strength_preference_summary">Engine strength: number of moves computer will analyze while playing</string>
     <string name="settings_strength_preference_title">Search Depth</string>
     <string name="settings_strength_dialog_title">Choose One</string>

@@ -31,14 +31,14 @@ android:layout_height="wrap_content" android:textSize="24sp" android:text="@stri
 
 <Button android:layout_width="fill_parent" android:textSize="24sp" android:id="@+id/gameover_choice_options" android:text="@string/gameover_choices_options" android:layout_height="wrap_content"></Button>
 
-<Button android:id="@+id/gameover_choice_cancel" 
-android:layout_width="fill_parent" 
-android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/gameover_choices_cancel">
-</Button>
-
 <Button android:id="@+id/gameover_choice_email" 
 android:layout_width="fill_parent" 
 android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/gameover_choices_email">
+</Button>
+
+<Button android:id="@+id/gameover_choice_cancel" 
+android:layout_width="fill_parent" 
+android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/gameover_choices_cancel">
 </Button>
 
 

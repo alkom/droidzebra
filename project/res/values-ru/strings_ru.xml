@@ -30,6 +30,7 @@
     <string name="settings_engine_function_title">Выбор цвета</string>
     <string name="settings_engine_function_dialog_title">Выбор цвета</string>
     <string name="settings_sendmail_title">e-mail адрес</string>
+    <string name="settings_sendmail_summary">e-mail адрес для экспорта игр</string>
     <string name="setting_strength_preference_summary">Максимальная глубина поиска при анализе позиции. Определяет силу игры программы. </string>
     <string name="settings_strength_preference_title">Глубина поиска</string>
     <string name="settings_strength_dialog_title">Глубина поиска</string>

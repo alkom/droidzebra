@@ -21,7 +21,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 import com.shurik.droidzebra.ZebraEngine.CandidateMove;
-import com.shurik.droidzebra.ZebraEngine.InvalidMove;
 import com.shurik.droidzebra.ZebraEngine.Move;
 import com.shurik.droidzebra.ZebraEngine.PlayerInfo;
 
@@ -33,7 +32,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.util.Log;
+//import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -381,7 +380,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			} break;
 			
 			case ZebraEngine.MSG_DEBUG: {
-				Log.d("DroidZebra", m.getData().getString("message"));
+//				Log.d("DroidZebra", m.getData().getString("message"));
 			} break;
 			}
 		}
@@ -721,6 +720,10 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		sb.append(sbBlackPlayer.toString());
 		sb.append("&wp=");
 		sb.append(sbWhitePlayer.toString());
+		sb.append("&bs=");
+		sb.append(mBlackScore);
+		sb.append("&ws=");
+		sb.append(mWhiteScore);
 		
 		intent.putExtra(Intent.EXTRA_TEXT, sb.toString());
 		// Intent 

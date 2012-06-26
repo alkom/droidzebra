@@ -30,6 +30,7 @@
     <string name="settings_engine_function_title">機能</string>
     <string name="settings_engine_function_dialog_title">機能</string>
     <string name="settings_sendmail_title">メールアドレス</string>
+	<string name="settings_sendmail_summary">メールアドレス</string>    
     <string name="setting_strength_preference_summary">コンピュータの強さ: コンピュータの読みの深さを設定</string>
     <string name="settings_strength_preference_title">読みの深さ</string>
     <string name="settings_strength_dialog_title">読みの深さ</string>
