@@ -736,15 +736,19 @@ void _droidzebra_redo_turn(int* side_to_move)
 	target_disks_played = _droidzebra_undo_stack_pop();
 	droidzebra_message_debug("redo: score_sheet_row %d, disks_played %d, new_disks_played %d", score_sheet_row, disks_played, target_disks_played);
 	while(disks_played<target_disks_played) {
-		curr_move = get_stored_move(disks_played);
-		droidzebra_message_debug("redo: score_sheet_row %d, curr_move %d, side_to_move %d, disks_played %d", score_sheet_row, curr_move, *side_to_move, disks_played);
-		if( curr_move==ILLEGAL || !valid_move(curr_move, *side_to_move) ) {
-			fatal_error( "Invalid move %c%c in redo sequence", TO_SQUARE( curr_move ));
+		generate_all( *side_to_move );
+
+		if( move_count[disks_played]>0 ) {
+			curr_move = get_stored_move(disks_played);
+			if( curr_move==ILLEGAL || !valid_move(curr_move, *side_to_move) ) {
+				fatal_error( "Invalid move %c%c in redo sequence", TO_SQUARE( curr_move ));
+			}
+			(void) make_move( *side_to_move, curr_move, TRUE );
+		} else {
+			curr_move = PASS;
 		}
 
-		if( curr_move!=PASS ) {
-			(void) make_move( *side_to_move, curr_move, TRUE );
-		}
+		droidzebra_message_debug("redo: score_sheet_row %d, curr_move %d, side_to_move %d, disks_played %d", score_sheet_row, curr_move, *side_to_move, disks_played);
 
 		if ( *side_to_move == BLACKSQ )
 			black_moves[score_sheet_row] = curr_move;
