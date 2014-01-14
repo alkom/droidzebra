@@ -25,6 +25,8 @@
     <string name="gameover_choices_email">e-Mail</string>
     <string name="settings_ui_display_pv_summary">Показывать оптимальную последовательность ходов, просчитанную программой для указанной глубины поиска.</string>
     <string name="settings_ui_display_pv_title">Строка главного изменение (PV)</string>
+    <string name="settings_ui_display_enable_animations_summary">Включить анимационные эффекты</string>
+    <string name="settings_ui_display_enable_animations_title">Включить анимацию</string>
     <string name="settings_ui_preferences">Интерфейс пользователя</string>
     <string name="settings_engine_function_summary">Выбрать кто играет каким цветом</string>
     <string name="settings_engine_function_title">Выбор цвета</string>
@@ -48,6 +50,7 @@
 <string name="menu_item_quit">Выход</string>
 <string name="menu_item_about">О программе</string>
 <string name="menu_item_settings">Настройки</string>
+<string name="menu_item_hint">Подсказка</string>
 <string name="gameover_title">Конец игры</string>
 <string name="dialog_quit_title">Вы уверены?</string>
 <string name="dialog_quit_button_quit">Выход</string>

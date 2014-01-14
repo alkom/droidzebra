@@ -25,6 +25,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Paint.FontMetrics;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -132,8 +133,8 @@ public class StatusView extends View {
 			mScreenBounds = new RectF(mXstart*scaleW, mYstart*scaleH, mXend*scaleW, mYend*scaleH);
 			mScreenColor = getResources().getColor(mRColor);
 				
-			mScreenText = new String();
 			mScreenTextSize = mScreenBounds.height()*0.8f; 
+			mScreenText = mText;
 			p.setTextSize(mScreenTextSize);
 			
 			if( (mFlags & FLAG_TRUNCATE)>0 ) {
@@ -159,7 +160,6 @@ public class StatusView extends View {
 				}
 			} else if( (mFlags & FLAG_FIT)>0 ) {
 				Rect bounds = new Rect();
-				mScreenText = mText;
 				p.getTextBounds(mText, 0, mText.length(), bounds);
 				if( mScreenBounds.width()/bounds.width()<0.8f ) {
 					mScreenTextSize = mScreenBounds.height()*mScreenBounds.width()/bounds.width();
@@ -213,19 +213,21 @@ public class StatusView extends View {
 		;
 	
 	private static final float
+		HSF = 0.8f, // horizontal scale factor between score box and moves table
+	
 		STATUS_POS_Y = 0.8f,
 		
 		SCORE_BOX_START_Y = 0.18f,
 		SCORE_BOX_END_Y = 0.76f,
 		
-		SCORE_BOX_NUM_START_X = 0.02f,
-		SCORE_BOX_NUM_END_X = 0.10f,
+		SCORE_BOX_NUM_START_X = 0.02f*HSF,
+		SCORE_BOX_NUM_END_X = 0.10f*HSF,
 
-		SCORE_BOX_BLACK_START_X = 0.16f,
-		SCORE_BOX_BLACK_END_X = 0.28f,
+		SCORE_BOX_BLACK_START_X = 0.16f*HSF,
+		SCORE_BOX_BLACK_END_X = 0.28f*HSF,
 
-		SCORE_BOX_WHITE_START_X = 0.32f,
-		SCORE_BOX_WHITE_END_X = 0.46f
+		SCORE_BOX_WHITE_START_X = 0.32f*HSF,
+		SCORE_BOX_WHITE_END_X = 0.46f*HSF
 		;
 		
 	private  DrawElement[] mLayout = {
@@ -234,35 +236,35 @@ public class StatusView extends View {
 		new DrawLine(ID_NONE, 0.0f, 0.0f, 0.0f, 1.0f, R.color.statuslinecolor),
 		new DrawLine(ID_NONE, 1.0f, 0.0f, 1.0f, 1.0f, R.color.statuslinecolor),
 
-		new DrawLine(ID_NONE, 0.5f, 0.0f, 0.5f, STATUS_POS_Y, R.color.statuslinecolor),
+		new DrawLine(ID_NONE, 0.5f*HSF, 0.0f, 0.5f*HSF, STATUS_POS_Y, R.color.statuslinecolor),
 		new DrawLine(ID_NONE, 0.0f, STATUS_POS_Y, 1.0f, STATUS_POS_Y, R.color.statuslinecolor),
 
 		// moves panel
-		new DrawLine(ID_NONE, 0.12f, SCORE_BOX_START_Y, 0.48f, SCORE_BOX_START_Y, R.color.statuslinecolor),
-		new DrawLine(ID_NONE, 0.30f, SCORE_BOX_START_Y, 0.30f, SCORE_BOX_END_Y, R.color.statuslinecolor),
-		new DrawText(ID_NONE, 0.12f, 0.02f, 0.30f, SCORE_BOX_START_Y-0.02f, "B", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_FIT),
-		new DrawText(ID_NONE, 0.30f, 0.02f, 0.48f, SCORE_BOX_START_Y-0.02f, "W", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_FIT),
+		new DrawLine(ID_NONE, 0.12f*HSF, SCORE_BOX_START_Y, 0.48f*HSF, SCORE_BOX_START_Y, R.color.statuslinecolor),
+		new DrawLine(ID_NONE, 0.30f*HSF, SCORE_BOX_START_Y, 0.30f*HSF, SCORE_BOX_END_Y, R.color.statuslinecolor),
+		new DrawText(ID_NONE, 0.12f*HSF, 0.02f, 0.30f*HSF, SCORE_BOX_START_Y-0.02f, "B", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_FIT),
+		new DrawText(ID_NONE, 0.30f*HSF, 0.02f, 0.48f*HSF, SCORE_BOX_START_Y-0.02f, "W", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_FIT),
 		
-		new DrawText(ID_SCORELINE_NUM_1, SCORE_BOX_NUM_START_X, SCORE_BOX_START_Y+0*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_NUM_END_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "12", R.color.statustextcolor, Paint.Align.RIGHT, DrawText.FLAG_TRUNCATE),
-		new DrawText(ID_SCORELINE_NUM_2, SCORE_BOX_NUM_START_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_NUM_END_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "13", R.color.statustextcolor, Paint.Align.RIGHT, DrawText.FLAG_TRUNCATE),
-		new DrawText(ID_SCORELINE_NUM_3, SCORE_BOX_NUM_START_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_NUM_END_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "14", R.color.statustextcolor, Paint.Align.RIGHT, DrawText.FLAG_TRUNCATE),
-		new DrawText(ID_SCORELINE_NUM_4, SCORE_BOX_NUM_START_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_NUM_END_X, SCORE_BOX_START_Y+4*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "15", R.color.statustextcolor, Paint.Align.RIGHT, DrawText.FLAG_TRUNCATE),
+		new DrawText(ID_SCORELINE_NUM_1, SCORE_BOX_NUM_START_X, SCORE_BOX_START_Y+0*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_NUM_END_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "12", R.color.statustextcolor, Paint.Align.RIGHT, 0),
+		new DrawText(ID_SCORELINE_NUM_2, SCORE_BOX_NUM_START_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_NUM_END_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "13", R.color.statustextcolor, Paint.Align.RIGHT, 0),
+		new DrawText(ID_SCORELINE_NUM_3, SCORE_BOX_NUM_START_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_NUM_END_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "14", R.color.statustextcolor, Paint.Align.RIGHT, 0),
+		new DrawText(ID_SCORELINE_NUM_4, SCORE_BOX_NUM_START_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_NUM_END_X, SCORE_BOX_START_Y+4*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "15", R.color.statustextcolor, Paint.Align.RIGHT, 0),
 
-		new DrawText(ID_SCORELINE_BLACK_1, SCORE_BOX_BLACK_START_X, SCORE_BOX_START_Y+0*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_BLACK_END_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "a1", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
-		new DrawText(ID_SCORELINE_BLACK_2, SCORE_BOX_BLACK_START_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_BLACK_END_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "d3", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
-		new DrawText(ID_SCORELINE_BLACK_3, SCORE_BOX_BLACK_START_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_BLACK_END_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "g8", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
-		new DrawText(ID_SCORELINE_BLACK_4, SCORE_BOX_BLACK_START_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_BLACK_END_X, SCORE_BOX_START_Y+4*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "d7", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
+		new DrawText(ID_SCORELINE_BLACK_1, SCORE_BOX_BLACK_START_X, SCORE_BOX_START_Y+0*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_BLACK_END_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "a1", R.color.statustextcolor, Paint.Align.CENTER, 0),
+		new DrawText(ID_SCORELINE_BLACK_2, SCORE_BOX_BLACK_START_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_BLACK_END_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "d3", R.color.statustextcolor, Paint.Align.CENTER, 0),
+		new DrawText(ID_SCORELINE_BLACK_3, SCORE_BOX_BLACK_START_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_BLACK_END_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "g8", R.color.statustextcolor, Paint.Align.CENTER, 0),
+		new DrawText(ID_SCORELINE_BLACK_4, SCORE_BOX_BLACK_START_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_BLACK_END_X, SCORE_BOX_START_Y+4*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "d7", R.color.statustextcolor, Paint.Align.CENTER, 0),
 
-		new DrawText(ID_SCORELINE_WHITE_1, SCORE_BOX_WHITE_START_X, SCORE_BOX_START_Y+0*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_WHITE_END_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "c4", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
-		new DrawText(ID_SCORELINE_WHITE_2, SCORE_BOX_WHITE_START_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_WHITE_END_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "d3", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
-		new DrawText(ID_SCORELINE_WHITE_3, SCORE_BOX_WHITE_START_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_WHITE_END_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "f5", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
-		new DrawText(ID_SCORELINE_WHITE_4, SCORE_BOX_WHITE_START_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_WHITE_END_X, SCORE_BOX_START_Y+4*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "f9", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
+		new DrawText(ID_SCORELINE_WHITE_1, SCORE_BOX_WHITE_START_X, SCORE_BOX_START_Y+0*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_WHITE_END_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "c4", R.color.statustextcolor, Paint.Align.CENTER, 0),
+		new DrawText(ID_SCORELINE_WHITE_2, SCORE_BOX_WHITE_START_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_WHITE_END_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "d3", R.color.statustextcolor, Paint.Align.CENTER, 0),
+		new DrawText(ID_SCORELINE_WHITE_3, SCORE_BOX_WHITE_START_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_WHITE_END_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "f5", R.color.statustextcolor, Paint.Align.CENTER, 0),
+		new DrawText(ID_SCORELINE_WHITE_4, SCORE_BOX_WHITE_START_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_WHITE_END_X, SCORE_BOX_START_Y+4*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "f9", R.color.statustextcolor, Paint.Align.CENTER, 0),
 
 		// score panel
-		new DrawText(ID_SCORE_BLACK, 0.52f, 0.10f, 0.68f, STATUS_POS_Y-0.30f, "34", R.color.black, Paint.Align.CENTER, DrawText.FLAG_FIT),
-		new DrawText(ID_NONE, 0.72f, 0.20f, 0.78f, STATUS_POS_Y-0.40f, ":", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_FIT),
-		new DrawText(ID_SCORE_WHITE, 0.82f, 0.10f, 0.98f, STATUS_POS_Y-0.30f, "21", R.color.white, Paint.Align.CENTER, DrawText.FLAG_FIT),
-		new DrawText(ID_SCORE_SKILL, 0.52f, STATUS_POS_Y-0.25f, 0.98f, STATUS_POS_Y-0.15f, "Mid: 8  Exact: 16  W/L: 18", R.color.white, Paint.Align.CENTER, DrawText.FLAG_FIT),
+		new DrawText(ID_SCORE_BLACK, 0.44f, 0.10f, 0.67f, STATUS_POS_Y-0.30f, "34", R.color.black, Paint.Align.RIGHT, 0),
+		new DrawText(ID_NONE, 0.67f, 0.20f, 0.73f, STATUS_POS_Y-0.40f, ":", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_FIT),
+		new DrawText(ID_SCORE_WHITE, 0.73f, 0.10f, 0.96f, STATUS_POS_Y-0.30f, "21", R.color.white, Paint.Align.LEFT, 0),
+		new DrawText(ID_SCORE_SKILL, 0.48f, STATUS_POS_Y-0.25f, 0.92f, STATUS_POS_Y-0.15f, "Mid: 8  Exact: 16  W/L: 18", R.color.white, Paint.Align.CENTER, DrawText.FLAG_FIT),
 		
 		// status panel
 		new DrawLine(ID_NONE, 0.40f, STATUS_POS_Y, 0.40f, 1.0f, R.color.statuslinecolor),
@@ -283,6 +285,7 @@ public class StatusView extends View {
 		mPaint.setAntiAlias(true);
 		mPaint.setStyle(Paint.Style.FILL);
 		mPaint.setStrokeWidth(0.0f);
+		mPaint.setTypeface(Typeface.SERIF);
 		
 		for(DrawElement elem:mLayout) {
 			if( elem.mID!=ID_NONE && DrawText.class.isInstance(elem))

@@ -41,7 +41,8 @@
 		<CheckBoxPreference android:title="@string/settings_ui_display_pv_title"
 			android:key="settings_ui_display_pv" android:summary="@string/settings_ui_display_pv_summary"
 			android:defaultValue="true"></CheckBoxPreference>
-
-
+		<CheckBoxPreference android:title="@string/settings_ui_display_enable_animations_title"
+			android:key="settings_ui_display_enable_animations" android:summary="@string/settings_ui_display_enable_animations_summary"
+			android:defaultValue="true"></CheckBoxPreference>
 	</PreferenceCategory>
 </PreferenceScreen>

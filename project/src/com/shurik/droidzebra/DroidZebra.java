@@ -20,13 +20,16 @@ package com.shurik.droidzebra;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.shurik.droidzebra.ZebraEngine;
 import com.shurik.droidzebra.ZebraEngine.CandidateMove;
 import com.shurik.droidzebra.ZebraEngine.Move;
 import com.shurik.droidzebra.ZebraEngine.PlayerInfo;
 
-import android.app.Activity;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.support.v4.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -34,10 +37,12 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 //import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.net.Uri;
@@ -46,8 +51,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-public class DroidZebra extends Activity
-implements SharedPreferences.OnSharedPreferenceChangeListener
+public class DroidZebra extends FragmentActivity
+	implements SharedPreferences.OnSharedPreferenceChangeListener
 {
 	public static final String SHARED_PREFS_NAME="droidzebrasettings";
 
@@ -61,15 +66,8 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	MENU_SWITCH_SIDES = 5,
 	MENU_DONATE = 6,
 	MENU_MAIL = 7,
-	MENU_TAKE_REDO = 8
-	;
-
-	private static final int
-	DIALOG_PASS_ID = 1,
-	DIALOG_GAME_OVER = 2,
-	DIALOG_QUIT = 3,
-	DIALOG_BUSY = 4,
-	DIALOG_DONATE = 5
+	MENU_TAKE_REDO = 8,
+	MENU_HINT = 9
 	;
 
 	private static final int
@@ -99,6 +97,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	public static final boolean DEFAULT_SETTING_DISPLAY_MOVES = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_LAST_MOVE = true;
 	public static final String DEFAULT_SETTING_SENDMAIL = "";
+	public static final boolean DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS = true;
 
 	public static final String 
 	SETTINGS_KEY_FUNCTION = "settings_engine_function",
@@ -112,11 +111,34 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	SETTINGS_KEY_DISPLAY_PV = "settings_ui_display_pv",
 	SETTINGS_KEY_DISPLAY_MOVES = "settings_ui_display_moves",
 	SETTINGS_KEY_DISPLAY_LAST_MOVE = "settings_ui_display_last_move",
-	SETTINGS_KEY_SENDMAIL = "settings_sendmail"
+	SETTINGS_KEY_SENDMAIL = "settings_sendmail",
+	SETTINGS_KEY_DISPLAY_ENABLE_ANIMATIONS = "settings_ui_display_enable_animations"
 	;
 
-	private byte mBoard[][] = new byte[boardSize][boardSize];
-
+	public static class BoardState {
+		public final static byte ST_FLIPPED = 0x01;
+		public byte mState;
+		public byte mFlags;
+		public BoardState(byte state) {
+			mState = state;
+			mFlags = 0;
+		}
+		public void set(byte newState) {
+			if(newState!=ZebraEngine.PLAYER_EMPTY && mState!=ZebraEngine.PLAYER_EMPTY && mState!=newState)
+				mFlags |= ST_FLIPPED;
+			else
+				mFlags &= ~ST_FLIPPED;
+			mState = newState;
+		}
+		public byte getState() {
+			return mState;
+		}
+		public boolean isFlipped() {
+			return (mFlags & ST_FLIPPED)>0;
+		}
+	};
+	private BoardState mBoard[][] = new BoardState[boardSize][boardSize];
+	
 	private CandidateMove[] mCandidateMoves = null;
 
 	private Move mLastMove = null;
@@ -128,6 +150,8 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	private StatusView mStatusView;
 	
 	private boolean mBusyDialogUp = false;
+	
+	private boolean mHintIsUp = false;
 	
 	private SharedPreferences mSettings;
 	public int mSettingFunction = DEFAULT_SETTING_FUNCTION;
@@ -143,6 +167,8 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	public boolean mSettingDisplayPV = DEFAULT_SETTING_DISPLAY_PV;
 	public boolean mSettingDisplayMoves = DEFAULT_SETTING_DISPLAY_MOVES;
 	public boolean mSettingDisplayLastMove = DEFAULT_SETTING_DISPLAY_LAST_MOVE;
+	public boolean mSettingDisplayEnableAnimations = DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS;
+	public int mSettingAnimationDelay = 1000;
 
 	private void newCompletionPort(final int zebraEngineStatus, final Runnable completion) {
 		new AsyncTask<Void, Void, Void>() {
@@ -163,7 +189,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		initBoard();
 	}
 
-	public byte[][] getBoard() {
+	public BoardState[][] getBoard() {
 		return mBoard;
 	}
 
@@ -173,16 +199,16 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		mWhiteScore = mBlackScore = 0;
 		for(int i=0; i<boardSize; i++)
 			for(int j=0; j<boardSize; j++)
-				mBoard[i][j] = ZebraEngine.PLAYER_EMPTY;
+				mBoard[i][j] = new BoardState(ZebraEngine.PLAYER_EMPTY);
 		if( mStatusView!=null ) 
 			mStatusView.clear();
 	}
 
 	public void setBoard(byte[] board) {
 		for(int i=0; i<boardSize; i++)
-			for(int j=0; j<boardSize; j++)
-				mBoard[i][j] = board[i*boardSize + j];
-		mBoardView.invalidate();
+			for(int j=0; j<boardSize; j++) {
+				mBoard[i][j].set(board[i*boardSize + j]);
+			}
 	}
 
 	public CandidateMove[] getCandidateMoves() {
@@ -212,6 +238,10 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		return false;
 	}
 
+	public boolean evalsDisplayEnabled() {
+		return mSettingZebraPracticeMode || mHintIsUp;
+	}
+	
 	public void newGame() {
 		if(mZebraThread.getEngineState()!=ZebraEngine.ES_READY2PLAY) {
 			mZebraThread.stopGame();
@@ -228,13 +258,6 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		);
 	}
 
-	public void busyDialog() {
-		if( !mBusyDialogUp && mZebraThread.isThinking() ) {
-			mBusyDialogUp = true;
-			showDialog(DIALOG_BUSY);
-		}
-	}
-	
 	class DroidZebraHandler extends Handler {
 		@Override
 		public void handleMessage(Message m) {
@@ -242,6 +265,9 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			switch(m.what) {
 			case ZebraEngine.MSG_ERROR: {
 				FatalError(m.getData().getString("error"));
+			} break;
+			case ZebraEngine.MSG_MOVE_START: {
+				// noop
 			} break;
 			case ZebraEngine.MSG_BOARD: {
 				String score;
@@ -252,19 +278,21 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 				mBlackScore = m.getData().getBundle("black").getInt("disc_count");
 				mWhiteScore = m.getData().getBundle("white").getInt("disc_count");
 				
-				if(sideToMove==ZebraEngine.PLAYER_BLACK)
+				if(sideToMove==ZebraEngine.PLAYER_BLACK) {
 					score = String.format("•%d", mBlackScore);
-				else
+				} else {
 					score = String.format("%d", mBlackScore);
+				}
 				mStatusView.setTextForID(
 					StatusView.ID_SCORE_BLACK, 
 					score
 				);
 
-				if(sideToMove==ZebraEngine.PLAYER_WHITE)
-					score = String.format("•%d", mWhiteScore);
-				else
+				if(sideToMove==ZebraEngine.PLAYER_WHITE) {
+					score = String.format("%d•", mWhiteScore);
+				} else {
 					score = String.format("%d", mWhiteScore);
+				}
 				mStatusView.setTextForID(
 						StatusView.ID_SCORE_WHITE,
 						score
@@ -310,6 +338,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 							move_text
 						);
 				}
+				mBoardView.onBoardStateChanged();
 			} break;
 			
 			case ZebraEngine.MSG_CANDIDATE_MOVES: {
@@ -317,7 +346,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			} break;
 			
 			case ZebraEngine.MSG_PASS: {
-				showDialog(DIALOG_PASS_ID);
+				showPassDialog();
 			} break;
 			
 			case ZebraEngine.MSG_OPENING_NAME: {
@@ -334,14 +363,16 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			} break;
 			
 			case ZebraEngine.MSG_GAME_OVER: {
-				showDialog(DIALOG_GAME_OVER);
+				showGameOverDialog();
 			} break;
 			
 			case ZebraEngine.MSG_EVAL_TEXT: {
-				mStatusView.setTextForID(
-						StatusView.ID_STATUS_EVAL, 
-						m.getData().getString("eval")
-					);
+				if( mSettingDisplayPV ) {
+					mStatusView.setTextForID(
+							StatusView.ID_STATUS_EVAL, 
+							m.getData().getString("eval")
+						);
+				}
 			} break;
 			
 			case ZebraEngine.MSG_PV: {
@@ -360,9 +391,11 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			} break;
 			
 			case ZebraEngine.MSG_MOVE_END: {
-				if( mBusyDialogUp ) {
-					dismissDialog(DIALOG_BUSY);
-					mBusyDialogUp = false;
+				dismissBusyDialog();
+				if( mHintIsUp ) {
+					mHintIsUp = false;
+					mZebraThread.setPracticeMode(mSettingZebraPracticeMode);
+					mZebraThread.sendSettingsChanged();
 				}
 			} break;
 			
@@ -391,13 +424,14 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, MENU_NEW_GAME, 0, R.string.menu_item_new_game).setIcon(R.drawable.ic_menu_play);
+		menu.add(0, MENU_HINT, 0, R.string.menu_item_hint).setIcon(android.R.drawable.ic_menu_compass);
 		menu.add(0, MENU_TAKE_BACK, 0, R.string.menu_item_undo).setIcon(android.R.drawable.ic_menu_revert);
 		menu.add(0, MENU_TAKE_REDO, 0, R.string.menu_item_redo).setIcon(android.R.drawable.ic_menu_rotate);
 		menu.add(0, MENU_SETTINGS, 0, R.string.menu_item_settings).setIcon(android.R.drawable.ic_menu_preferences);
-		menu.add(0, MENU_QUIT, 0, R.string.menu_item_quit).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
 		menu.add(0, MENU_SWITCH_SIDES, 0, R.string.menu_item_switch_sides).setIcon(R.drawable.ic_menu_switch_sides);
 		menu.add(0, MENU_DONATE, 0, R.string.menu_item_donate).setIcon(android.R.drawable.ic_menu_send);		
 		menu.add(0, MENU_MAIL, 0, R.string.menu_item_mail).setIcon(android.R.drawable.ic_menu_send);
+		menu.add(0, MENU_QUIT, 0, R.string.menu_item_quit).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
 		return true;
 	}	
 
@@ -409,7 +443,7 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 				newGame();
 				return true;
 			case MENU_QUIT:
-				showDialog(DIALOG_QUIT);
+				showQuitDialog();
 				return true;
 			case MENU_TAKE_BACK:
 				mZebraThread.undoMove();
@@ -426,10 +460,13 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 				switchSides();
 			} break;
 			case MENU_DONATE: {
-				showDialog(DIALOG_DONATE);
+				showDonateDialog();
 			} return true;
 			case MENU_MAIL: {
 				sendMail();
+			} return true;
+			case MENU_HINT: {
+				showHint();
 			} return true;
 			}
 		} catch (EngineError e) {
@@ -605,10 +642,14 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		mSettingDisplayPV = settings.getBoolean(SETTINGS_KEY_DISPLAY_PV, DEFAULT_SETTING_DISPLAY_PV);
 		if(!mSettingDisplayPV ) {
 			mStatusView.setTextForID(StatusView.ID_STATUS_PV, "");
+			mStatusView.setTextForID(StatusView.ID_STATUS_EVAL, "");
 		}
 
 		mSettingDisplayMoves = settings.getBoolean(SETTINGS_KEY_DISPLAY_MOVES, DEFAULT_SETTING_DISPLAY_MOVES);
 		mSettingDisplayLastMove = settings.getBoolean(SETTINGS_KEY_DISPLAY_LAST_MOVE, DEFAULT_SETTING_DISPLAY_LAST_MOVE);
+		
+		mSettingDisplayEnableAnimations = settings.getBoolean(SETTINGS_KEY_DISPLAY_ENABLE_ANIMATIONS, DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS);
+		mZebraThread.setMoveDelay(mSettingDisplayEnableAnimations? mSettingAnimationDelay : 0);
 		
 		if( bZebraSettingChanged ) {
 			mZebraThread.sendSettingsChanged();
@@ -752,6 +793,14 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 			newGame();
 	}
 	
+	private void showHint() {
+		if( !mSettingZebraPracticeMode ) {
+			mHintIsUp = true;
+			mZebraThread.setPracticeMode(true);
+			mZebraThread.sendSettingsChanged();
+		}
+	}
+	
 	@Override
 	protected void onDestroy() {
 		boolean retry = true;
@@ -767,119 +816,17 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 		super.onDestroy();
 	}
 
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		Dialog dialog;
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		switch(id) {
-		case DIALOG_PASS_ID: {
-			builder.setTitle(R.string.app_name);
-			builder.setMessage(R.string.dialog_pass_text);
-			builder.setPositiveButton( R.string.dialog_ok, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int id) {
-					mZebraThread.setEngineState(ZebraEngine.ES_USER_INPUT_RESUME);
-				}
-			}
-			);
-			dialog = builder.create();
-		} break;
-		case DIALOG_GAME_OVER: {
-			dialog = new Dialog(this);
+	//-------------------------------------------------------------------------
+	// Donate Dialog
+	public static class DialogDonate extends DialogFragment {
 
-			dialog.setContentView(R.layout.gameover);
-			dialog.setTitle(R.string.gameover_title);
+		public static DialogDonate newInstance() {
+	    	return new DialogDonate();
+	    }
 
-			Button button;
-			button = (Button)dialog.findViewById(R.id.gameover_choice_new_game);
-			button.setOnClickListener(
-					new View.OnClickListener() {
-						public void onClick(View v) {
-							dismissDialog(DIALOG_GAME_OVER);
-							newGame();
-						}
-					});
-
-			button = (Button)dialog.findViewById(R.id.gameover_choice_switch);
-			button.setOnClickListener(
-					new View.OnClickListener() {
-						public void onClick(View v) {
-							dismissDialog(DIALOG_GAME_OVER);
-							switchSides();
-						}
-					});
-
-			button = (Button)dialog.findViewById(R.id.gameover_choice_cancel);
-			button.setOnClickListener(
-					new View.OnClickListener() {
-						public void onClick(View v) {
-							dismissDialog(DIALOG_GAME_OVER);
-						}
-					});
-
-			button = (Button)dialog.findViewById(R.id.gameover_choice_options);
-			button.setOnClickListener(
-					new View.OnClickListener() {
-						public void onClick(View v) {
-							// close the dialog
-							dismissDialog(DIALOG_GAME_OVER);
-							
-							// start settings
-							Intent i = new Intent(DroidZebra.this, SettingsPreferences.class);
-							startActivity(i);
-						}
-					});
-			
-			button = (Button)dialog.findViewById(R.id.gameover_choice_email);
-			button.setOnClickListener(
-					new View.OnClickListener() {
-						public void onClick(View v) {
-							dismissDialog(DIALOG_GAME_OVER);
-							sendMail();
-						}
-					});
-		} break;
-		case DIALOG_QUIT: {
-			dialog = builder
-				.setTitle(R.string.dialog_quit_title)
-				.setPositiveButton( R.string.dialog_quit_button_quit, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								DroidZebra.this.finish();
-							}
-						}
-					)
-				.setNegativeButton( R.string.dialog_quit_button_cancel, null )
-				.create();
-		} break;
-		case DIALOG_BUSY: {
-			ProgressDialog pd = new ProgressDialog(this) {
-				@Override 
-				public boolean onKeyDown(int keyCode, KeyEvent event) {
-					 if( mZebraThread.isThinking() ) {
-						 mZebraThread.stopMove();
-					 }
-					 mBusyDialogUp = false;
-					 cancel();
-					 return super.onKeyDown(keyCode, event);
-				}
-				@Override 
-				public boolean onTouchEvent(MotionEvent event) {
-					 if(event.getAction()==MotionEvent.ACTION_DOWN) {
-						 if( mZebraThread.isThinking() ) {
-							 mZebraThread.stopMove();
-						 }
-						 mBusyDialogUp = false;
-						 cancel();
-						 return true;
-					 }
-					return super.onTouchEvent(event);
-				 }
-			};
-			pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-			pd.setMessage(getResources().getString(R.string.dialog_busy_message));			
-			dialog = pd;
-		} break;
-		case DIALOG_DONATE: {
-			builder
+	    @Override
+	    public Dialog onCreateDialog(Bundle savedInstanceState) {
+	    	return new AlertDialog.Builder(getActivity())
 			.setTitle(R.string.dialog_donate_title)
 			.setMessage(R.string.dialog_donate_message)
 			.setIcon(R.drawable.icon)
@@ -902,36 +849,243 @@ implements SharedPreferences.OnSharedPreferenceChangeListener
 					startActivity(Intent.createChooser(intent, shareTitle));				}
 			}
 			)
-			.setNegativeButton(R.string.dialog_donate_cancel, null);
-			dialog = builder.create();
-		} break;
-		default:
-			dialog = null;
-		}
-		return dialog;
+			.setNegativeButton(R.string.dialog_donate_cancel, null)
+			.create();
+	    }
+	}
+	
+	public void showDonateDialog() {
+	    DialogFragment newFragment = DialogDonate.newInstance();
+	    newFragment.show(getSupportFragmentManager(), "dialog_donate");
 	}
 
+	//-------------------------------------------------------------------------
+	// Pass Dialog
+	public static class DialogPass extends DialogFragment {
 
-	@Override
-	protected void onPrepareDialog(int id, Dialog dialog) {
-		super.onPrepareDialog(id, dialog);
-		switch(id) {
-		case DIALOG_GAME_OVER: {
+		public static DialogPass newInstance() {
+	    	return new DialogPass();
+	    }
+
+		public DroidZebra getDroidZebra() {
+			return (DroidZebra)getActivity();
+		}
+		
+	    @Override
+	    public Dialog onCreateDialog(Bundle savedInstanceState) {
+	    	return new AlertDialog.Builder(getActivity())
+			.setTitle(R.string.app_name)
+			.setMessage(R.string.dialog_pass_text)
+			.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						getDroidZebra().mZebraThread.setEngineState(ZebraEngine.ES_PLAY);
+					}
+				}
+			)
+			.create();
+	    }
+	}
+	
+	public void showPassDialog() {
+	    DialogFragment newFragment = DialogPass.newInstance();
+	    newFragment.show(getSupportFragmentManager(), "dialog_pass");
+	}
+
+	//-------------------------------------------------------------------------
+	// Game Over Dialog
+	public static class DialogGameOver extends DialogFragment {
+
+		public static DialogGameOver newInstance() {
+	    	return new DialogGameOver();
+	    }
+
+		public DroidZebra getDroidZebra() {
+			return (DroidZebra)getActivity();
+		}
+
+		public void refreshContent(View dialog) {
 			int winner;
-			if( mWhiteScore>mBlackScore ) 
+			int blackScore = getDroidZebra().mBlackScore;
+			int whiteScore = getDroidZebra().mWhiteScore;
+			if( whiteScore>blackScore ) 
 				winner =R.string.gameover_text_white_wins;
-			else if( mWhiteScore<mBlackScore ) 
+			else if( whiteScore<blackScore ) 
 				winner = R.string.gameover_text_black_wins;
 			else 
 				winner = R.string.gameover_text_draw;
 
 			((TextView)dialog.findViewById(R.id.gameover_text)).setText(winner);
 
-			((TextView)dialog.findViewById(R.id.gameover_score)).setText(String.format("%d : %d", mBlackScore, mWhiteScore));
-		} break;
+			((TextView)dialog.findViewById(R.id.gameover_score)).setText(String.format("%d : %d", blackScore, whiteScore));
 		}
+		
+	   @Override
+	   public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	            Bundle savedInstanceState) {
+		   
+		   	getDialog().setTitle(R.string.gameover_title);
+
+			View v = inflater.inflate(R.layout.gameover, container, false);
+			
+			Button button;
+			button = (Button)v.findViewById(R.id.gameover_choice_new_game);
+			button.setOnClickListener(
+					new View.OnClickListener() {
+						public void onClick(View v) {
+							dismiss();
+							getDroidZebra().newGame();
+						}
+					});
+
+			button = (Button)v.findViewById(R.id.gameover_choice_switch);
+			button.setOnClickListener(
+					new View.OnClickListener() {
+						public void onClick(View v) {
+							dismiss();
+							getDroidZebra().switchSides();
+						}
+					});
+
+			button = (Button)v.findViewById(R.id.gameover_choice_cancel);
+			button.setOnClickListener(
+					new View.OnClickListener() {
+						public void onClick(View v) {
+							dismiss();
+						}
+					});
+
+			button = (Button)v.findViewById(R.id.gameover_choice_options);
+			button.setOnClickListener(
+					new View.OnClickListener() {
+						public void onClick(View v) {
+							dismiss();
+
+							// start settings
+							Intent i = new Intent(getDroidZebra(), SettingsPreferences.class);
+							startActivity(i);
+						}
+					});
+			
+			button = (Button)v.findViewById(R.id.gameover_choice_email);
+			button.setOnClickListener(
+					new View.OnClickListener() {
+						public void onClick(View v) {
+							dismiss();
+							getDroidZebra().sendMail();
+						}
+					});
+			
+			refreshContent(v);
+			
+			return v;
+		}
+	   
+	   @Override
+	   public void onResume() {
+	     super.onResume();
+	     refreshContent(getView());
+	   }
 	}
 	
+	public void showGameOverDialog() {
+	    DialogFragment newFragment = DialogGameOver.newInstance();
+	    newFragment.show(getSupportFragmentManager(), "dialog_gameover");
+	}
+
+	//-------------------------------------------------------------------------
+	// Pass Dialog
+	public static class DialogQuit extends DialogFragment {
+
+		public static DialogQuit newInstance() {
+	    	return new DialogQuit();
+	    }
+
+		public DroidZebra getDroidZebra() {
+			return (DroidZebra)getActivity();
+		}
+		
+	    @Override
+	    public Dialog onCreateDialog(Bundle savedInstanceState) {
+	    	return new AlertDialog.Builder(getActivity())
+			.setTitle(R.string.dialog_quit_title)
+			.setPositiveButton( R.string.dialog_quit_button_quit, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							getDroidZebra().finish();
+						}
+					}
+				)
+			.setNegativeButton( R.string.dialog_quit_button_cancel, null )
+			.create();
+	    }
+	}
+	
+	public void showQuitDialog() {
+	    DialogFragment newFragment = DialogQuit.newInstance();
+	    newFragment.show(getSupportFragmentManager(), "dialog_quit");
+	}
+
+	//-------------------------------------------------------------------------
+	// Pass Dialog
+	public static class DialogBusy extends DialogFragment {
+
+		public static DialogBusy newInstance() {
+	    	return new DialogBusy();
+	    }
+
+		public DroidZebra getDroidZebra() {
+			return (DroidZebra)getActivity();
+		}
+		
+	    @Override
+	    public Dialog onCreateDialog(Bundle savedInstanceState) {
+			ProgressDialog pd = new ProgressDialog(getActivity()) {
+				@Override 
+				public boolean onKeyDown(int keyCode, KeyEvent event) {
+					 if( getDroidZebra().mZebraThread.isThinking() ) {
+						 getDroidZebra().mZebraThread.stopMove();
+					 }
+					 getDroidZebra().mBusyDialogUp = false;
+					 cancel();
+					 return super.onKeyDown(keyCode, event);
+				}
+				@Override 
+				public boolean onTouchEvent(MotionEvent event) {
+					 if(event.getAction()==MotionEvent.ACTION_DOWN) {
+						 if( getDroidZebra().mZebraThread.isThinking() ) {
+							 getDroidZebra().mZebraThread.stopMove();
+						 }
+						 getDroidZebra().mBusyDialogUp = false;
+						 cancel();
+						 return true;
+					 }
+					return super.onTouchEvent(event);
+				 }
+			};
+			pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			pd.setMessage(getResources().getString(R.string.dialog_busy_message));			
+			return pd;
+	    }
+	}
+
+	public void showBusyDialog() {
+		if( !mBusyDialogUp && mZebraThread.isThinking() ) {
+		    DialogFragment newFragment = DialogBusy.newInstance();
+			mBusyDialogUp = true;
+		    newFragment.show(getSupportFragmentManager(), "dialog_busy");
+		}
+	}
+
+	public void dismissBusyDialog() {
+		if( mBusyDialogUp ) {
+		    Fragment prev = getSupportFragmentManager().findFragmentByTag("dialog_busy");
+		    if (prev != null) {
+		        DialogFragment df = (DialogFragment) prev;
+		        df.dismiss();
+		    }		
+			mBusyDialogUp = false;
+		}
+	}
+
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 		if(mZebraThread!=null) 
 			loadSettings();

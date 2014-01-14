@@ -34,6 +34,7 @@ import android.os.Handler;
 import android.os.Message;
 //import android.util.Log;
 
+// DroidZebra -> ZebraEngine:public -async-> ZebraEngine thread(jni) -> Callback() -async-> DroidZebra:Handler 
 public class ZebraEngine extends Thread {
 
 	static public final int BOARD_SIZE = 8;
@@ -43,16 +44,17 @@ public class ZebraEngine extends Thread {
 	static public String BOOK_FILE_COMPRESSED = "book.cmp.z";
 	
 	// board colors
-	static public final int PLAYER_BLACK = 0;
-	static public final int PLAYER_EMPTY = 1; // for board color
-	static public final int PLAYER_WHITE = 2;
+	static public final byte PLAYER_BLACK = 0;
+	static public final byte PLAYER_EMPTY = 1; // for board color
+	static public final byte PLAYER_WHITE = 2;
 
 	static public final int PLAYER_ZEBRA = 1; // for zebra skill in PlayerInfo
 
 	// default parameters
 	static public final int INFINIT_TIME = 10000000;
 
-	static private final int SELFPLAY_MOVE_DELAY = 500; // ms
+	static private int SELFPLAY_MOVE_DELAY = 500; // ms
+	private int mMoveDelay = 0;
 	private long mMoveStartTime = 0; //ms
 	private int mMovesWithoutInput = 0;
 	
@@ -80,8 +82,8 @@ public class ZebraEngine extends Thread {
 	ES_READY2PLAY = 1,
 	ES_PLAY = 2,
 	ES_PLAYINPROGRESS = 3,
-	ES_USER_INPUT_WAIT = 4,
-	ES_USER_INPUT_RESUME = 5;
+	ES_USER_INPUT_WAIT = 4
+	;
 
 	static public final int
 	UI_EVENT_EXIT = 0,
@@ -92,7 +94,6 @@ public class ZebraEngine extends Thread {
 	;
 
 	private static final String[] coeffAssets = { "coeffs2.bin" };
-	//private static final String[] bookAssets = { "book.bin.0", "book.bin.1", "book.bin.2", "book.bin.3", "book.bin.4", "book.bin.5", "book.bin.6", "book.bin.7", "book.bin.8",};
 	private static final String[] bookCompressedAssets = { "book.cmp.z",};
 
 	// player info
@@ -124,9 +125,15 @@ public class ZebraEngine extends Thread {
 		public static int PASS = -1;
 		public int mMove;
 		public Move(int move) {
-			mMove = move;
+			set(move);
 		}
 		public Move(int x, int y) {
+			set(x,y);
+		}
+		public void set(int move) {
+			mMove = move;
+		}
+		public void set(int x, int y) {
 			mMove = (x+1)*10+y+1;
 		}
 		public int getY() { return mMove%10-1; }
@@ -308,7 +315,7 @@ public class ZebraEngine extends Thread {
 			} catch (JSONException e) {
 				// Log.getStackTraceString(e);
 			}			
-			setEngineState(ES_USER_INPUT_RESUME);
+			setEngineState(ES_PLAY);
 		}
 	}
 
@@ -337,7 +344,7 @@ public class ZebraEngine extends Thread {
 		} catch (JSONException e) {
 			// Log.getStackTraceString(e);
 		}
-		setEngineState(ES_USER_INPUT_RESUME);
+		setEngineState(ES_PLAY);
 	}
 
 	public void undoMove() throws EngineError
@@ -361,7 +368,7 @@ public class ZebraEngine extends Thread {
 		} catch (JSONException e) {
 			// Log.getStackTraceString(e);
 		}
-		setEngineState(ES_USER_INPUT_RESUME);
+		setEngineState(ES_PLAY);
 	}
 
 	public void redoMove() throws EngineError
@@ -385,7 +392,7 @@ public class ZebraEngine extends Thread {
 		} catch (JSONException e) {
 			// Log.getStackTraceString(e);
 		}
-		setEngineState(ES_USER_INPUT_RESUME);
+		setEngineState(ES_PLAY);
 	}
 	
 	// notifications that some settings have changes - see if we care
@@ -399,7 +406,7 @@ public class ZebraEngine extends Thread {
 			} catch (JSONException e) {
 				// Log.getStackTraceString(e);
 			}
-			setEngineState(ES_USER_INPUT_RESUME);
+			setEngineState(ES_PLAY);
 		}
 	}
 
@@ -454,6 +461,10 @@ public class ZebraEngine extends Thread {
 		mPlayerInfoChanged = true;
 	}
 
+	public void setMoveDelay(int delay) {
+		mMoveDelay = delay;
+	}
+	
 	// gamestate manipulators
 	public void setInitialGameState(int moveCount, byte[] moves) {
 		mInitialGameState = new GameState();
@@ -657,11 +668,11 @@ public class ZebraEngine extends Thread {
 				
 				setEngineState(ES_USER_INPUT_WAIT);
 
-				waitForEngineState(ES_USER_INPUT_RESUME);
+				waitForEngineState(ES_PLAY);
 
 				while(mPendingEvent==null) {
 					setEngineState(ES_USER_INPUT_WAIT);
-					waitForEngineState(ES_USER_INPUT_RESUME);
+					waitForEngineState(ES_PLAY);
 				}
 
 				retval = mPendingEvent;
@@ -675,7 +686,7 @@ public class ZebraEngine extends Thread {
 			case MSG_PASS: {
 				setEngineState(ES_USER_INPUT_WAIT);
 				mHandler.sendMessage(msg);
-				waitForEngineState(ES_USER_INPUT_RESUME);				
+				waitForEngineState(ES_PLAY);				
 				setEngineState(ES_PLAYINPROGRESS);
 			} break;
 
@@ -737,11 +748,11 @@ public class ZebraEngine extends Thread {
 
 				// introduce delay between moves made by the computer without user input 
 				// so we can actually to see that the game is being played :)
-				if( mMovesWithoutInput>1 ) {
+				if( mMoveDelay>0 || (mMovesWithoutInput>1 && mPlayerInfo[mSideToMove].skill>0) ) {
 					long moveEnd = android.os.SystemClock.uptimeMillis();
-					if( mPlayerInfo[mSideToMove].skill>0 
-						&& (moveEnd - mMoveStartTime)<SELFPLAY_MOVE_DELAY ) {
-						android.os.SystemClock.sleep(SELFPLAY_MOVE_DELAY - (moveEnd - mMoveStartTime));
+					int delay = mMoveDelay>0? mMoveDelay : SELFPLAY_MOVE_DELAY;
+					if( (moveEnd - mMoveStartTime)<delay ) {
+						android.os.SystemClock.sleep(delay - (moveEnd - mMoveStartTime));
 					}
 				}
 				

@@ -25,6 +25,8 @@
     <string name="gameover_choices_email">メール</string>
     <string name="settings_ui_display_pv_summary">想定される最善の手順について表示(コンピュータは先読みします)</string>
     <string name="settings_ui_display_pv_title">想定される手順表示</string>
+    <string name="settings_ui_display_enable_animations_summary">Enable animation effects</string>
+    <string name="settings_ui_display_enable_animations_title">Enable animations</string>    
     <string name="settings_ui_preferences">表示設定</string>
     <string name="settings_engine_function_summary">コンピュータとの対局設定</string>
     <string name="settings_engine_function_title">機能</string>
@@ -48,6 +50,7 @@
 <string name="menu_item_quit">終了</string>
 <string name="menu_item_about">droidzebraについて</string>
 <string name="menu_item_settings">設定</string>
+<string name="menu_item_hint">Hint</string>
 <string name="gameover_title">ゲーム終了</string>
 <string name="dialog_quit_title">終了しますか？</string>
 <string name="dialog_quit_button_quit">終了</string>
