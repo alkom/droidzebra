@@ -33,6 +33,14 @@ TODO:
 - timed play
 - remote player vs player
 
+Version 1.5
+
+- updated target version to API level 19
+- migrated dialogs to use dialog fragments
+- added board animations
+- added "hint" option (show evals on the board for one move)
+- minor scoreboard layout changes
+
 Version 1.4.1
 
 - bugfix: Randomness option in Settings was not available 
