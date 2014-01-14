@@ -487,6 +487,7 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz, jint providedMo
 	droidzebra_msg_game_start();
 
 AGAIN:
+    curr_move = -1;
 	while ( game_in_progress() && !force_exit ) {
 		force_return = 0;
 		silent = (provided_move_index < provided_move_count);
@@ -524,6 +525,7 @@ AGAIN:
 			opening_name = op;
 		}
 		droidzebra_msg_opening_name(opening_name);
+		if( curr_move != -1 ) droidzebra_msg_last_move(curr_move);
 		display_board( stdout, board, side_to_move, TRUE, TRUE, TRUE );
 		// echo
 
@@ -616,8 +618,6 @@ AGAIN:
 			else {
 				white_moves[score_sheet_row] = curr_move;
 			}
-
-			droidzebra_msg_last_move(curr_move);
 		}
 		else {
 			// this is where we pass

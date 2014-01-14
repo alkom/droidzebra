@@ -226,7 +226,6 @@ public class DroidZebra extends FragmentActivity
 
 	public Move getLastMove() {
 		return mLastMove;
-
 	}
 
 	public boolean isValidMove(Move move) {
@@ -649,7 +648,7 @@ public class DroidZebra extends FragmentActivity
 		mSettingDisplayLastMove = settings.getBoolean(SETTINGS_KEY_DISPLAY_LAST_MOVE, DEFAULT_SETTING_DISPLAY_LAST_MOVE);
 		
 		mSettingDisplayEnableAnimations = settings.getBoolean(SETTINGS_KEY_DISPLAY_ENABLE_ANIMATIONS, DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS);
-		mZebraThread.setMoveDelay(mSettingDisplayEnableAnimations? mSettingAnimationDelay : 0);
+		mZebraThread.setMoveDelay(mSettingDisplayEnableAnimations? mSettingAnimationDelay + 1000 : 0);
 		
 		if( bZebraSettingChanged ) {
 			mZebraThread.sendSettingsChanged();
