@@ -391,7 +391,8 @@ public class BoardView extends View {
 	@Override
     public boolean onKeyDown(int keyCode, KeyEvent msg) {
 		// Log.d("BoardView", String.format("onKeyDown: %d", keyCode));
-
+		if(mIsAnimationRunning) return false;
+		
         int newMX = mMoveSelection.getX();
         int newMY = mMoveSelection.getY();
         
@@ -425,6 +426,8 @@ public class BoardView extends View {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
+		if(mIsAnimationRunning) return false;
+		
 		int action = event.getAction();
     	int bx = (int)FloatMath.floor((event.getX() - mBoardRect.left)/mSizeCell);
     	int by = (int)FloatMath.floor((event.getY() - mBoardRect.top)/mSizeCell);
@@ -444,6 +447,8 @@ public class BoardView extends View {
 
 	@Override
 	public boolean onTrackballEvent(MotionEvent event) {
+		if(mIsAnimationRunning) return false;
+		
 		float tx = event.getX();
         float ty = event.getY();
 

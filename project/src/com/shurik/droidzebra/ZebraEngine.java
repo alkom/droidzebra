@@ -744,8 +744,6 @@ public class ZebraEngine extends Thread {
 			} break;
 
 			case MSG_MOVE_END: {
-				mHandler.sendMessage(msg);
-
 				// introduce delay between moves made by the computer without user input 
 				// so we can actually to see that the game is being played :)
 				if( mMoveDelay>0 || (mMovesWithoutInput>1 && mPlayerInfo[mSideToMove].skill>0) ) {
@@ -758,6 +756,8 @@ public class ZebraEngine extends Thread {
 				
 				// this counter is reset by user input
 				mMovesWithoutInput += 1;
+
+				mHandler.sendMessage(msg);
 			} break;			
 
 			case MSG_EVAL_TEXT: {

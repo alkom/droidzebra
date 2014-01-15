@@ -150,8 +150,8 @@ public class DroidZebra extends FragmentActivity
 	private StatusView mStatusView;
 	
 	private boolean mBusyDialogUp = false;
-	
 	private boolean mHintIsUp = false;
+	private boolean mIsInitCompleted = false;
 	
 	private SharedPreferences mSettings;
 	public int mSettingFunction = DEFAULT_SETTING_FUNCTION;
@@ -436,6 +436,7 @@ public class DroidZebra extends FragmentActivity
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		if( !mIsInitCompleted ) return false;
 		try {
 			switch (item.getItemId()) {
 			case MENU_NEW_GAME:
@@ -518,6 +519,7 @@ public class DroidZebra extends FragmentActivity
 						DroidZebra.this.initBoard();
 						DroidZebra.this.loadSettings();
 						DroidZebra.this.mZebraThread.setEngineState(ZebraEngine.ES_PLAY);                
+						DroidZebra.this.mIsInitCompleted = true;
 					}
 				}
 		);
