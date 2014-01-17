@@ -358,7 +358,7 @@ public class DroidZebra extends FragmentActivity
 			
 			case ZebraEngine.MSG_LAST_MOVE: {
 				byte move =  (byte)m.getData().getInt("move");
-				setLastMove(new Move(move));
+				setLastMove(move==Move.PASS ? null : new Move(move));
 			} break;
 			
 			case ZebraEngine.MSG_GAME_OVER: {
