@@ -285,7 +285,7 @@ public class StatusView extends View {
 		mPaint = new Paint();
 		mPaint.setAntiAlias(true);
 		mPaint.setStyle(Paint.Style.FILL);
-		mPaint.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0.5f, getResources().getDisplayMetrics()));
+		mPaint.setStrokeWidth(Math.max(1f, TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0.5f, getResources().getDisplayMetrics())));
 		mPaint.setTypeface(Typeface.SERIF);
 		
 		for(DrawElement elem:mLayout) {

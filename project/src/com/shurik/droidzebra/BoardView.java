@@ -98,9 +98,6 @@ public class BoardView extends View {
 		Resources r = getResources();
         setFocusable(true); // make sure we get key events
 
-        lineWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0.5f, r.getDisplayMetrics());
-        gridCirclesRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3, r.getDisplayMetrics());
-        
     	mColorHelpersValid = r.getColor(R.color.board_color_helpers_valid);
     	mColorHelpersInvalid = r.getColor(R.color.board_color_helpers_invalid);
     	mColorSelectionValid = r.getColor(R.color.board_color_selection_valid);
@@ -276,7 +273,7 @@ public class BoardView extends View {
         
         // draw moves
         float oval_x, oval_y;
-        float circle_r = mSizeCell/2-lineWidth*5;
+        float circle_r = mSizeCell/2-lineWidth*2;
         int circle_color;
         float oval_adjustment = (float)Math.abs(circle_r*Math.cos(Math.PI*mAnimationProgress)); 
 		for(int i = 0; i<DroidZebra.boardSize; i++ ) {
@@ -361,6 +358,8 @@ public class BoardView extends View {
 
 		mSizeX = mSizeY = Math.min(getMeasuredWidth(), getMeasuredHeight());
 		mSizeCell = Math.min(mSizeX/(DroidZebra.boardSize+1), mSizeY/(DroidZebra.boardSize+1));
+		lineWidth = Math.max(1f, mSizeCell/40f);
+		gridCirclesRadius = Math.max(3f, mSizeCell/13f);
 		mBoardRect.set(
 				mSizeX-mSizeCell/2-mSizeCell*DroidZebra.boardSize,
 				mSizeY-mSizeCell/2-mSizeCell*DroidZebra.boardSize,
