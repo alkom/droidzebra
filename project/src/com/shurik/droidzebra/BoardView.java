@@ -36,6 +36,7 @@ import android.graphics.Typeface;
 import android.graphics.Paint.FontMetrics;
 import android.os.CountDownTimer;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -44,8 +45,9 @@ import android.util.FloatMath;
 
 public class BoardView extends View {
 
-	final private static float lineWidth = 0.5f;
-
+	private float lineWidth = 1;
+	private float gridCirclesRadius = 3;
+	
 	private int mColorHelpersValid;
 	private int mColorHelpersInvalid;
 	private int mColorSelectionValid;
@@ -96,6 +98,9 @@ public class BoardView extends View {
 		Resources r = getResources();
         setFocusable(true); // make sure we get key events
 
+        lineWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0.5f, r.getDisplayMetrics());
+        gridCirclesRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3, r.getDisplayMetrics());
+        
     	mColorHelpersValid = r.getColor(R.color.board_color_helpers_valid);
     	mColorHelpersInvalid = r.getColor(R.color.board_color_helpers_invalid);
     	mColorSelectionValid = r.getColor(R.color.board_color_selection_valid);
@@ -211,10 +216,10 @@ public class BoardView extends View {
 			canvas.drawLine(mBoardRect.left+i*mSizeCell, mBoardRect.top, mBoardRect.left+i*mSizeCell, mBoardRect.top+mSizeCell*DroidZebra.boardSize, mPaint);
 			canvas.drawLine(mBoardRect.left, mBoardRect.top+i*mSizeCell, mBoardRect.left+mSizeCell*DroidZebra.boardSize, mBoardRect.top+i*mSizeCell, mPaint);
 		}
-		canvas.drawCircle(mBoardRect.left+2*mSizeCell, mBoardRect.top+2*mSizeCell, 2, mPaint);
-		canvas.drawCircle(mBoardRect.left+2*mSizeCell, mBoardRect.top+6*mSizeCell, 2, mPaint);
-		canvas.drawCircle(mBoardRect.left+6*mSizeCell, mBoardRect.top+2*mSizeCell, 2, mPaint);
-		canvas.drawCircle(mBoardRect.left+6*mSizeCell, mBoardRect.top+6*mSizeCell, 2, mPaint);
+		canvas.drawCircle(mBoardRect.left+2*mSizeCell, mBoardRect.top+2*mSizeCell, gridCirclesRadius, mPaint);
+		canvas.drawCircle(mBoardRect.left+2*mSizeCell, mBoardRect.top+6*mSizeCell, gridCirclesRadius, mPaint);
+		canvas.drawCircle(mBoardRect.left+6*mSizeCell, mBoardRect.top+2*mSizeCell, gridCirclesRadius, mPaint);
+		canvas.drawCircle(mBoardRect.left+6*mSizeCell, mBoardRect.top+6*mSizeCell, gridCirclesRadius, mPaint);
 
 		// draw guides
         for(int i = 0; i<DroidZebra.boardSize; i++ ) {
@@ -271,7 +276,7 @@ public class BoardView extends View {
         
         // draw moves
         float oval_x, oval_y;
-        float circle_r = mSizeCell/2-3;
+        float circle_r = mSizeCell/2-lineWidth*5;
         int circle_color;
         float oval_adjustment = (float)Math.abs(circle_r*Math.cos(Math.PI*mAnimationProgress)); 
 		for(int i = 0; i<DroidZebra.boardSize; i++ ) {
@@ -313,7 +318,7 @@ public class BoardView extends View {
 		// draw evals if in practive mode
 		if( (getDroidZebra().mSettingDisplayMoves || getDroidZebra().evalsDisplayEnabled() )
 			&& getDroidZebra().getCandidateMoves()!=null ) {
-			mPaint.setStrokeWidth(1.0f);
+			mPaint.setStrokeWidth(lineWidth*2);
 			float lineLength = mSizeCell/4;
 			for( CandidateMove m : getDroidZebra().getCandidateMoves() ) {
 				RectF cr = getCellRect(m.mMove.getX(), m.mMove.getY());

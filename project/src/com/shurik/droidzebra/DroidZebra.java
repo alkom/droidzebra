@@ -152,6 +152,7 @@ public class DroidZebra extends FragmentActivity
 	private boolean mBusyDialogUp = false;
 	private boolean mHintIsUp = false;
 	private boolean mIsInitCompleted = false;
+	private boolean mActivityActive = false;
 	
 	private SharedPreferences mSettings;
 	public int mSettingFunction = DEFAULT_SETTING_FUNCTION;
@@ -417,7 +418,7 @@ public class DroidZebra extends FragmentActivity
 			}
 		}
 	}
-	final private DroidZebraHandler mDroidZebraHandler = new DroidZebraHandler();
+	private DroidZebraHandler mDroidZebraHandler = null;
 	
 	/* Creates the menu items */
 	@Override
@@ -484,6 +485,7 @@ public class DroidZebra extends FragmentActivity
 		setContentView(R.layout.spash_layout);
 
 		// start your engines
+		mDroidZebraHandler = new DroidZebraHandler();
 		mZebraThread = new ZebraEngine(this, mDroidZebraHandler);
 
 		// preferences
@@ -814,9 +816,16 @@ public class DroidZebra extends FragmentActivity
 			} catch (InterruptedException e) {
 			}
 		}
+		mDroidZebraHandler = null;
 		super.onDestroy();
 	}
 
+	void showDialog(DialogFragment dialog, String tag) {
+		if( mActivityActive ) {
+			dialog.show(getSupportFragmentManager(), tag);
+		}
+	}
+	
 	//-------------------------------------------------------------------------
 	// Donate Dialog
 	public static class DialogDonate extends DialogFragment {
@@ -857,7 +866,7 @@ public class DroidZebra extends FragmentActivity
 	
 	public void showDonateDialog() {
 	    DialogFragment newFragment = DialogDonate.newInstance();
-	    newFragment.show(getSupportFragmentManager(), "dialog_donate");
+	    showDialog(newFragment, "dialog_donate");
 	}
 
 	//-------------------------------------------------------------------------
@@ -889,7 +898,7 @@ public class DroidZebra extends FragmentActivity
 	
 	public void showPassDialog() {
 	    DialogFragment newFragment = DialogPass.newInstance();
-	    newFragment.show(getSupportFragmentManager(), "dialog_pass");
+	    showDialog(newFragment, "dialog_pass");
 	}
 
 	//-------------------------------------------------------------------------
@@ -990,7 +999,7 @@ public class DroidZebra extends FragmentActivity
 	
 	public void showGameOverDialog() {
 	    DialogFragment newFragment = DialogGameOver.newInstance();
-	    newFragment.show(getSupportFragmentManager(), "dialog_gameover");
+	    showDialog(newFragment, "dialog_gameover");
 	}
 
 	//-------------------------------------------------------------------------
@@ -1022,7 +1031,7 @@ public class DroidZebra extends FragmentActivity
 	
 	public void showQuitDialog() {
 	    DialogFragment newFragment = DialogQuit.newInstance();
-	    newFragment.show(getSupportFragmentManager(), "dialog_quit");
+	    showDialog(newFragment, "dialog_quit");
 	}
 
 	//-------------------------------------------------------------------------
@@ -1072,7 +1081,7 @@ public class DroidZebra extends FragmentActivity
 		if( !mBusyDialogUp && mZebraThread.isThinking() ) {
 		    DialogFragment newFragment = DialogBusy.newInstance();
 			mBusyDialogUp = true;
-		    newFragment.show(getSupportFragmentManager(), "dialog_busy");
+			showDialog(newFragment, "dialog_busy");
 		}
 	}
 
@@ -1107,14 +1116,14 @@ public class DroidZebra extends FragmentActivity
 
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		super.onPause();
+		mActivityActive = false;
 	}
 
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
+		mActivityActive = true;
 	}
 
 	@Override

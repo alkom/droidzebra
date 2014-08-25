@@ -27,6 +27,7 @@ import android.graphics.RectF;
 import android.graphics.Paint.FontMetrics;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 
 public class StatusView extends View {
@@ -284,7 +285,7 @@ public class StatusView extends View {
 		mPaint = new Paint();
 		mPaint.setAntiAlias(true);
 		mPaint.setStyle(Paint.Style.FILL);
-		mPaint.setStrokeWidth(0.0f);
+		mPaint.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0.5f, getResources().getDisplayMetrics()));
 		mPaint.setTypeface(Typeface.SERIF);
 		
 		for(DrawElement elem:mLayout) {
