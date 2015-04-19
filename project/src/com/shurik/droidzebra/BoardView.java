@@ -36,7 +36,6 @@ import android.graphics.Typeface;
 import android.graphics.Paint.FontMetrics;
 import android.os.CountDownTimer;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;

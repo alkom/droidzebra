@@ -174,13 +174,15 @@ public class StatusView extends View {
 			p.setColor(mScreenColor);
 			FontMetrics fontMetrics = p.getFontMetrics();
 			
-			p.setTextAlign(mAlign);
-			if(mAlign == Paint.Align.LEFT) {
+			if(mAlign == Paint.Align.LEFT || mScreenText.endsWith("...")) {
 				x = mScreenBounds.left;
+				p.setTextAlign(Paint.Align.LEFT);
 			} else if(mAlign == Paint.Align.CENTER) {
 				x = mScreenBounds.centerX();
+				p.setTextAlign(Paint.Align.CENTER);
 			} else if(mAlign == Paint.Align.RIGHT) {
 				x = mScreenBounds.right;
+				p.setTextAlign(Paint.Align.RIGHT);
 			}
 			c.drawText(mScreenText, x, mScreenBounds.centerY() - (fontMetrics.ascent+fontMetrics.descent)/2, p);
 		}
