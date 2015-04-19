@@ -33,6 +33,11 @@ TODO:
 - timed play
 - remote player vs player
 
+Version 1.5.2
+
+- added French translation (by Bintsa Andriani and Cédric et Anne-Laure Beaurain)
+- corrected status view text truncation issues
+
 Version 1.5
 
 - updated target version to API level 19
