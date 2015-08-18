@@ -33,6 +33,11 @@ TODO:
 - timed play
 - remote player vs player
 
+Version 1.5.3
+
+- added Korean translation (by Dal Yu)
+- enable action bar on devices with API 11+
+
 Version 1.5.2
 
 - added French translation (by Bintsa Andriani and Cédric et Anne-Laure Beaurain)

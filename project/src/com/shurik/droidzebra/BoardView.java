@@ -1,18 +1,18 @@
 /* Copyright (C) 2010 by Alex Kompel  */
 /* This file is part of DroidZebra.
 
-    DroidZebra is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	DroidZebra is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    DroidZebra is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	DroidZebra is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with DroidZebra.  If not, see <http://www.gnu.org/licenses/>
+	You should have received a copy of the GNU General Public License
+	along with DroidZebra.  If not, see <http://www.gnu.org/licenses/>
 */
 package com.shurik.droidzebra;
 
@@ -39,7 +39,7 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.util.FloatMath;
+import java.lang.Math;
 //import android.util.Log;
 
 public class BoardView extends View {
@@ -69,17 +69,17 @@ public class BoardView extends View {
 	private FontMetrics mEvalFontMetrics = null;
 
 	private BitmapShader mShaderV = null;
-    private BitmapShader mShaderH = null;
-    private Path mPath = null;
-    
-    private Move mMoveSelection = new Move(0,0);
-    private boolean mShowSelection = false; // highlight selection rectangle
-    private boolean mShowSelectionHelpers = false ;// highlight row/column
-    
-    private CountDownTimer mAnimationTimer = null;
-    private boolean mIsAnimationRunning = false;
-    private double mAnimationProgress = 0;
-    
+	private BitmapShader mShaderH = null;
+	private Path mPath = null;
+	
+	private Move mMoveSelection = new Move(0,0);
+	private boolean mShowSelection = false; // highlight selection rectangle
+	private boolean mShowSelectionHelpers = false ;// highlight row/column
+	
+	private CountDownTimer mAnimationTimer = null;
+	private boolean mIsAnimationRunning = false;
+	private double mAnimationProgress = 0;
+	
 	public BoardView(Context context) {
 		super(context);
 		initBoardView();
@@ -95,24 +95,24 @@ public class BoardView extends View {
 			setDroidZebra((DroidZebra)getContext());
 
 		Resources r = getResources();
-        setFocusable(true); // make sure we get key events
+		setFocusable(true); // make sure we get key events
 
-    	mColorHelpersValid = r.getColor(R.color.board_color_helpers_valid);
-    	mColorHelpersInvalid = r.getColor(R.color.board_color_helpers_invalid);
-    	mColorSelectionValid = r.getColor(R.color.board_color_selection_valid);
-    	mColorSelectionInvalid = r.getColor(R.color.board_color_selection_invalid);
-    	mColorEvals = Color.YELLOW;
-    	mColorEvalsBest = Color.CYAN;
-    	mColorLine = r.getColor(R.color.board_line);
-    	mColorNumbers = r.getColor(R.color.board_numbers);
-        
-        Bitmap woodtrim = BitmapFactory.decodeResource(r, R.drawable.woodtrim);
-        mShaderV = new BitmapShader(woodtrim, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-        mShaderH = new BitmapShader(woodtrim, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-        Matrix m = new Matrix();
-        m.setRotate(90);
-        mShaderH.setLocalMatrix(m);
-        mPath = new Path();
+		mColorHelpersValid = r.getColor(R.color.board_color_helpers_valid);
+		mColorHelpersInvalid = r.getColor(R.color.board_color_helpers_invalid);
+		mColorSelectionValid = r.getColor(R.color.board_color_selection_valid);
+		mColorSelectionInvalid = r.getColor(R.color.board_color_selection_invalid);
+		mColorEvals = Color.YELLOW;
+		mColorEvalsBest = Color.CYAN;
+		mColorLine = r.getColor(R.color.board_line);
+		mColorNumbers = r.getColor(R.color.board_numbers);
+		
+		Bitmap woodtrim = BitmapFactory.decodeResource(r, R.drawable.woodtrim);
+		mShaderV = new BitmapShader(woodtrim, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+		mShaderH = new BitmapShader(woodtrim, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+		Matrix m = new Matrix();
+		m.setRotate(90);
+		mShaderH.setLocalMatrix(m);
+		mPath = new Path();
 
 		mPaint = new Paint();
 		mPaintEvalText = new Paint();
@@ -155,11 +155,11 @@ public class BoardView extends View {
 	}
 
 	public Move getMoveFromCoord(float x, float y) throws InvalidMove {
-    	int bx = (int)FloatMath.floor((x - mBoardRect.left)/mSizeCell);
-    	int by = (int)FloatMath.floor((y - mBoardRect.top)/mSizeCell);
-    	if(bx<0 || bx>=DroidZebra.boardSize || by<0 || by>=DroidZebra.boardSize) {
-    		throw new InvalidMove();
-    	}
+		int bx = (int)Math.floor((x - mBoardRect.left)/mSizeCell);
+		int by = (int)Math.floor((y - mBoardRect.top)/mSizeCell);
+		if(bx<0 || bx>=DroidZebra.boardSize || by<0 || by>=DroidZebra.boardSize) {
+			throw new InvalidMove();
+		}
 		return new Move(bx, by);
 	}
 	
@@ -167,45 +167,45 @@ public class BoardView extends View {
 	protected void onDraw(Canvas canvas) {
 
 		// draw borders
-        mPaint.setShader(mShaderV);
+		mPaint.setShader(mShaderV);
 
-        mPath.reset(); 
-        mPath.moveTo(0, 0); 
-        mPath.lineTo(0, mSizeY); 
-        mPath.lineTo(mBoardRect.left, mBoardRect.bottom);
-        mPath.lineTo(mBoardRect.left, mBoardRect.top);
-        mPath.lineTo(0, 0);
-        canvas.drawPath(mPath, mPaint);
+		mPath.reset(); 
+		mPath.moveTo(0, 0); 
+		mPath.lineTo(0, mSizeY); 
+		mPath.lineTo(mBoardRect.left, mBoardRect.bottom);
+		mPath.lineTo(mBoardRect.left, mBoardRect.top);
+		mPath.lineTo(0, 0);
+		canvas.drawPath(mPath, mPaint);
 
-        mPath.reset(); 
-        mPath.moveTo(mSizeX, 0); 
-        mPath.lineTo(mSizeX, mSizeY); 
-        mPath.lineTo(mBoardRect.right, mBoardRect.bottom);
-        mPath.lineTo(mBoardRect.right, mBoardRect.top);
-        mPath.lineTo(mSizeX, 0);
-        canvas.drawPath(mPath, mPaint);        
-        
-        mPaint.setShader(mShaderH);
+		mPath.reset(); 
+		mPath.moveTo(mSizeX, 0); 
+		mPath.lineTo(mSizeX, mSizeY); 
+		mPath.lineTo(mBoardRect.right, mBoardRect.bottom);
+		mPath.lineTo(mBoardRect.right, mBoardRect.top);
+		mPath.lineTo(mSizeX, 0);
+		canvas.drawPath(mPath, mPaint);        
+		
+		mPaint.setShader(mShaderH);
 
-        mPath.reset(); 
-        mPath.moveTo(0, 0); 
-        mPath.lineTo(mSizeX, 0); 
-        mPath.lineTo(mBoardRect.right, mBoardRect.top);
-        mPath.lineTo(mBoardRect.left, mBoardRect.top);
-        mPath.lineTo(0, 0);
-        canvas.drawPath(mPath, mPaint);
+		mPath.reset(); 
+		mPath.moveTo(0, 0); 
+		mPath.lineTo(mSizeX, 0); 
+		mPath.lineTo(mBoardRect.right, mBoardRect.top);
+		mPath.lineTo(mBoardRect.left, mBoardRect.top);
+		mPath.lineTo(0, 0);
+		canvas.drawPath(mPath, mPaint);
 
-        mPath.reset(); 
-        mPath.moveTo(0, mSizeY); 
-        mPath.lineTo(mSizeX, mSizeY); 
-        mPath.lineTo(mBoardRect.right, mBoardRect.bottom);
-        mPath.lineTo(mBoardRect.left, mBoardRect.bottom);
-        mPath.lineTo(0, mSizeY);
-        canvas.drawPath(mPath, mPaint);        
+		mPath.reset(); 
+		mPath.moveTo(0, mSizeY); 
+		mPath.lineTo(mSizeX, mSizeY); 
+		mPath.lineTo(mBoardRect.right, mBoardRect.bottom);
+		mPath.lineTo(mBoardRect.left, mBoardRect.bottom);
+		mPath.lineTo(0, mSizeY);
+		canvas.drawPath(mPath, mPaint);        
 
-        mPaint.setShader(null);
-        
-        // draw the board
+		mPaint.setShader(null);
+		
+		// draw the board
 		mPaint.setStrokeWidth(lineWidth);
 		for(int i = 0; i<=DroidZebra.boardSize; i++ ) {
 			mPaint.setColor(mColorLine);
@@ -218,8 +218,8 @@ public class BoardView extends View {
 		canvas.drawCircle(mBoardRect.left+6*mSizeCell, mBoardRect.top+6*mSizeCell, gridCirclesRadius, mPaint);
 
 		// draw guides
-        for(int i = 0; i<DroidZebra.boardSize; i++ ) {
-    		mPaint.setTextSize(mSizeCell*0.3f);
+		for(int i = 0; i<DroidZebra.boardSize; i++ ) {
+			mPaint.setTextSize(mSizeCell*0.3f);
 			mPaint.setColor(Color.BLACK);
 			canvas.drawText(String.valueOf(i+1), mBoardRect.left/2 + 1, mBoardRect.top + i*mSizeCell + mSizeCell/2 - (mFontMetrics.ascent+mFontMetrics.descent)/2 + 1, mPaint);
 			canvas.drawText(Character.toString((char) ('A'+i)), mBoardRect.left + i*mSizeCell + mSizeCell/2 + 1, mBoardRect.top/2-(mFontMetrics.ascent+mFontMetrics.descent)/2 + 1, mPaint);
@@ -228,15 +228,15 @@ public class BoardView extends View {
 			canvas.drawText(Character.toString((char) ('A'+i)), mBoardRect.left + i*mSizeCell + mSizeCell/2, mBoardRect.top/2-(mFontMetrics.ascent+mFontMetrics.descent)/2, mPaint);
 		}
 
-        // draw helpers for move selector
-        if( mMoveSelection != null ) {
-        	if( mShowSelectionHelpers ) {
-            	if( mDroidZebra.isValidMove(mMoveSelection) )
-            		mPaint.setColor(mColorHelpersValid);
-            	else
-            		mPaint.setColor(mColorHelpersInvalid);
+		// draw helpers for move selector
+		if( mMoveSelection != null ) {
+			if( mShowSelectionHelpers ) {
+				if( mDroidZebra.isValidMove(mMoveSelection) )
+					mPaint.setColor(mColorHelpersValid);
+				else
+					mPaint.setColor(mColorHelpersInvalid);
 
-            	canvas.drawRect(
+				canvas.drawRect(
 	        			mBoardRect.left+mMoveSelection.getX()*mSizeCell, 
 	        			mBoardRect.top, 
 	        			mBoardRect.left+(mMoveSelection.getX()+1)*mSizeCell, 
@@ -250,31 +250,31 @@ public class BoardView extends View {
 	        			mBoardRect.top+(mMoveSelection.getY()+1)*mSizeCell,
 	        			mPaint
 	        		);
-        	} else if( mShowSelection ) {
-            	if( mDroidZebra.isValidMove(mMoveSelection) )
-            		mPaint.setColor(mColorSelectionValid);
-            	else
-            		mPaint.setColor(mColorSelectionInvalid);
+			} else if( mShowSelection ) {
+				if( mDroidZebra.isValidMove(mMoveSelection) )
+					mPaint.setColor(mColorSelectionValid);
+				else
+					mPaint.setColor(mColorSelectionInvalid);
 
-            	canvas.drawRect(
+				canvas.drawRect(
 	        			mBoardRect.left+mMoveSelection.getX()*mSizeCell, 
 	        			mBoardRect.top+mMoveSelection.getY()*mSizeCell,
 	        			mBoardRect.left+(mMoveSelection.getX()+1)*mSizeCell, 
 	        			mBoardRect.top+(mMoveSelection.getY()+1)*mSizeCell,
 	        			mPaint
 	        		);        	
-        	}
-        }
-        
-        // if we are not playing we are done (designer only)
-        if( getDroidZebra()==null ) 
-        	return;
-        
-        // draw moves
-        float oval_x, oval_y;
-        float circle_r = mSizeCell/2-lineWidth*2;
-        int circle_color;
-        float oval_adjustment = (float)Math.abs(circle_r*Math.cos(Math.PI*mAnimationProgress)); 
+			}
+		}
+		
+		// if we are not playing we are done (designer only)
+		if( getDroidZebra()==null ) 
+			return;
+		
+		// draw moves
+		float oval_x, oval_y;
+		float circle_r = mSizeCell/2-lineWidth*2;
+		int circle_color;
+		float oval_adjustment = (float)Math.abs(circle_r*Math.cos(Math.PI*mAnimationProgress)); 
 		for(int i = 0; i<DroidZebra.boardSize; i++ ) {
 			for(int j=0; j<DroidZebra.boardSize; j++) {
 				if(getDroidZebra().getBoard()[i][j].getState()==ZebraEngine.PLAYER_EMPTY) continue;
@@ -392,15 +392,15 @@ public class BoardView extends View {
 	}
 
 	@Override
-    public boolean onKeyDown(int keyCode, KeyEvent msg) {
+	public boolean onKeyDown(int keyCode, KeyEvent msg) {
 		// Log.d("BoardView", String.format("onKeyDown: %d", keyCode));
 		if(mIsAnimationRunning) return false;
 		
-        int newMX = mMoveSelection.getX();
-        int newMY = mMoveSelection.getY();
-        
-        newMX = mMoveSelection.getX();
-        newMY = mMoveSelection.getY();
+		int newMX = mMoveSelection.getX();
+		int newMY = mMoveSelection.getY();
+		
+		newMX = mMoveSelection.getX();
+		newMY = mMoveSelection.getY();
 
 		switch(keyCode) {
 		case KeyEvent.KEYCODE_DPAD_LEFT:
@@ -421,10 +421,10 @@ public class BoardView extends View {
 				keyCode == KeyEvent.KEYCODE_DPAD_CENTER
 				|| keyCode == KeyEvent.KEYCODE_SPACE );
 		
-        updateSelection(newMX, newMY, bMakeMove, true);
+		updateSelection(newMX, newMY, bMakeMove, true);
 
-        return false;
-    }
+		return false;
+	}
 
 
 	@Override
@@ -432,8 +432,8 @@ public class BoardView extends View {
 		if(mIsAnimationRunning) return false;
 		
 		int action = event.getAction();
-    	int bx = (int)FloatMath.floor((event.getX() - mBoardRect.left)/mSizeCell);
-    	int by = (int)FloatMath.floor((event.getY() - mBoardRect.top)/mSizeCell);
+		int bx = (int)Math.floor((event.getX() - mBoardRect.left)/mSizeCell);
+		int by = (int)Math.floor((event.getY() - mBoardRect.top)/mSizeCell);
 		switch (action) {
 		case MotionEvent.ACTION_DOWN:
 		case MotionEvent.ACTION_MOVE:
@@ -453,61 +453,61 @@ public class BoardView extends View {
 		if(mIsAnimationRunning) return false;
 		
 		float tx = event.getX();
-        float ty = event.getY();
+		float ty = event.getY();
 
-        // Log.d("BoardView", String.format("trackball event: %d %f %f", event.getAction(), tx, ty));
-        
-        switch(event.getAction()) {
-        case MotionEvent.ACTION_DOWN: {
-        	updateSelection(mMoveSelection.getX(), mMoveSelection.getY(), true, true);
-        } break;
-        
-        case MotionEvent.ACTION_MOVE: { 
-            int newMX = mMoveSelection.getX();
-            int newMY = mMoveSelection.getY();
-            if( Math.abs(tx)>Math.abs(ty) ) {
-    	        if( tx>0 ) 
-    	        	newMX++; 
-    	        else 
-    	        	newMX--;
-            } else {
-    	        if( ty>0 ) 
-    	        	newMY++; 
-    	        else 
-    	        	newMY--;
-            }
-            updateSelection(newMX, newMY, false, true);
-        } break;
-        
-        default:
-        	return false;
-        }
+		// Log.d("BoardView", String.format("trackball event: %d %f %f", event.getAction(), tx, ty));
+		
+		switch(event.getAction()) {
+		case MotionEvent.ACTION_DOWN: {
+			updateSelection(mMoveSelection.getX(), mMoveSelection.getY(), true, true);
+		} break;
+		
+		case MotionEvent.ACTION_MOVE: { 
+			int newMX = mMoveSelection.getX();
+			int newMY = mMoveSelection.getY();
+			if( Math.abs(tx)>Math.abs(ty) ) {
+		        if( tx>0 ) 
+		        	newMX++; 
+		        else 
+		        	newMX--;
+			} else {
+		        if( ty>0 ) 
+		        	newMY++; 
+		        else 
+		        	newMY--;
+			}
+			updateSelection(newMX, newMY, false, true);
+		} break;
+		
+		default:
+			return false;
+		}
 
-        return true;
+		return true;
 	}
 
 	private void updateSelection(int bX, int bY, boolean bMakeMove, boolean bShowSelection ) {
 		boolean bInvalidate = false;
 		
-        if(bX<0 || bX>=DroidZebra.boardSize) 
-        	bX = mMoveSelection.getX();
+		if(bX<0 || bX>=DroidZebra.boardSize) 
+			bX = mMoveSelection.getX();
 
-        if(bY<0 || bY>=DroidZebra.boardSize) 
-        	bY = mMoveSelection.getY();
+		if(bY<0 || bY>=DroidZebra.boardSize) 
+			bY = mMoveSelection.getY();
 
-        if( mShowSelection!=bShowSelection ) {
-            mShowSelection = bShowSelection;
-            bInvalidate = true;
-        }
+		if( mShowSelection!=bShowSelection ) {
+			mShowSelection = bShowSelection;
+			bInvalidate = true;
+		}
 
-        if( bX!=mMoveSelection.getX() || bY!=mMoveSelection.getY()) {
-        	mMoveSelection = new Move(bX, bY);
-        	bInvalidate = true;
-        }
+		if( bX!=mMoveSelection.getX() || bY!=mMoveSelection.getY()) {
+			mMoveSelection = new Move(bX, bY);
+			bInvalidate = true;
+		}
 
-        	
-        if( bMakeMove ) {
-        	bInvalidate = true;
+			
+		if( bMakeMove ) {
+			bInvalidate = true;
 			mShowSelectionHelpers = false;
 			
 			if( getDroidZebra().mZebraThread.isValidMove(mMoveSelection) ) {
@@ -524,10 +524,10 @@ public class BoardView extends View {
 				}
 			}
 		}
-        
+		
 	    if( bInvalidate ) {
-        	invalidate();
-        }
+			invalidate();
+		}
 	}
 
 	public void onBoardStateChanged() {

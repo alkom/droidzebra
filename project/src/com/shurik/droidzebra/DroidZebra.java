@@ -1,18 +1,18 @@
 /* Copyright (C) 2010 by Alex Kompel  */
 /* This file is part of DroidZebra.
 
-    DroidZebra is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	DroidZebra is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    DroidZebra is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	DroidZebra is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with DroidZebra.  If not, see <http://www.gnu.org/licenses/>
+	You should have received a copy of the GNU General Public License
+	along with DroidZebra.  If not, see <http://www.gnu.org/licenses/>
 */
 
 package com.shurik.droidzebra;
@@ -27,6 +27,7 @@ import com.shurik.droidzebra.ZebraEngine.PlayerInfo;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.support.v4.app.DialogFragment;
@@ -39,6 +40,7 @@ import android.content.res.Configuration;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -57,18 +59,6 @@ public class DroidZebra extends FragmentActivity
 	public static final String SHARED_PREFS_NAME="droidzebrasettings";
 
 	final public static int boardSize = 8;
-
-	private static final int
-	MENU_NEW_GAME = 1,
-	MENU_QUIT = 2,
-	MENU_TAKE_BACK = 3,
-	MENU_SETTINGS = 4,
-	MENU_SWITCH_SIDES = 5,
-	MENU_DONATE = 6,
-	MENU_MAIL = 7,
-	MENU_TAKE_REDO = 8,
-	MENU_HINT = 9
-	;
 
 	private static final int
 	FUNCTION_HUMAN_VS_HUMAN = 0,
@@ -114,7 +104,7 @@ public class DroidZebra extends FragmentActivity
 	SETTINGS_KEY_SENDMAIL = "settings_sendmail",
 	SETTINGS_KEY_DISPLAY_ENABLE_ANIMATIONS = "settings_ui_display_enable_animations"
 	;
-
+	    
 	public static class BoardState {
 		public final static byte ST_FLIPPED = 0x01;
 		public byte mState;
@@ -423,16 +413,9 @@ public class DroidZebra extends FragmentActivity
 	/* Creates the menu items */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, MENU_NEW_GAME, 0, R.string.menu_item_new_game).setIcon(R.drawable.ic_menu_play);
-		menu.add(0, MENU_HINT, 0, R.string.menu_item_hint).setIcon(android.R.drawable.ic_menu_compass);
-		menu.add(0, MENU_TAKE_BACK, 0, R.string.menu_item_undo).setIcon(android.R.drawable.ic_menu_revert);
-		menu.add(0, MENU_TAKE_REDO, 0, R.string.menu_item_redo).setIcon(android.R.drawable.ic_menu_rotate);
-		menu.add(0, MENU_SETTINGS, 0, R.string.menu_item_settings).setIcon(android.R.drawable.ic_menu_preferences);
-		menu.add(0, MENU_SWITCH_SIDES, 0, R.string.menu_item_switch_sides).setIcon(R.drawable.ic_menu_switch_sides);
-		menu.add(0, MENU_DONATE, 0, R.string.menu_item_donate).setIcon(android.R.drawable.ic_menu_send);		
-		menu.add(0, MENU_MAIL, 0, R.string.menu_item_mail).setIcon(android.R.drawable.ic_menu_send);
-		menu.add(0, MENU_QUIT, 0, R.string.menu_item_quit).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
-		return true;
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.menu, menu);
+	    return super.onCreateOptionsMenu(menu);
 	}	
 
 	@Override
@@ -440,33 +423,33 @@ public class DroidZebra extends FragmentActivity
 		if( !mIsInitCompleted ) return false;
 		try {
 			switch (item.getItemId()) {
-			case MENU_NEW_GAME:
+			case R.id.menu_new_game:
 				newGame();
 				return true;
-			case MENU_QUIT:
+			case R.id.menu_quit:
 				showQuitDialog();
 				return true;
-			case MENU_TAKE_BACK:
+			case R.id.menu_take_back:
 				mZebraThread.undoMove();
 				return true;
-			case MENU_TAKE_REDO:
+			case R.id.menu_take_redo:
 				mZebraThread.redoMove();
 				return true;
-			case MENU_SETTINGS: {
+			case R.id.menu_settings: {
 				// Launch Preference activity
 				Intent i = new Intent(this, SettingsPreferences.class);
 				startActivity(i);
 			} return true;
-			case MENU_SWITCH_SIDES: {
+			case R.id.menu_switch_sides: {
 				switchSides();
 			} break;
-			case MENU_DONATE: {
+			case R.id.menu_donate: {
 				showDonateDialog();
 			} return true;
-			case MENU_MAIL: {
+			case R.id.menu_mail: {
 				sendMail();
 			} return true;
-			case MENU_HINT: {
+			case R.id.menu_hint: {
 				showHint();
 			} return true;
 			}
@@ -476,6 +459,16 @@ public class DroidZebra extends FragmentActivity
 		return false;
 	}
 
+	@SuppressLint("NewApi")
+	class ActionBarHelper{
+	   void show(){
+	      getActionBar().show();
+	   }
+	   void hide(){
+	      getActionBar().hide();
+	   }
+	}
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -483,7 +476,10 @@ public class DroidZebra extends FragmentActivity
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.spash_layout);
-
+		if(android.os.Build.VERSION.SDK_INT >= 11) {
+			new ActionBarHelper().hide();    
+		}
+		
 		// start your engines
 		mDroidZebraHandler = new DroidZebraHandler();
 		mZebraThread = new ZebraEngine(this, mDroidZebraHandler);
@@ -514,6 +510,9 @@ public class DroidZebra extends FragmentActivity
 				new Runnable() {
 					@Override public void run() {
 						DroidZebra.this.setContentView(R.layout.board_layout);
+						if(android.os.Build.VERSION.SDK_INT >= 11) {
+							new ActionBarHelper().show();    
+						}
 						DroidZebra.this.mBoardView = (BoardView)DroidZebra.this.findViewById(R.id.board);
 						DroidZebra.this.mStatusView  = (StatusView)DroidZebra.this.findViewById(R.id.status_panel);
 						DroidZebra.this.mBoardView.setDroidZebra(DroidZebra.this);
