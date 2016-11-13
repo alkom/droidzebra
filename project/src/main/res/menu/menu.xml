@@ -1,0 +1,42 @@
+
+    <menu xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:droidzebra="http://schemas.android.com/apk/res-auto">
+        <item android:id="@+id/menu_new_game" 
+            android:icon="@drawable/ic_menu_play" 
+            android:title="@string/menu_item_new_game">
+        </item>
+        <item android:id="@+id/menu_hint" 
+            android:icon="@android:drawable/ic_menu_compass" 
+            android:title="@string/menu_item_hint">
+        </item>
+        <item android:id="@+id/menu_take_back" 
+            android:icon="@drawable/ic_menu_undo" 
+            android:title="@string/menu_item_undo"
+            android:showAsAction="ifRoom|withText">
+        </item>
+        <item android:id="@+id/menu_take_redo" 
+            android:icon="@drawable/ic_menu_redo" 
+            android:title="@string/menu_item_redo"
+            android:showAsAction="ifRoom|withText">
+        </item>
+        <item android:id="@+id/menu_settings" 
+            android:icon="@android:drawable/ic_menu_preferences" 
+            android:title="@string/menu_item_settings">
+        </item>
+        <item android:id="@+id/menu_switch_sides" 
+            android:icon="@drawable/ic_menu_switch_sides" 
+            android:title="@string/menu_item_switch_sides">
+        </item>
+        <item android:id="@+id/menu_donate" 
+            android:icon="@android:drawable/ic_menu_send" 
+            android:title="@string/menu_item_donate">
+        </item>
+        <item android:id="@+id/menu_mail" 
+            android:icon="@android:drawable/ic_menu_send" 
+            android:title="@string/menu_item_mail">
+        </item>
+        <item android:id="@+id/menu_quit" 
+            android:icon="@android:drawable/ic_menu_close_clear_cancel" 
+            android:title="@string/menu_item_quit">
+        </item>
+     </menu>
