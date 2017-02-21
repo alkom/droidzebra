@@ -47,7 +47,5 @@ public class SettingsPreferences extends PreferenceActivity
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
-		// TODO Auto-generated method stub
-		
 	}
 }

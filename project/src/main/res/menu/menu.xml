@@ -27,7 +27,9 @@
             android:icon="@drawable/ic_menu_switch_sides" 
             android:title="@string/menu_item_switch_sides">
         </item>
-        <item android:id="@+id/menu_donate" 
+        <item android:title="@string/menu_enter_moves"
+            android:id="@+id/menu_enter_moves" />
+        <item android:id="@+id/menu_donate"
             android:icon="@android:drawable/ic_menu_send" 
             android:title="@string/menu_item_donate">
         </item>

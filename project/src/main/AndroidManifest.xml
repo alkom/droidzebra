@@ -4,7 +4,7 @@
       android:versionName="1.5.3" 
       android:versionCode="17" 
       android:installLocation="auto">
-    <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="19"/>
+    <uses-sdk android:minSdkVersion="11" android:targetSdkVersion="19"/>
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	<uses-feature android:required="false" android:name="android.hardware.touchscreen"></uses-feature>
 	<application android:label="@string/app_name" android:icon="@drawable/icon" android:allowBackup="true" android:theme="@style/CustomActionBarTheme">
@@ -13,6 +13,11 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
     	<activity android:name=".SettingsPreferences" android:label="@string/settings_title" android:screenOrientation="portrait" android:multiprocess="false" android:launchMode="standard" android:stateNotNeeded="true" android:noHistory="false" android:allowTaskReparenting="false"></activity>

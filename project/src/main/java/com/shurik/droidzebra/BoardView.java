@@ -119,7 +119,7 @@ public class BoardView extends View {
 		mBoardRect = new RectF();
 		mTempRect = new RectF();
 		
-		int animationDelay = 1000;
+		int animationDelay = 100;
 		if( !isInEditMode() )
 			animationDelay = getDroidZebra().mSettingAnimationDelay;
 	    mAnimationProgress = 0;		
@@ -510,13 +510,13 @@ public class BoardView extends View {
 			bInvalidate = true;
 			mShowSelectionHelpers = false;
 			
-			if( getDroidZebra().mZebraThread.isValidMove(mMoveSelection) ) {
+			if( getDroidZebra().isValidMove(mMoveSelection) ) {
 				// if zebra is still thinking - no move is possible yet - throw a busy dialog
-				if( mDroidZebra.mZebraThread.isThinking() && !mDroidZebra.mZebraThread.isHumanToMove()) {
+				if( mDroidZebra.isThinking() && !mDroidZebra.isHumanToMove()) {
 					mDroidZebra.showBusyDialog();
 				} else {
 		        	try {
-						getDroidZebra().mZebraThread.makeMove(mMoveSelection);
+						getDroidZebra().makeMove(mMoveSelection);
 					} catch (InvalidMove e) {
 					} catch (EngineError e) {
 						getDroidZebra().FatalError(e.msg);

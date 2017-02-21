@@ -46,7 +46,7 @@ public class DroidZebraTest extends ActivityInstrumentationTestCase2<DroidZebra>
 	    	JSONObject json = new JSONObject();
 	        try {
 				json.put("testin", test);
-				this.getActivity().mZebraThread.zeJsonTest(json);
+				this.getActivity().zeJsonTest(json);
 				assertEquals("JSON object test: in and out", test, json.getString("testout")); 
 			} catch (JSONException e1) {
 				// TODO Auto-generated catch block
