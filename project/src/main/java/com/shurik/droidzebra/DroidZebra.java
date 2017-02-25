@@ -497,7 +497,30 @@ public class DroidZebra extends FragmentActivity
 	      getActionBar().hide();
 	   }
 	}
-	
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+
+		String action = intent.getAction();
+		String type = intent.getType();
+
+		Log.i("Intent", type + " " + action);
+
+		if (Intent.ACTION_SEND.equals(action) && type != null) {
+			if ("text/plain".equals(type)) {
+				setUpBoard(intent.getDataString()); // Handle text being sent
+			} else 	if ("message/rfc822".equals(type)) {
+				Log.i("Intent", intent.getStringExtra(Intent.EXTRA_TEXT));
+				setUpBoard(intent.getStringExtra(Intent.EXTRA_TEXT)); // Handle text being sent
+			}
+			else  {
+				Log.e("intent", "unknown intent");
+			}
+		} else {
+			Log.e("intent", "unknown intent");
+		}
+	}
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -509,20 +532,6 @@ public class DroidZebra extends FragmentActivity
 			new ActionBarHelper().hide();    
 		}
 
-		// Get intent, action and MIME type
-		Intent intent = getIntent();
-		String action = intent.getAction();
-		String type = intent.getType();
-
-		if (Intent.ACTION_SEND.equals(action) && type != null) {
-			if ("text/plain".equals(type)) {
-				setUpBoard(intent.getDataString()); // Handle text being sent
-			} else  {
-				Log.e("inten", "unknown intent");
-			}
-		} else {
-			Log.e("inten", "unknown intent");
-		}
 		
 		// start your engines
 		mDroidZebraHandler = new DroidZebraHandler();
@@ -532,20 +541,23 @@ public class DroidZebra extends FragmentActivity
 		mSettings = getSharedPreferences(SHARED_PREFS_NAME, 0);
 		mSettings.registerOnSharedPreferenceChangeListener(this);
 
-		if( savedInstanceState != null 
-			&& savedInstanceState.containsKey("moves_played_count") ) {
-			mZebraThread.setInitialGameState(savedInstanceState.getInt("moves_played_count"), savedInstanceState.getByteArray("moves_played"));
-		} 
-		/*else {
-			//byte[] init = {56,66,65,46,35,64,47,34,33,36,57,24,43,25,37,23,63,26,16,15,14,13,12,53, 52, 62, 75, 41, 42, 74, 51, 31, 32, 61, 83, 84, 73, 82, 17, 21, 72, 68, 58, 85, 76, 67, 86, 87, 78, 38, 48, 88, 27, 77 };
-			byte[] init = {
-					65 , 46 , 35 , 64 , 53 , 36 , 56 , 24 , 27 , 34 , 26 , 43 , 33 , 25 , 47 , 18 ,
-					15 , 14 , 37 , 16 , 17 , 62 , 23 , 52 , 13 , 66 , 74 , 12 , 63 , 42 , 32 , 41 ,
-					31 , 51 , 22 , 21 , 72 , 11 , 67 , 28 , 38 , 58 , 48 , 61 , 68 , 57 , -1 , 71 ,
-					-1 , 81 , 82 , 78 , -1 , 77 , -1 , 83 , 84 , 73 , 75 , 86 , 76 , 87 
-			};
-			mZebraThread.setInitialGameState(init.length, init);
-		}*/
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        Log.i("Intent", type + " " + action);
+
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if ("text/plain".equals(type) || "message/rfc822".equals(type)) {
+                mZebraThread.setInitialGameState(makeMoveList(intent.getStringExtra(Intent.EXTRA_TEXT)));
+            }
+            else  {
+                Log.e("intent", "unknown intent");
+            }
+        } else 	if( savedInstanceState != null
+            && savedInstanceState.containsKey("moves_played_count") ) {
+            mZebraThread.setInitialGameState(savedInstanceState.getInt("moves_played_count"), savedInstanceState.getByteArray("moves_played"));
+        }
 		
 		mZebraThread.start();
 

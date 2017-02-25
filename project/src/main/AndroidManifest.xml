@@ -19,6 +19,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="message/rfc822" />
+            </intent-filter>
         </activity>
     	<activity android:name=".SettingsPreferences" android:label="@string/settings_title" android:screenOrientation="portrait" android:multiprocess="false" android:launchMode="standard" android:stateNotNeeded="true" android:noHistory="false" android:allowTaskReparenting="false"></activity>
 	</application>

@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -96,6 +97,8 @@ public class ZebraEngine extends Thread {
 
 	private static final String[] coeffAssets = { "coeffs2.bin" };
 	private static final String[] bookCompressedAssets = { "book.cmp.z",};
+
+
 
 	// player info
 	public static class PlayerInfo {
@@ -482,6 +485,11 @@ public class ZebraEngine extends Thread {
 
 	public void setMoveDelay(int delay) {
 		mMoveDelay = delay;
+	}
+
+	public void setInitialGameState(LinkedList<Move> moves) {
+		byte[] bytes = toByte(moves);
+		setInitialGameState(moves.size(), bytes);
 	}
 	
 	// gamestate manipulators
