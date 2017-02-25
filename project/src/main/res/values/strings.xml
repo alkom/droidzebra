@@ -12,7 +12,7 @@
     <string name="settings_engine_randomness_dialog_message">Allow AI to consider non-optimal moves. This will result in weaker but more varied gameplay - more like human.</string>
     <string name="settings_engine_randomness_summary">Allow AI to make non-optimal moves</string>
     <string name="settings_engine_randomness_title">Randomness</string>
-    <string name="spash_layout_message">DroidZebra is loading</string>
+    <string name="spash_layout_message">OersZebra is loading</string>
     <string name="settings_engine_auto_make_moves_summary">Make forced moves automatically</string>
     <string name="settings_engine_auto_make_moves_title">Auto forced moves</string>
     <string name="settings_ui_display_last_move_summary">Mark last move on the board</string>
@@ -36,7 +36,7 @@
     <string name="setting_strength_preference_summary">Engine strength: number of moves computer will analyze while playing</string>
     <string name="settings_strength_preference_title">Search Depth</string>
     <string name="settings_strength_dialog_title">Choose One</string>
-    <string name="app_name">DroidZebra</string>
+    <string name="app_name">OersZebra</string>
 
     <string name="settings_engine_preferences">Engine Preferences</string>
 
@@ -61,11 +61,11 @@
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">CANCEL</string>
     <string name="dialog_donate_title">Support the project</string>
-    <string name="dialog_donate_message">DroidZebra is freeware. If you enjoyed it please consider making a small contribution. The button below will take you to DroidZebra development fund page. Thanks!</string>
+    <string name="dialog_donate_message">OersZebra is freeware. If you enjoyed it please consider making a small contribution. The button below will take you to OersZebra development fund page. Thanks!</string>
     <string name="dialog_donate_doit">Paypal</string>
     <string name="dialog_donate_cancel">No, thanks</string>
     <string name="dialog_donate_share">Tell a friend</string>
-    <string name="donate_share_text">DroidZebra Reversi for Android - https://play.google.com/store/apps/details?id=com.shurik.droidzebra</string>
+    <string name="donate_share_text">OersZebra Reversi for Android - https://play.google.com/store/apps/details?id=com.shurik.droidzebra</string>
     <string name="donate_url">https://droidzebra.appspot.com/droidzebra/donate/</string>
     <string name="menu_item_donate">Donate</string>
     <string name="menu_item_mail">e-Mail</string>

@@ -12,7 +12,7 @@
     <string name="settings_engine_randomness_dialog_message">Разрешить программе делать неоптимальные ходы. Более разнообразная игра с ошибками как в игре с людьми.</string>
     <string name="settings_engine_randomness_summary">Разрешить неоптимальные ходы</string>
     <string name="settings_engine_randomness_title">Оптимизация</string>
-    <string name="spash_layout_message">DroidZebra загружается</string>
+    <string name="spash_layout_message">OersZebra загружается</string>
     <string name="settings_engine_auto_make_moves_summary">Делать вынужденные ходы автоматически (без подтверждения)</string>
     <string name="settings_engine_auto_make_moves_title">Вынужденные ходы</string>
     <string name="settings_ui_display_last_move_summary">Отмечать последний сделанный ход на доске</string>
@@ -36,7 +36,7 @@
     <string name="setting_strength_preference_summary">Максимальная глубина поиска при анализе позиции. Определяет силу игры программы. </string>
     <string name="settings_strength_preference_title">Глубина поиска</string>
     <string name="settings_strength_dialog_title">Глубина поиска</string>
-    <string name="app_name">DroidZebra</string>
+    <string name="app_name">OersZebra</string>
 
 <string name="settings_engine_preferences">Настройки программы</string>
 
@@ -59,7 +59,7 @@
 <string name="dialog_pass_text">Вы пропускаете ход</string>
 <string name="dialog_ok">OK</string>
 <string name="dialog_donate_title">Поддержите проэкт</string>
-<string name="dialog_donate_message">DroidZebra бесплатная программа. Если она вам понравилась сделайте небольшое пожертвование. Вы будете перенаравлены на страничку фонда поддержки программы. Спасибо!</string>
+    <string name="dialog_donate_message">OersZebra бесплатная программа. Если она вам понравилась сделайте небольшое пожертвование. Вы будете перенаравлены на страничку фонда поддержки программы. Спасибо!</string>
 <string name="dialog_donate_doit">Paypal</string>
 <string name="dialog_donate_cancel">Нет, в другой раз</string>
 <string name="donate_url">https://droidzebra.appspot.com/droidzebra/donate/</string>
@@ -69,8 +69,8 @@
 <string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
 <string name="settings_title">Настройки</string>
 <string name="dialog_donate_share">Пошли другу</string>
-<string name="donate_share_text">DroidZebra Reversi for Android - https://play.google.com/store/apps/details?id=com.shurik.droidzebra</string>
-<string name="mail_generated">Сгенерировано с помощью DroidZebra (https://play.google.com/store/apps/details?id=com.shurik.droidzebra)</string>
+    <string name="donate_share_text">OersZebra Reversi for Android - https://play.google.com/store/apps/details?id=com.shurik.droidzebra</string>
+    <string name="mail_generated">Сгенерировано с помощью OersZebra (https://play.google.com/store/apps/details?id=com.shurik.droidzebra)</string>
 <string name="mail_date">Дата:</string>
 <string name="mail_move">Последовательность ходов:</string>
 <string name="mail_url">Веб-страница:</string>
