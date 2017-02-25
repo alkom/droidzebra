@@ -22,6 +22,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -96,6 +98,8 @@ public class ZebraEngine extends Thread {
 	private static final String[] coeffAssets = { "coeffs2.bin" };
 	private static final String[] bookCompressedAssets = { "book.cmp.z",};
 
+
+
 	// player info
 	public static class PlayerInfo {
 		public PlayerInfo(int _player, int _skill, int _exact_skill, int _wld_skill, int _player_time, int _increment) {
@@ -145,7 +149,14 @@ public class ZebraEngine extends Thread {
 			m[0] = (byte) ('a' + getX());
 			m[1] = (byte) ('1' + getY());
 			return new String(m);
-		} 
+		}
+
+		@Override
+		public String toString() {
+			return "Move{" +
+					"mMove=" + mMove +
+					'}';
+		}
 	};
 
 	// candidate move with evals
@@ -174,8 +185,8 @@ public class ZebraEngine extends Thread {
 		public int mDisksPlayed;
 		public byte[] mMoveSequence;
 	};
-	private GameState mInitialGameState;
-	private GameState mCurrentGameState;
+	private transient GameState mInitialGameState;
+	private transient GameState mCurrentGameState;
 	
 	// current move
 	private JSONObject mPendingEvent= null;
@@ -202,7 +213,7 @@ public class ZebraEngine extends Thread {
 	// synchronization
 	static private final Object  mJNILock = new Object();
 
-	private Object mEngineStateEvent = new Object();
+	private transient Object mEngineStateEvent = new Object();
 
 	private int mEngineState = ES_INITIAL;
 
@@ -410,6 +421,17 @@ public class ZebraEngine extends Thread {
 		}
 	}
 
+	public void sendReplayMoves(List<Move> moves) {
+            if(getEngineState()!=ZebraEngine.ES_READY2PLAY) {
+                stopGame();
+                waitForEngineState(ZebraEngine.ES_READY2PLAY);
+            }
+            mInitialGameState = new GameState();
+            mInitialGameState.mDisksPlayed = moves.size();
+            mInitialGameState.mMoveSequence = toByte(moves);
+            setEngineState(ES_PLAY);
+    }
+
 	// settings helpers
 	public void setAutoMakeMoves(boolean _settingAutoMakeForcedMoves) {
 		if(_settingAutoMakeForcedMoves)
@@ -463,6 +485,11 @@ public class ZebraEngine extends Thread {
 
 	public void setMoveDelay(int delay) {
 		mMoveDelay = delay;
+	}
+
+	public void setInitialGameState(LinkedList<Move> moves) {
+		byte[] bytes = toByte(moves);
+		setInitialGameState(moves.size(), bytes);
 	}
 	
 	// gamestate manipulators
@@ -533,7 +560,7 @@ public class ZebraEngine extends Thread {
 				mCurrentGameState = new GameState();
 				mCurrentGameState.mDisksPlayed = 0;
 				mCurrentGameState.mMoveSequence = new byte[2*BOARD_SIZE*BOARD_SIZE];
-				
+
 				if( mInitialGameState != null )
 					zePlay(mInitialGameState.mDisksPlayed, mInitialGameState.mMoveSequence);
 				else
@@ -550,6 +577,16 @@ public class ZebraEngine extends Thread {
 			zeGlobalTerminate();
 		}
 	}
+	
+
+
+	private byte[] toByte(List<Move> moves) {
+		byte[] moveBytes = new byte[moves.size()];
+		for(int i = 0; i < moves.size(); i++) {
+			moveBytes[i] = (byte)moves.get(i).mMove;
+		}
+		return moveBytes;
+	}
 
 
 	// called by native code
@@ -565,8 +602,13 @@ public class ZebraEngine extends Thread {
 		Bundle b = new Bundle();
 		msg.setData(b);
 		// Log.d("ZebraEngine", String.format("Callback(%d,%s)", msgcode, data.toString()));
-		if( bInCallback )
-			fatalError("Recursive vallback call");
+		if( bInCallback && msgcode != MSG_ERROR ) {
+			fatalError("Recursive callback call");
+			new Exception().printStackTrace();
+		}
+
+
+
 		try {
 			bInCallback = true;
 			switch(msgcode) {
