@@ -69,8 +69,8 @@
 <string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
 <string name="settings_title">Настройки</string>
 <string name="dialog_donate_share">Пошли другу</string>
-    <string name="donate_share_text">OersZebra Reversi for Android - https://play.google.com/store/apps/details?id=com.shurik.droidzebra</string>
-    <string name="mail_generated">Сгенерировано с помощью OersZebra (https://play.google.com/store/apps/details?id=com.shurik.droidzebra)</string>
+    <string name="donate_share_text">OersZebra Reversi for Android - https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra</string>
+    <string name="mail_generated">Сгенерировано с помощью OersZebra (https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra)</string>
 <string name="mail_date">Дата:</string>
 <string name="mail_move">Последовательность ходов:</string>
 <string name="mail_url">Веб-страница:</string>

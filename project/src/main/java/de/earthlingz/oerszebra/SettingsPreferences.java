@@ -15,7 +15,7 @@
     along with DroidZebra.  If not, see <http://www.gnu.org/licenses/>
 */
 
-package com.shurik.droidzebra;
+package de.earthlingz.oerszebra;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;

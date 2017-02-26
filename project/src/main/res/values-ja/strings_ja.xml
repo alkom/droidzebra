@@ -69,8 +69,8 @@
 <string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
 <string name="settings_title">設定</string>
 <string name="dialog_donate_share">友達とシェア</string>
-    <string name="donate_share_text">OersZebra Reversi for Android - https://play.google.com/store/apps/details?id=com.shurik.droidzebra</string>
-<string name="mail_generated">作成：DroidZebra (https://play.google.com/store/apps/details?id=com.shurik.droidzebra)</string>
+    <string name="donate_share_text">OersZebra Reversi for Android - https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra</string>
+    <string name="mail_generated">作成：DroidZebra (https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra)</string>
 <string name="mail_date">日付:</string>
 <string name="mail_move">棋譜:</string>
 <string name="mail_url">Game URL:</string>

@@ -5,7 +5,7 @@
   android:layout_width="fill_parent"
   android:layout_height="fill_parent">
 
- <com.shurik.droidzebra.BoardView
+	<de.earthlingz.oerszebra.BoardView
             android:id="@+id/board"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content" 
@@ -26,7 +26,7 @@
 > 
 
 	<view
-	class="com.shurik.droidzebra.StatusView" 
+		class="de.earthlingz.oerszebra.StatusView"
 	android:focusable="false"
 	android:id="@+id/status_panel" 
 	android:layout_width="fill_parent" 

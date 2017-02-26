@@ -17,6 +17,16 @@
 
 package com.shurik.droidzebra;
 
+import android.content.Context;
+import android.content.res.AssetManager;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,16 +34,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.content.Context;
-import android.content.res.AssetManager;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 //import android.util.Log;
 
 // DroidZebra -> ZebraEngine:public -async-> ZebraEngine thread(jni) -> Callback() -async-> DroidZebra:Handler 
@@ -118,11 +118,11 @@ public class ZebraEngine extends Thread {
 		public int wldSolvingSkill;
 		public int playerTime;
 		public int playerTimeIncrement;
-	};
+	}
 
 	public static class InvalidMove extends Exception {
 		private static final long serialVersionUID = 8970579827351672330L;
-	};
+	}
 
 	// Zebra move representation
 	public static class Move {
@@ -157,7 +157,7 @@ public class ZebraEngine extends Thread {
 					"mMove=" + mMove +
 					'}';
 		}
-	};
+	}
 
 	// candidate move with evals
 	public class CandidateMove {
@@ -181,10 +181,7 @@ public class ZebraEngine extends Thread {
 		}
 	}
 
-	class GameState {
-		public int mDisksPlayed;
-		public byte[] mMoveSequence;
-	};
+
 	private transient GameState mInitialGameState;
 	private transient GameState mCurrentGameState;
 	

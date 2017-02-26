@@ -1,8 +1,10 @@
-package com.shurik.droidzebra;
+package de.earthlingz.oerszebra;
 
 import android.content.Intent;
 import android.test.ActivityInstrumentationTestCase2;
 import android.util.Log;
+
+import com.shurik.droidzebra.ZebraEngine;
 
 /**
  * This is a simple framework for a test of an Application.  See
@@ -11,13 +13,13 @@ import android.util.Log;
  * <p/>
  * To run this test, you can type:
  * adb shell am instrument -w \
- * -e class com.shurik.droidzebra.DroidZebraTest \
- * com.shurik.droidzebra.tests/android.test.InstrumentationTestRunner
+ * -e class de.earthlingz.oerszebra.DroidZebraTest \
+ * de.earthlingz.oerszebra.tests/android.test.InstrumentationTestRunner
  */
 public class DroidZebraTest extends ActivityInstrumentationTestCase2<DroidZebra> {
 
     public DroidZebraTest() {
-        super("com.shurik.droidzebra", DroidZebra.class);
+        super("de.earthlingz.oerszebra", DroidZebra.class);
     }
 
     

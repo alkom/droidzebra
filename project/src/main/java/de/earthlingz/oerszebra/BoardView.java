@@ -14,11 +14,7 @@
 	You should have received a copy of the GNU General Public License
 	along with DroidZebra.  If not, see <http://www.gnu.org/licenses/>
 */
-package com.shurik.droidzebra;
-
-import com.shurik.droidzebra.ZebraEngine.CandidateMove;
-import com.shurik.droidzebra.ZebraEngine.InvalidMove;
-import com.shurik.droidzebra.ZebraEngine.Move;
+package de.earthlingz.oerszebra;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -29,17 +25,22 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Paint.FontMetrics;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Typeface;
-import android.graphics.Paint.FontMetrics;
 import android.os.CountDownTimer;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import java.lang.Math;
+
+import com.shurik.droidzebra.EngineError;
+import com.shurik.droidzebra.ZebraEngine;
+import com.shurik.droidzebra.ZebraEngine.CandidateMove;
+import com.shurik.droidzebra.ZebraEngine.InvalidMove;
+import com.shurik.droidzebra.ZebraEngine.Move;
 //import android.util.Log;
 
 public class BoardView extends View {
@@ -277,7 +278,8 @@ public class BoardView extends View {
 		float oval_adjustment = (float)Math.abs(circle_r*Math.cos(Math.PI*mAnimationProgress)); 
 		for(int i = 0; i<DroidZebra.boardSize; i++ ) {
 			for(int j=0; j<DroidZebra.boardSize; j++) {
-				if(getDroidZebra().getBoard()[i][j].getState()==ZebraEngine.PLAYER_EMPTY) continue;
+				if (getDroidZebra().getBoard()[i][j].getState() == ZebraEngine.PLAYER_EMPTY)
+					continue;
 				if(getDroidZebra().getBoard()[i][j].getState()==ZebraEngine.PLAYER_BLACK)
 					circle_color = Color.BLACK;
 				else
@@ -519,7 +521,7 @@ public class BoardView extends View {
 						getDroidZebra().makeMove(mMoveSelection);
 					} catch (InvalidMove e) {
 					} catch (EngineError e) {
-						getDroidZebra().FatalError(e.msg);
+						getDroidZebra().FatalError(e.getError());
 					}
 				}
 			}

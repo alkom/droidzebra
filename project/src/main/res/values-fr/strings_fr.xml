@@ -61,14 +61,14 @@
 	<string name="dialog_donate_doit">Paypal</string>
 	<string name="dialog_donate_cancel">Non, merci</string>
 	<string name="dialog_donate_share">Recommander à un ami</string>
-    <string name="donate_share_text">OersZebra Reversi pour Android - https://play.google.com/store/apps/details?id=com.shurik.droidzebra</string>
+    <string name="donate_share_text">OersZebra Reversi pour Android - https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra</string>
 	<string name="donate_url">https://droidzebra.appspot.com/droidzebra/donate/</string>
 	<string name="menu_item_donate">Don</string>
 	<string name="menu_item_mail">e-Mail</string>
 	<string name="spash_layout_message_2">(ceci peut prendre du temps)</string>
 	<string name="display_depth" formatted="false">Milieu: %d  Exact: %d  G/P: %d</string>
 	<string name="settings_title">Paramètres</string>
-    <string name="mail_generated">Généré par OersZebra (https://play.google.com/store/apps/details?id=com.shurik.droidzebra)</string>
+    <string name="mail_generated">Généré par OersZebra (https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra)</string>
 	<string name="mail_date">Date:</string>
 	<string name="mail_move">Suite de coups:</string>
 	<string name="mail_url">URL de la partie:</string>

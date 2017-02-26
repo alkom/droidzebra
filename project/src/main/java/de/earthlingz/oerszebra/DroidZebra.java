@@ -15,7 +15,7 @@
 	along with DroidZebra.  If not, see <http://www.gnu.org/licenses/>
 */
 
-package com.shurik.droidzebra;
+package de.earthlingz.oerszebra;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -47,6 +47,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.shurik.droidzebra.CandidateMoves;
+import com.shurik.droidzebra.EngineError;
+import com.shurik.droidzebra.GameState;
+import com.shurik.droidzebra.ZebraEngine;
 import com.shurik.droidzebra.ZebraEngine.CandidateMove;
 import com.shurik.droidzebra.ZebraEngine.Move;
 import com.shurik.droidzebra.ZebraEngine.PlayerInfo;
@@ -292,7 +296,7 @@ public class DroidZebra extends FragmentActivity
 			} return true;
 			}
 		} catch (EngineError e) {
-			FatalError(e.msg);
+			FatalError(e.getError());
 		}
 		return false;
 	}
@@ -488,7 +492,7 @@ public class DroidZebra extends FragmentActivity
 				break;
 			}
 		} catch (EngineError e) {
-			FatalError(e.msg);
+			FatalError(e.getError());
 		}
 
 		mStatusView.setTextForID(
@@ -519,7 +523,7 @@ public class DroidZebra extends FragmentActivity
 		Date nowTime = calendar.getTime();
 		StringBuffer sbBlackPlayer = new StringBuffer();
 		StringBuffer sbWhitePlayer = new StringBuffer();
-		ZebraEngine.GameState gs = mZebraThread.getGameState();
+		GameState gs = mZebraThread.getGameState();
 		SharedPreferences settings = getSharedPreferences(SHARED_PREFS_NAME, 0);
 		byte[] moves = null;
 		if( gs != null ) {
@@ -783,7 +787,7 @@ public class DroidZebra extends FragmentActivity
 			try {
 				mZebraThread.undoMove();
 			} catch (EngineError e) {
-				FatalError(e.msg);
+				FatalError(e.getError());
 			}
 			return true;
 		}
@@ -797,7 +801,7 @@ public class DroidZebra extends FragmentActivity
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		ZebraEngine.GameState gs = mZebraThread.getGameState();
+		GameState gs = mZebraThread.getGameState();
 		if (gs != null) {
 			outState.putByteArray("moves_played", gs.mMoveSequence);
 			outState.putInt("moves_played_count", gs.mDisksPlayed);

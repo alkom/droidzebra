@@ -15,20 +15,20 @@
 	along with DroidZebra.  If not, see <http://www.gnu.org/licenses/>
 */
 
-package com.shurik.droidzebra;
-
-import java.util.TreeMap;
+package de.earthlingz.oerszebra;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Paint.FontMetrics;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.Paint.FontMetrics;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
+
+import java.util.TreeMap;
 
 public class StatusView extends View {
 
@@ -45,8 +45,8 @@ public class StatusView extends View {
 			getScreenRectF().roundOut(bounds);
 			StatusView.this.invalidate(bounds);
 		}
-	};
-	
+	}
+
 	private class DrawLine extends DrawElement {
 		// logical attrs
 		private float mXstart;
@@ -89,8 +89,8 @@ public class StatusView extends View {
 		public RectF getScreenRectF() {
 			return new RectF(mXstart, mYstart, mXend, mYend);
 		}
-	};
-	
+	}
+
 	private class DrawText extends DrawElement {
 		public static final int
 			FLAG_FIT = 0x0001,
@@ -191,8 +191,8 @@ public class StatusView extends View {
 		public RectF getScreenRectF() {
 			return mScreenBounds;
 		}
-	};
-	
+	}
+
 	public static final int
 		ID_NONE = -1,
 		ID_SCORE_BLACK = 1,
