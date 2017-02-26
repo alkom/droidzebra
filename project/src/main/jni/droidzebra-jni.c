@@ -620,6 +620,11 @@ AGAIN:
 			}
 		}
 		else {
+			//if we still have moves to make continue and switch sides
+			if (provided_move_index < provided_move_count) {
+				side_to_move = OPP(side_to_move);
+				continue;
+			}
 			// this is where we pass
 			if ( side_to_move == BLACKSQ )
 				black_moves[score_sheet_row] = PASS;
