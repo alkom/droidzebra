@@ -10,6 +10,15 @@ before_install:
  - export ANDROID_NDK_HOME=`pwd`/android-ndk-r9c
  - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
 
+before_cache:
+    - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+
+cache:
+  directories:      #Cache all dirs under .gradle folder
+    - $HOME/.gradle/daemon      #Cache daemon logs
+    - $HOME/.gradle/native      #Cache library downloaded from the gradle dependency
+    - $HOME/.gradle/wrapper     #Cache the gradle
+
 android:
   components:
     - build-tools-22.0.1
@@ -28,6 +37,7 @@ before_script:
   - emulator -avd test -no-skin -no-audio -no-window &
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
+  - adb logcat *:W | tee logcat.log > /dev/null 2>&1 &
 
 after_script:
-  - adb logcat -t 500
+  - cat logcat.log
