@@ -84,13 +84,13 @@ public class DroidZebra extends FragmentActivity
 			RANDOMNESS_HUGE = 4;
 
 	final public static int boardSize = 8;
-	public static final int DEFAULT_SETTING_FUNCTION = FUNCTION_ZEBRA_WHITE;
-	public static final String DEFAULT_SETTING_STRENGTH  = "1|1|1";
+	public static final int DEFAULT_SETTING_FUNCTION = FUNCTION_HUMAN_VS_HUMAN;
+	public static final String DEFAULT_SETTING_STRENGTH = "8|16|18";
 	public static final boolean DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES  = false;
 	public static final int DEFAULT_SETTING_RANDOMNESS = RANDOMNESS_LARGE;
 	public static final String DEFAULT_SETTING_FORCE_OPENING = "None";
 	public static final boolean DEFAULT_SETTING_HUMAN_OPENINGS = false;
-	public static final boolean DEFAULT_SETTING_PRACTICE_MODE = false;
+	public static final boolean DEFAULT_SETTING_PRACTICE_MODE = true;
 	public static final boolean DEFAULT_SETTING_USE_BOOK = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_PV = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_MOVES = true;
