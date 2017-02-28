@@ -1213,10 +1213,12 @@ public class DroidZebra extends FragmentActivity
 
 				case ZebraEngine.MSG_OPENING_NAME: {
 					mOpeningName = m.getData().getString("opening");
-					mStatusView.setTextForID(
-							StatusView.ID_STATUS_OPENING,
-							mOpeningName
-					);
+					if (mStatusView != null) {
+						mStatusView.setTextForID(
+								StatusView.ID_STATUS_OPENING,
+								mOpeningName
+						);
+					}
 				}
 				break;
 
