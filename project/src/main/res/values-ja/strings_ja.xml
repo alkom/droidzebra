@@ -12,7 +12,7 @@
     <string name="settings_engine_randomness_dialog_message">中盤に最善でない手を着手することでより人間との対戦に近くなります。</string>
     <string name="settings_engine_randomness_summary">中盤を変化させる</string>
     <string name="settings_engine_randomness_title">中盤</string>
-    <string name="spash_layout_message">OersZebraはロード中です</string>
+    <string name="spash_layout_message">Reversi Trainerはロード中です</string>
     <string name="settings_engine_auto_make_moves_summary">指定打ちは自動で着手する</string>
     <string name="settings_engine_auto_make_moves_title">指定打ちについて</string>
     <string name="settings_ui_display_last_move_summary">最終手に印を付ける</string>
@@ -36,7 +36,7 @@
     <string name="setting_strength_preference_summary">コンピュータの強さ: コンピュータの読みの深さを設定</string>
     <string name="settings_strength_preference_title">読みの深さ</string>
     <string name="settings_strength_dialog_title">読みの深さ</string>
-    <string name="app_name">OersZebra</string>
+    <string name="app_name">Reversi Trainer</string>
 
 <string name="settings_engine_preferences">対局設定</string>
 
@@ -48,7 +48,7 @@
 <string name="menu_item_redo">１手進む</string>
 <string name="menu_item_undo">１手戻る</string>
 <string name="menu_item_quit">終了</string>
-    <string name="menu_item_about">OersZebraについて</string>
+    <string name="menu_item_about">Reversi Trainerについて</string>
 <string name="menu_item_settings">設定</string>
 <string name="menu_item_hint">ヒント</string>
 <string name="gameover_title">ゲーム終了</string>
@@ -59,7 +59,7 @@
 <string name="dialog_pass_text">あなたはパスです</string>
 <string name="dialog_ok">OK</string>
 <string name="dialog_donate_title">プロジェクトサポート</string>
-    <string name="dialog_donate_message">OersZebraはフリーウェアです。もしあなたが楽しめたら、少しプロジェクトに貢献してくれませんか？　下記のボタンで選択できます。ご協力おねがいします。</string>
+    <string name="dialog_donate_message">Reversi Trainerはフリーウェアです。もしあなたが楽しめたら、少しプロジェクトに貢献してくれませんか？　下記のボタンで選択できます。ご協力おねがいします。</string>
 <string name="dialog_donate_doit">Paypal</string>
 <string name="dialog_donate_cancel">協力しない。</string>
 <string name="donate_url">https://droidzebra.appspot.com/droidzebra/donate/</string>
@@ -69,7 +69,7 @@
 <string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
 <string name="settings_title">設定</string>
 <string name="dialog_donate_share">友達とシェア</string>
-    <string name="donate_share_text">OersZebra Reversi for Android - https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra</string>
+    <string name="donate_share_text">Reversi Trainer Reversi for Android - https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra</string>
     <string name="mail_generated">作成：DroidZebra (https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra)</string>
 <string name="mail_date">日付:</string>
 <string name="mail_move">棋譜:</string>

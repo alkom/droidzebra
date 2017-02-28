@@ -12,7 +12,7 @@
     <string name="settings_engine_randomness_dialog_message">Autoriser à jouer coup non-optimal. Niveau plus faible - mais jeu plus humain.</string>
     <string name="settings_engine_randomness_summary">Autoriser les coups non-optimaux</string>
     <string name="settings_engine_randomness_title">Hasard</string>
-    <string name="spash_layout_message">Force du jeu de OersZebra</string>
+    <string name="spash_layout_message">Force du jeu de Reversi Trainer</string>
     <string name="settings_engine_auto_make_moves_summary">Jouer automatiquement les coups forcés</string>
     <string name="settings_engine_auto_make_moves_title">Jouer les coups forcés</string>
     <string name="settings_ui_display_last_move_summary">Marquer le dernier coup</string>
@@ -36,7 +36,7 @@
     <string name="setting_strength_preference_summary">Force de jeu: nombre de coups analysés par le programme</string>
     <string name="settings_strength_preference_title">Profondeur d\'analyse</string>
     <string name="settings_strength_dialog_title">Choix</string>
-    <string name="app_name">OersZebra</string>
+    <string name="app_name">Reversi Trainer</string>
 	<string name="settings_engine_preferences">Réglages du moteur de jeu</string>
 	<string name="gameover_text_white_wins">Blanc a gagné</string>
 	<string name="gameover_text_black_wins">Noir a gagné</string>
@@ -57,18 +57,18 @@
 	<string name="dialog_pass_text">Vous passez</string>
 	<string name="dialog_ok">OK</string>
 	<string name="dialog_donate_title">Support du projet</string>
-    <string name="dialog_donate_message">OersZebra est un freeware. Si vous l\'appréciez, une petite contribution sera la bienvenue. Le bouton ci-dessous vous dirige vers la page de développement de OersZebra. Merci!</string>
+    <string name="dialog_donate_message">Reversi Trainer est un freeware. Si vous l\'appréciez, une petite contribution sera la bienvenue. Le bouton ci-dessous vous dirige vers la page de développement de Reversi Trainer. Merci!</string>
 	<string name="dialog_donate_doit">Paypal</string>
 	<string name="dialog_donate_cancel">Non, merci</string>
 	<string name="dialog_donate_share">Recommander à un ami</string>
-    <string name="donate_share_text">OersZebra Reversi pour Android - https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra</string>
+    <string name="donate_share_text">Reversi Trainer Reversi pour Android - https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra</string>
 	<string name="donate_url">https://droidzebra.appspot.com/droidzebra/donate/</string>
 	<string name="menu_item_donate">Don</string>
 	<string name="menu_item_mail">e-Mail</string>
 	<string name="spash_layout_message_2">(ceci peut prendre du temps)</string>
 	<string name="display_depth" formatted="false">Milieu: %d  Exact: %d  G/P: %d</string>
 	<string name="settings_title">Paramètres</string>
-    <string name="mail_generated">Généré par OersZebra (https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra)</string>
+    <string name="mail_generated">Généré par Reversi Trainer (https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra)</string>
 	<string name="mail_date">Date:</string>
 	<string name="mail_move">Suite de coups:</string>
 	<string name="mail_url">URL de la partie:</string>
