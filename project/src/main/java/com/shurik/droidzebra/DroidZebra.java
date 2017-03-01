@@ -253,6 +253,10 @@ public class DroidZebra extends FragmentActivity
 	    return super.onCreateOptionsMenu(menu);
 	}
 
+
+	public boolean initialized() {
+		return mIsInitCompleted;
+	}
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if( !mIsInitCompleted ) return false;

@@ -24,6 +24,9 @@ public class DroidZebraTest extends ActivityInstrumentationTestCase2<DroidZebra>
     @Override
     protected void setUp() throws Exception {
     	super.setUp();
+        while (!getActivity().initialized()) {
+            Thread.sleep(100);
+        }
     }
 
 
