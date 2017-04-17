@@ -6,6 +6,7 @@
  * needs to build Android app modules.
  */
 
+
 buildscript {
 
     /**
@@ -29,6 +30,10 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.1'
     }
+}
+
+plugins {
+    id 'com.gladed.androidgitversion' version '0.3.4'
 }
 
 /**

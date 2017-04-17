@@ -1,8 +1,6 @@
 apply plugin: 'com.android.application'
 
-plugins {
-    id 'com.gladed.androidgitversion' version '0.3.4'
-}
+
 
 android {
     compileSdkVersion 19
