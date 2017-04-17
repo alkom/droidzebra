@@ -1,6 +1,4 @@
-
-    <menu xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:droidzebra="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
         <item android:id="@+id/menu_new_game" 
             android:icon="@drawable/ic_menu_play" 
             android:title="@string/menu_item_new_game">
@@ -29,10 +27,6 @@
         </item>
         <item android:title="@string/menu_enter_moves"
             android:id="@+id/menu_enter_moves" />
-        <item android:id="@+id/menu_donate"
-            android:icon="@android:drawable/ic_menu_send" 
-            android:title="@string/menu_item_donate">
-        </item>
         <item android:id="@+id/menu_mail" 
             android:icon="@android:drawable/ic_menu_send" 
             android:title="@string/menu_item_mail">

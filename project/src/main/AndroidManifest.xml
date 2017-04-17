@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.earthlingz.oerszebra"
     android:installLocation="auto"
-    android:label="Reversi Trainer"
+    android:label="Reversatile"
     android:versionCode="2"
     android:versionName="1.0.0">
     <uses-sdk android:minSdkVersion="11" android:targetSdkVersion="19"/>

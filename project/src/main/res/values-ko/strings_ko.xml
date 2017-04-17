@@ -63,7 +63,7 @@
 <string name="dialog_donate_doit">Paypal</string>
 <string name="dialog_donate_cancel">취소</string>
 <string name="dialog_donate_share">친구에게 드로이드제브라 소개</string>
-    <string name="donate_share_text">Reversi Trainer Reversi for Android - https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra </string>
+    <string name="donate_share_text">Reversatile Reversi for Android - https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra </string>
 <string name="donate_url">https://droidzebra.appspot.com/droidzebra/donate/</string>
 <string name="menu_item_donate">기부</string>
 <string name="menu_item_mail">이메일</string>
