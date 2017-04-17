@@ -21,6 +21,8 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -112,7 +114,8 @@ public class DroidZebra extends FragmentActivity
 			SETTINGS_KEY_DISPLAY_ENABLE_ANIMATIONS = "settings_ui_display_enable_animations";
 
 	private final CandidateMoves mCandidateMoves = new CandidateMoves();
-	public int mSettingFunction = DEFAULT_SETTING_FUNCTION;
+    private ClipboardManager clipboard;
+    public int mSettingFunction = DEFAULT_SETTING_FUNCTION;
 	public boolean mSettingAutoMakeForcedMoves = DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES;
 	public int mSettingZebraRandomness = DEFAULT_SETTING_RANDOMNESS;
 	public String mSettingZebraForceOpening = DEFAULT_SETTING_FORCE_OPENING;
@@ -143,8 +146,10 @@ public class DroidZebra extends FragmentActivity
 	private DroidZebraHandler mDroidZebraHandler = null;
 
 	public DroidZebra() {
+
 		initBoard();
-	}
+
+    }
 
 	public boolean isThinking() {
 		return mZebraThread.isThinking();
@@ -329,6 +334,9 @@ public class DroidZebra extends FragmentActivity
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+
+        clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 
 		setContentView(R.layout.spash_layout);
 		if(android.os.Build.VERSION.SDK_INT >= 11) {
@@ -686,8 +694,8 @@ public class DroidZebra extends FragmentActivity
 	}
 
 	private void enterMoves() {
-		DialogFragment newFragment = DialogMoves.newInstance();
-		showDialog(newFragment, "dialog_moves");
+        DialogFragment newFragment = DialogMoves.newInstance(clipboard);
+        showDialog(newFragment, "dialog_moves");
 	}
 
 	private void setUpBoard(String s) {
@@ -695,8 +703,8 @@ public class DroidZebra extends FragmentActivity
 		mZebraThread.sendReplayMoves(moves);
 	}
 
-	private LinkedList<Move> makeMoveList(String s) {
-		LinkedList<Move> moves = new LinkedList<Move>();
+    private static LinkedList<Move> makeMoveList(String s) {
+        LinkedList<Move> moves = new LinkedList<Move>();
 		Pattern p = Pattern.compile("([ABCDEFGH]{1}[12345678]{1})+");
 		Matcher matcher = p.matcher(s.toUpperCase());
 		if (!matcher.matches()) {
@@ -972,8 +980,12 @@ public class DroidZebra extends FragmentActivity
     // Moves as Text
     public static class DialogMoves extends DialogFragment {
 
-        public static DialogMoves newInstance() {
-            return new DialogMoves();
+        private ClipboardManager clipBoard;
+
+        public static DialogMoves newInstance(ClipboardManager clipBoard) {
+            DialogMoves moves = new DialogMoves();
+            moves.setClipBoard(clipBoard);
+            return moves;
         }
 
         public DroidZebra getDroidZebra() {
@@ -991,6 +1003,24 @@ public class DroidZebra extends FragmentActivity
             input.setInputType(InputType.TYPE_CLASS_TEXT);
             builder.setView(input);
 
+            if (clipBoard != null) {
+                String possibleMatch = null;
+                ClipData primaryClip = clipBoard.getPrimaryClip();
+                for (int i = 0; i < primaryClip.getItemCount(); i++) {
+                    ClipData.Item clip = primaryClip.getItemAt(i);
+                    CharSequence charSequence = clip.coerceToText(getActivity().getBaseContext());
+                    if (charSequence != null) {
+                        possibleMatch = charSequence.toString();
+                        break;
+                    }
+                }
+
+                if (possibleMatch != null && !DroidZebra.makeMoveList(possibleMatch).isEmpty()) {
+                    input.setText(possibleMatch);
+                }
+            }
+
+
             // Set up the buttons
             builder.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
                 @Override
@@ -1006,6 +1036,10 @@ public class DroidZebra extends FragmentActivity
             });
 
             return builder.create();
+        }
+
+        public void setClipBoard(ClipboardManager clipBoard) {
+            this.clipBoard = clipBoard;
         }
     }
 
