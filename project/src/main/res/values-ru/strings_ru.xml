@@ -62,8 +62,7 @@
     <string name="dialog_donate_message">Reversatile бесплатная программа. Если она вам понравилась сделайте небольшое пожертвование. Вы будете перенаравлены на страничку фонда поддержки программы. Спасибо!</string>
 <string name="dialog_donate_doit">Paypal</string>
 <string name="dialog_donate_cancel">Нет, в другой раз</string>
-<string name="donate_url">https://droidzebra.appspot.com/droidzebra/donate/</string>
-<string name="menu_item_donate">Фонд поддержки</string>
+    <string name="menu_item_donate">Фонд поддержки</string>
 <string name="menu_item_mail">e-Mail</string>
 <string name="spash_layout_message_2">(это займет немного времени)</string>
 <string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
@@ -73,7 +72,5 @@
     <string name="mail_generated">Сгенерировано с помощью Reversatile (https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra)</string>
 <string name="mail_date">Дата:</string>
 <string name="mail_move">Последовательность ходов:</string>
-<string name="mail_url">Веб-страница:</string>
-<string name="mail_viewer_url">http://droidzebra.appspot.com/viewer/?</string>
 
 </resources>

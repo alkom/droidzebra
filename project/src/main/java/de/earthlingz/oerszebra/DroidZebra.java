@@ -25,7 +25,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -289,9 +288,6 @@ public class DroidZebra extends FragmentActivity
             case R.id.menu_enter_moves: {
 				enterMoves();
 			} break;
-			case R.id.menu_donate: {
-				showDonateDialog();
-			} return true;
 			case R.id.menu_mail: {
 				sendMail();
 			} return true;
@@ -541,7 +537,7 @@ public class DroidZebra extends FragmentActivity
 				Intent.EXTRA_EMAIL,
 				new String[]{settings.getString(SETTINGS_KEY_SENDMAIL, DEFAULT_SETTING_SENDMAIL)});
 
-		intent.putExtra(Intent.EXTRA_SUBJECT, "DroidZebra");
+		intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.app_name));
 
 		//get BlackPlayer and WhitePlayer
 		switch( mSettingFunction ) {
@@ -616,20 +612,6 @@ public class DroidZebra extends FragmentActivity
 		sb.append(mWhiteScore);
 		sb.append("  (W)  ");
 		sb.append(sbWhitePlayer.toString());
-		sb.append("\r\n\r\n");
-		sb.append(getResources().getString(R.string.mail_url));
-		sb.append("\r\n");
-		sb.append(getResources().getString(R.string.mail_viewer_url));
-		sb.append("lm=");
-		sb.append(sbMoves);
-		sb.append("&bp=");
-		sb.append(sbBlackPlayer.toString());
-		sb.append("&wp=");
-		sb.append(sbWhitePlayer.toString());
-		sb.append("&bs=");
-		sb.append(mBlackScore);
-		sb.append("&ws=");
-		sb.append(mWhiteScore);
 
 		intent.putExtra(Intent.EXTRA_TEXT, sb.toString());
 		// Intent
@@ -686,11 +668,6 @@ public class DroidZebra extends FragmentActivity
 		if( mActivityActive ) {
 			dialog.show(getSupportFragmentManager(), tag);
 		}
-	}
-
-	public void showDonateDialog() {
-		DialogFragment newFragment = DialogDonate.newInstance();
-		showDialog(newFragment, "dialog_donate");
 	}
 
 	public void showPassDialog() {
@@ -840,43 +817,6 @@ public class DroidZebra extends FragmentActivity
 		}
 	}
 
-	//-------------------------------------------------------------------------
-	// Donate Dialog
-	public static class DialogDonate extends DialogFragment {
-
-		public static DialogDonate newInstance() {
-	    	return new DialogDonate();
-	    }
-
-	    @Override
-	    public Dialog onCreateDialog(Bundle savedInstanceState) {
-	    	return new AlertDialog.Builder(getActivity())
-			.setTitle(R.string.dialog_donate_title)
-			.setMessage(R.string.dialog_donate_message)
-			.setIcon(R.drawable.icon)
-			.setPositiveButton( R.string.dialog_donate_doit, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int id) {
-					String url = getResources().getString(R.string.donate_url);
-					Intent i = new Intent(Intent.ACTION_VIEW);
-					i.setData(Uri.parse(url));
-					startActivity(i);
-				}
-			}
-			)
-			.setNeutralButton(R.string.dialog_donate_share, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int id) {
-					String shareText = getResources().getString(R.string.donate_share_text);
-					String shareTitle = getResources().getString(R.string.dialog_donate_share);
-					Intent intent = new Intent(Intent.ACTION_SEND);
-					intent.setType("text/plain");
-					intent.putExtra(Intent.EXTRA_TEXT, shareText);
-					startActivity(Intent.createChooser(intent, shareTitle));				}
-			}
-			)
-			.setNegativeButton(R.string.dialog_donate_cancel, null)
-			.create();
-	    }
-	}
 
 	//-------------------------------------------------------------------------
 	// Pass Dialog
