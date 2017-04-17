@@ -2,4 +2,70 @@
 <resources>
     <string name="dialog_cancel">Cancel</string>
     <string name="menu_enter_moves">Enter Moves</string>
+    <string name="settings_engine_use_book_summary">오프닝 사용</string>
+    <string name="settings_engine_use_book_title">오프닝 사용</string>
+    <string name="gameover_choices_options">환경설정</string>
+    <string name="settings_engine_practice_mode_summary">평가 보이기</string>
+    <string name="settings_engine_practice_mode_title">연습모드</string>
+    <string name="settings_engine_human_openings_summary">인간다운 오프닝 놀기</string>
+    <string name="settings_engine_human_openings_title">인간다운 오프닝</string>
+    <string name="settings_engine_force_opening_summary">오프닝 골르기</string>
+    <string name="settings_engine_force_opening_title">오프닝 쓰기</string>
+    <string name="settings_engine_randomness_dialog_message">AI가 최상의 움직임이 아닌 것을 고려하도록 허용하다.  약해질 수 도 있지만 더 변화가 많은 게임 가능 – 더 인간 같은.</string>
+    <string name="settings_engine_randomness_summary">AI가 최상의 움직임이 아닌 것을 고려하도록 허용하다</string>
+    <string name="settings_engine_randomness_title">랜덤</string>
+    <string name="spash_layout_message">드로이드제브라가 준비중입니다</string>
+    <string name="settings_engine_auto_make_moves_summary">자동으로 움직이게 하다</string>
+    <string name="settings_engine_auto_make_moves_title">자동으로 움직이게 하다</string>
+    <string name="settings_ui_display_last_move_summary">보드에 마지막 이동 표시</string>
+    <string name="settings_ui_display_last_move_title">마지막 이동 표시</string>
+    <string name="settings_ui_display_moves_summary">보드에 유효한 이동 표시</string>
+    <string name="settings_ui_display_moves_title">이동 표시</string>
+    <string name="gameover_choices_cancel">보드 보기</string>
+    <string name="gameover_choices_switch">팀 바꾸기</string>
+    <string name="gameover_choices_new_game">새로운 게임</string>
+    <string name="gameover_choices_email">이메일</string>
+    <string name="settings_ui_display_pv_summary">현재 플레이어에게 가장 유리한 이동 순서 보이기</string>
+    <string name="settings_ui_display_pv_title">중요한 변동 전시</string>
+    <string name="settings_ui_display_enable_animations_summary">위치 이동 시 애니메이션 효과를 주게하다</string>
+    <string name="settings_ui_display_enable_animations_title">애니메이션 가능하게하다</string>
+    <string name="settings_ui_preferences">사용자 인터페이스</string>
+    <string name="settings_engine_function_summary">컴퓨터가 경기 할 팀 선택하기</string>
+    <string name="settings_engine_function_title">엔진 기능</string>
+    <string name="settings_engine_function_dialog_title">엔진 기능 선택</string>
+    <string name="settings_sendmail_title">이메일 주소</string>
+    <string name="settings_sendmail_summary">게임 결과표 전송을 위한 이메일 주소 없음</string>
+    <string name="setting_strength_preference_summary">엔진 강도: 게임 하는 동안 컴퓨터가 분석 할 움직임의 수</string>
+    <string name="settings_strength_preference_title">검색 강도</string>
+    <string name="settings_strength_dialog_title">하나를 선택하다</string>
+    <string name="app_name">드로이드제브라</string>
+
+    <string name="settings_engine_preferences">엔진 환경설정</string>
+
+    <string name="gameover_text_white_wins">백이 승리했습니다</string>
+    <string name="gameover_text_black_wins">흑이 승리했습니다</string>
+    <string name="gameover_text_draw">무승부</string>
+    <string name="menu_item_new_game">새로운 게임</string>
+    <string name="menu_item_switch_sides">흑백 자리 바뀌다</string>
+    <string name="menu_item_redo">다시 실행</string>
+    <string name="menu_item_undo">실행 취소</string>
+    <string name="menu_item_quit">나가기</string>
+    <string name="menu_item_about">드로이드제브라 정보</string>
+    <string name="menu_item_settings">환경설정</string>
+    <string name="menu_item_hint">암시</string>
+    <string name="gameover_title">게임 오버</string>
+    <string name="dialog_quit_title">확실입니까?</string>
+    <string name="dialog_quit_button_quit">나가기</string>
+    <string name="dialog_quit_button_cancel">취소</string>
+    <string name="dialog_busy_message">&quot;생각 중 입니다. 중단하려면 아무 키나 눌러주세요&quot;</string>
+    <string name="dialog_pass_text">패스해야만 한다</string>
+    <string name="dialog_ok">네</string>
+    <string name="menu_item_donate">기부</string>
+    <string name="menu_item_mail">이메일</string>
+    <string name="spash_layout_message_2">잠시만 기다려주십시오</string>
+    <string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
+    <string name="settings_title">환경설정</string>
+    <string name="mail_generated">드로이드제브라에 의해 생성됨 (https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra)</string>
+    <string name="mail_date">날짜:</string>
+    <string name="mail_move">수순:</string>
 </resources>
