@@ -1,5 +1,7 @@
-DroidZebra Reversi for Android
+Reversatile - Zebra Reversi for Android
 ---------------------------------------------------------------
+
+This is a fork of Droidzebra: https://github.com/alkom/droidzebra
 
 DroidZebra is a graphical front-end for well-known Zebra Othello
 Engine written by Gunnar Andersson. It is one of the strongest
@@ -10,9 +12,6 @@ The game requires 10MB of storage (external or internal) to play.
 
 Info about Reversi: http://en.wikipedia.org/wiki/Reversi
 
-DroidZebra is a graphical interface for Zebra Othello Engine
-written by Gunnar Andersson ported to Android OS (by myself).
-
 You will need approximately 15mb of storage space to install
 and play the game.
 
@@ -21,6 +20,9 @@ jni/ - C code Zebra + mods
 src/ - Java code
 res/ - resource files
 
+Differences in this fork:
+- will start in practise mode with highest difficulty
+- can read games via intents/copy and paste
 
 Current features:
 - Zebra engine
@@ -29,38 +31,8 @@ Current features:
 - practice mode
 - unlimited undo
 
-TODO:
-- timed play
-- remote player vs player
 
-Version 1.5.3
+Version 1.0.0
 
-- added Korean translation (by Dal Yu)
-- enable action bar on devices with API 11+
-
-Version 1.5.2
-
-- added French translation (by Bintsa Andriani and Cédric et Anne-Laure Beaurain)
-- corrected status view text truncation issues
-
-Version 1.5
-
-- updated target version to API level 19
-- migrated dialogs to use dialog fragments
-- added board animations
-- added "hint" option (show evals on the board for one move)
-- minor scoreboard layout changes
-
-Version 1.4.1
-
-- bugfix: Randomness option in Settings was not available
-
-Version 1.4
-
- - Japanese translation (by Keishiro Tsuchiya)
- - REDO function (by Keishiro Tsuchiya)
- - email function (by Keishiro Tsuchiya)
- - russian translation
- - bugfixes
-
-
+- added functionality to enter games (via copy and paste or manually)
+- added functionality to listen to intent from Reversi Wars
