@@ -8,7 +8,7 @@
     <string name="dialog_pass_text">Du musst aussetzen</string>
     <string name="dialog_quit_button_cancel">Abbrechen</string>
     <string name="dialog_quit_title">Bist du sicher?</string>
-    <string name="display_depth">Mid: %d  Exakt: %d  G/V: %d</string>
+    <string name="display_depth" formatted="false">Mid: %d  Exakt: %d  G/V: %d</string>
     <string name="gameover_choices_cancel">Brett anzeigen</string>
     <string name="gameover_choices_email">e-Mail</string>
     <string name="gameover_choices_new_game">Neues Spiel</string>
