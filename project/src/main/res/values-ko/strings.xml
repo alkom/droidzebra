@@ -60,7 +60,6 @@
     <string name="dialog_busy_message">&quot;생각 중 입니다. 중단하려면 아무 키나 눌러주세요&quot;</string>
     <string name="dialog_pass_text">패스해야만 한다</string>
     <string name="dialog_ok">네</string>
-    <string name="menu_item_donate">기부</string>
     <string name="menu_item_mail">이메일</string>
     <string name="spash_layout_message_2">잠시만 기다려주십시오</string>
     <string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
