@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+apply from: "signing.gradle"
+
 project.ext.set("archivesBaseName", "reversatile");
 
 android {
