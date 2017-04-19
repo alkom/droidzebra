@@ -8,7 +8,12 @@ android {
     compileSdkVersion 19
     buildToolsVersion '25.0.1'
 
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
     defaultConfig {
+        multiDexEnabled true
         versionName androidGitVersion.name()
         versionCode androidGitVersion.code()
         ndk {
