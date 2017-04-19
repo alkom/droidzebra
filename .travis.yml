@@ -40,3 +40,6 @@ deploy:
   file: build/releases/reversatile-release.apk
   on:
     repo: oers/oerszebra
+dd:
+- openssl aes-256-cbc -K $encrypted_03208d80b1d9_key -iv $encrypted_03208d80b1d9_iv
+  -in keystore/zebra.jks.enc -out keystore/zebra.jks -d
