@@ -1,44 +1,42 @@
 language: android
-
 jdk: oraclejdk8
-
 before_install:
- - chmod +x gradlew
- # newest Android NDK
- - if [ `uname -m` = x86_64]; then wget http://dl.google.com/android/ndk/android-ndk-r9c-linux-x86_64.tar.bz2 -O ndk.tgz; else wget http://dl.google.com/android/ndk/android-ndk-r9c-linux-x86.tar.bz2 -O ndk.tgz; fi
- - tar -xf ndk.tgz
- - export ANDROID_NDK_HOME=`pwd`/android-ndk-r9c
- - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
-
+- chmod +x gradlew
+- if [ `uname -m` = x86_64]; then wget http://dl.google.com/android/ndk/android-ndk-r9c-linux-x86_64.tar.bz2
+  -O ndk.tgz; else wget http://dl.google.com/android/ndk/android-ndk-r9c-linux-x86.tar.bz2
+  -O ndk.tgz; fi
+- tar -xf ndk.tgz
+- export ANDROID_NDK_HOME=`pwd`/android-ndk-r9c
+- export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
 before_cache:
-    - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-
+- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 cache:
-  directories:      #Cache all dirs under .gradle folder
-    - $HOME/.gradle/daemon      #Cache daemon logs
-    - $HOME/.gradle/native      #Cache library downloaded from the gradle dependency
-    - $HOME/.gradle/wrapper     #Cache the gradle
-
+  directories:
+  - $HOME/.gradle/daemon
+  - $HOME/.gradle/native
+  - $HOME/.gradle/wrapper
 android:
   components:
-    - tools
-    - build-tools-25.0.1
-    - android-19
-    - extra
-    - ndk-bundle
-
+  - tools
+  - build-tools-25.0.1
+  - android-19
+  - extra
+  - ndk-bundle
 env:
   global:
-   # install timeout in minutes (2 minutes by default)
-    - ADB_INSTALL_TIMEOUT=8
-
-# Emulator Management: Create, Start and Wait
+  - ADB_INSTALL_TIMEOUT=8
 before_script:
-  - echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
-  - emulator -avd test -no-skin -no-audio -no-window &
-  - android-wait-for-emulator
-  - adb shell input keyevent 82 &
-  - adb logcat *:W | tee logcat.log > /dev/null 2>&1 &
-
+- echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
+- emulator -avd test -no-skin -no-audio -no-window &
+- android-wait-for-emulator
+- adb shell input keyevent 82 &
+- adb logcat *:W | tee logcat.log > /dev/null 2>&1 &
 after_script:
-  - cat logcat.log
+- cat logcat.log
+deploy:
+  provider: releases
+  api_key:
+    secure: OzY2HHyFmcop+412mV/XXSrbqb8T6T4K5ATr8rP4YZXWnrtRU7HvAcfYkQQNvU5d+9pBA2D6nP3ZW7R9Ia/rdT/ysylJtOM3hR+8wwVNKoa8unxHzUgQgn3txxos1VxLON5vzR4lhyNpo8j+Di3Xcb5EVw/+g7HKbr7pytAkBnvAdv4vGW4B0SFwiFpHrSLlW/5uL8BKGmi/oG4sJGKNt5UE6Z0RCtj7YgesNyDwMGtMvGBXj5PdISgETCy3ZdYCRR1G7Y4Oeqfw3LAmv9C54MrFZlNdXzAbuGhEXKy8UDLD0uYWXOsxq9xpmfE3Xw79HCqqmHXfMmuf1IO3Tgit1a/aN6CWC33fH+cMt3h9C0ulGHnrUpLKNC7xlQeP66TjPDtYQYhvnAGF8Ps7yYyjpExrREsh9ShKJPVhtfWCPQQCaCygcWTUD4JLwRr4gy0d14cpOUNVIJ5ja/u+oGCy16VZ7PFeOLiZbZQ8IWrYSRh1Rdxn/9q0ac8hAlj24QwIDTbhAHh+JgRbkCxIAPiZ+bDQCkLKe6MM9Vt7H9Yox2f83cIVfPLj9bZKRb2FuLRWtXezB41pU7Hk/+AnfLyM/hyELKE8tCe8h6yQCEIB/iPiCd1SbCYmZ0gChz4egaBCAQgJXJ+mQd8XjYnrbERbG6HK/GHsH66WLQKMbwpRVKY=
+  file: build/releases/reversatile-release.apk
+  on:
+    repo: oers/oerszebra
