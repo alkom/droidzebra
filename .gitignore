@@ -11,3 +11,5 @@ build
 *.log
 android-ndk-*
 *.tgz
+#don't commit the unencrypted jks
+keystore/zebra.jks
