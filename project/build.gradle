@@ -27,13 +27,9 @@ android {
         }
     }
 
-    android {
-        applicationVariants.all { variant ->
-            variant.outputs.each { output ->
-                def newName = outputFileName
-                newName.replace(".apk", "-${variant.versionName}.apk")
-                outputFileName = new File(newName)
-            }
+    android.applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "${variant.name}-${variant.versionName}.apk"
         }
     }
 }
@@ -43,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:19.1.0'
+    implementation  'com.android.support:support-v4:19.1.0'
 }
 
 

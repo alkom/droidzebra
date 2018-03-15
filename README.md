@@ -1,5 +1,7 @@
-Reversatile - Zebra Reversi for Android
+Reversatile - Zebra Reversi for Android 
 ---------------------------------------------------------------
+
+[![Build Status](https://travis-ci.org/oers/oerszebra.svg?branch=master)](https://travis-ci.org/oers/oerszebra)
 
 This is a fork of Droidzebra: https://github.com/alkom/droidzebra
 
