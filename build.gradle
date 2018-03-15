@@ -19,6 +19,7 @@ buildscript {
 
     repositories {
         jcenter()
+        google()
     }
 
     /**
@@ -28,12 +29,12 @@ buildscript {
      */
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.1'
+        classpath 'com.android.tools.build:gradle:3.0.1'
     }
 }
 
 plugins {
-    id 'com.gladed.androidgitversion' version '0.3.4'
+    id 'com.gladed.androidgitversion' version '0.4.3'
 }
 
 /**
@@ -48,5 +49,6 @@ plugins {
 allprojects {
    repositories {
        jcenter()
+       google()
    }
 }

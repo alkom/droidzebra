@@ -2,11 +2,11 @@ apply plugin: 'com.android.application'
 
 apply from: "signing.gradle"
 
-project.ext.set("archivesBaseName", "reversatile");
+project.ext.set("archivesBaseName", "reversatile")
 
 android {
     compileSdkVersion 19
-    buildToolsVersion '25.0.1'
+    buildToolsVersion '26.0.2'
 
 
     dexOptions {
@@ -17,7 +17,7 @@ android {
         versionName androidGitVersion.name()
         versionCode androidGitVersion.code()
         ndk {
-            abiFilters 'x86', 'armeabi', 'armeabi-v7a'
+            abiFilters 'x86', 'armeabi-v7a'
         }
     }
     externalNativeBuild {
@@ -27,10 +27,13 @@ android {
         }
     }
 
-    applicationVariants.all { variant ->
-        variant.outputs.each { output ->
-            output.outputFile = new File(output.outputFile.parentFile,
-                    output.outputFile.name.replace(".apk", "-${variant.versionName}.apk"));
+    android {
+        applicationVariants.all { variant ->
+            variant.outputs.each { output ->
+                def newName = outputFileName
+                newName.replace(".apk", "-${variant.versionName}.apk")
+                outputFileName = new File(newName)
+            }
         }
     }
 }
@@ -40,7 +43,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:19.0.+'
+    compile 'com.android.support:support-v4:19.1.0'
 }
 
 
