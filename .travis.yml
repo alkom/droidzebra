@@ -50,7 +50,7 @@ before_deploy:
 - jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore keystore/zebra.jks -storepass $reversatile_keystore_password -keypass $reversatile_key_password $RELEASE_FILE $reversatile_key_alias
 # Verification
 - jarsigner -verify $RELEASE_FILE
-- zipalign -f 4 $RELEASE_FILE
+- ${ANDROID_HOME}/build-tools/26.0.2/zipalign -f 4 $RELEASE_FILE
 deploy:
   provider: releases
   api_key:
