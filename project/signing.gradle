@@ -1,0 +1,20 @@
+if (project.hasProperty("reversatile_key_alias")
+        && project.hasProperty("reversatile_key_password")
+        && project.hasProperty("reversatile_keystore_password")
+        && file('../keystore/zebra.jks').exists()) {
+    android {
+        signingConfigs {
+            releaseSigningConfig {
+                keyAlias reversatile_key_alias
+                keyPassword reversatile_key_password
+                storeFile file('../keystore/zebra.jks')
+                storePassword reversatile_keystore_password
+            }
+        }
+        buildTypes {
+            release {
+                signingConfig signingConfigs.releaseSigningConfig
+            }
+        }
+    }
+}

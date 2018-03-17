@@ -1,0 +1,47 @@
+apply plugin: 'com.android.application'
+
+apply from: "signing.gradle"
+
+project.ext.set("archivesBaseName", "reversatile")
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion '26.0.2'
+
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+    defaultConfig {
+        multiDexEnabled true
+        versionName androidGitVersion.name()
+        versionCode androidGitVersion.code()
+        ndk {
+        }
+    }
+    externalNativeBuild {
+        ndkBuild {
+            path 'src/main/jni/Android.mk'
+
+        }
+    }
+
+    android.applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "reversatile-${variant.name}-${variant.versionName}.apk"
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation  'com.android.support:support-v4:19.1.0'
+}
+
+
+
+
+

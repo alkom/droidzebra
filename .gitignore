@@ -1,0 +1,15 @@
+build
+.gradle/
+*.iml
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/captures
+.externalNativeBuild
+# during travis build
+*.log
+android-ndk-*
+*.tgz
+#don't commit the unencrypted jks
+keystore/zebra.jks

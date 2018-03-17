@@ -1,0 +1,63 @@
+language: android
+jdk: oraclejdk8
+before_install:
+- rm -fr $HOME/android-ndk-r16b
+- curl -L http://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip -O
+- unzip -oq android-ndk-r16b-linux-x86_64.zip
+- rm android-ndk-r16b-linux-x86_64.zip
+- export ANDROID_NDK_HOME=./android-ndk-r16b
+- ls -ltr $ANDROID_NDK_HOME
+- ls -ltr $ANDROID_NDK_HOME/platforms
+- export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
+- openssl aes-256-cbc -K $encrypted_03208d80b1d9_key -iv $encrypted_03208d80b1d9_iv -in keystore/zebra.jks.enc -out keystore/zebra.jks -d
+before_cache:
+- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+cache:
+  directories:
+  - $HOME/.gradle/daemon
+  - $HOME/.gradle/native
+  - $HOME/.gradle/wrapper
+  - $HOME/.m2
+android:
+  components:
+  - tools
+  - platform-tools
+  - tools
+  - build-tools-26.0.2
+  - android-21
+  - android-19
+  - extra
+  - ndk-bundle
+  - sys-img-armeabi-v7a-android-21
+env:
+  global:
+  - ADB_INSTALL_TIMEOUT=8
+before_script:
+- echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
+- emulator -avd test -no-skin -no-audio -no-window &
+- android-wait-for-emulator
+- adb shell input keyevent 82 &
+- adb logcat *:W | tee logcat.log > /dev/null 2>&1 &
+
+script: ./gradlew build connectedCheck
+
+after_script:
+- git status
+- find . -name *.apk
+- cat logcat.log
+before_deploy:
+- export RELEASE_FILE="$(find . -type f -iname 'reversatile-release-*.apk')"
+- jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore keystore/zebra.jks -storepass $reversatile_keystore_password -keypass $reversatile_key_password $RELEASE_FILE $reversatile_key_alias
+# Verification
+- jarsigner -verify $RELEASE_FILE
+deploy:
+  provider: releases
+  api_key:
+    secure: OzY2HHyFmcop+412mV/XXSrbqb8T6T4K5ATr8rP4YZXWnrtRU7HvAcfYkQQNvU5d+9pBA2D6nP3ZW7R9Ia/rdT/ysylJtOM3hR+8wwVNKoa8unxHzUgQgn3txxos1VxLON5vzR4lhyNpo8j+Di3Xcb5EVw/+g7HKbr7pytAkBnvAdv4vGW4B0SFwiFpHrSLlW/5uL8BKGmi/oG4sJGKNt5UE6Z0RCtj7YgesNyDwMGtMvGBXj5PdISgETCy3ZdYCRR1G7Y4Oeqfw3LAmv9C54MrFZlNdXzAbuGhEXKy8UDLD0uYWXOsxq9xpmfE3Xw79HCqqmHXfMmuf1IO3Tgit1a/aN6CWC33fH+cMt3h9C0ulGHnrUpLKNC7xlQeP66TjPDtYQYhvnAGF8Ps7yYyjpExrREsh9ShKJPVhtfWCPQQCaCygcWTUD4JLwRr4gy0d14cpOUNVIJ5ja/u+oGCy16VZ7PFeOLiZbZQ8IWrYSRh1Rdxn/9q0ac8hAlj24QwIDTbhAHh+JgRbkCxIAPiZ+bDQCkLKe6MM9Vt7H9Yox2f83cIVfPLj9bZKRb2FuLRWtXezB41pU7Hk/+AnfLyM/hyELKE8tCe8h6yQCEIB/iPiCd1SbCYmZ0gChz4egaBCAQgJXJ+mQd8XjYnrbERbG6HK/GHsH66WLQKMbwpRVKY=
+  file_glob: true
+  file: "./project/build/outputs/apk/release/reversatile-release-*.apk"
+  skip_cleanup: true
+  on:
+    repo: oers/oerszebra
+    tags: true
+
