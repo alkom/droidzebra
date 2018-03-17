@@ -1003,7 +1003,7 @@ public class DroidZebra extends FragmentActivity
             input.setInputType(InputType.TYPE_CLASS_TEXT);
             builder.setView(input);
 
-            if (clipBoard != null) {
+            if (clipBoard != null && clipBoard.getPrimaryClip() != null) {
                 String possibleMatch = null;
                 ClipData primaryClip = clipBoard.getPrimaryClip();
                 for (int i = 0; i < primaryClip.getItemCount(); i++) {
