@@ -5,7 +5,7 @@ apply from: "signing.gradle"
 project.ext.set("archivesBaseName", "reversatile")
 
 android {
-    compileSdkVersion 19
+    compileSdkVersion 25
     buildToolsVersion '26.0.2'
 
 
@@ -38,7 +38,20 @@ repositories {
 }
 
 dependencies {
-    implementation  'com.android.support:support-v4:19.1.0'
+    implementation  'com.android.support:appcompat-v7:25.4.0'
+    implementation  'com.android.support:support-compat:25.4.0'
+    implementation  'com.android.support:animated-vector-drawable:25.4.0'
+    implementation  'com.android.support:support-v4:25.4.0'
+
+    implementation "com.google.dagger:dagger:2.15"
+    annotationProcessor "com.google.dagger:dagger-compiler:2.15"
+    annotationProcessor "com.google.dagger:dagger-android-processor:2.15"
+    implementation "com.google.dagger:dagger-android-support:2.15"
+
+    // Required -- JUnit 4 framework
+    testCompile 'junit:junit:4.12'
+    // Optional -- Mockito framework
+    testCompile 'org.mockito:mockito-core:1.10.19'
 }
 
 

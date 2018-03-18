@@ -8,7 +8,7 @@
     <string name="dialog_pass_text">Du musst aussetzen</string>
     <string name="dialog_quit_button_cancel">Abbrechen</string>
     <string name="dialog_quit_title">Bist du sicher?</string>
-    <string name="display_depth" formatted="false">Mid: %d  Exakt: %d  G/V: %d</string>
+    <string name="display_depth">Mid: %1$d  Exakt: %2$d  G/V: %3$d</string>
     <string name="gameover_choices_cancel">Brett anzeigen</string>
     <string name="gameover_choices_email">e-Mail</string>
     <string name="gameover_choices_new_game">Neues Spiel</string>
@@ -65,4 +65,6 @@
     <string name="settings_ui_preferences">Benutzerinterface</string>
     <string name="spash_layout_message">Reversatile wird geladen</string>
     <string name="spash_layout_message_2">(das kann einige Momente dauern)</string>
+    <string name="somebody_wins">Somebody wins</string>
+    <string name="_00_00">00:00</string>
 </resources>

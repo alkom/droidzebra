@@ -98,88 +98,9 @@ public class ZebraEngine extends Thread {
 	private static final String[] coeffAssets = { "coeffs2.bin" };
 	private static final String[] bookCompressedAssets = { "book.cmp.z",};
 
-
-
-	// player info
-	public static class PlayerInfo {
-		public PlayerInfo(int _player, int _skill, int _exact_skill, int _wld_skill, int _player_time, int _increment) {
-			assert(_player==PLAYER_BLACK || _player==PLAYER_WHITE || _player==PLAYER_ZEBRA);
-			playerColor = _player;
-			skill = _skill;
-			exactSolvingSkill = _exact_skill;
-			wldSolvingSkill = _wld_skill;
-			playerTime = _player_time;
-			playerTimeIncrement = _increment;
-
-		}
-		public int playerColor;
-		public int skill;
-		public int exactSolvingSkill;
-		public int wldSolvingSkill;
-		public int playerTime;
-		public int playerTimeIncrement;
-	}
-
-	public static class InvalidMove extends Exception {
-		private static final long serialVersionUID = 8970579827351672330L;
-	}
-
-	// Zebra move representation
-	public static class Move {
-		public static int PASS = -1;
-		public int mMove;
-		public Move(int move) {
-			set(move);
-		}
-		public Move(int x, int y) {
-			set(x,y);
-		}
-		public void set(int move) {
-			mMove = move;
-		}
-		public void set(int x, int y) {
-			mMove = (x+1)*10+y+1;
-		}
-		public int getY() { return mMove%10-1; }
-		public int getX() { return mMove/10-1; }
-		public String getText() {
-			if (mMove == PASS) return "--";
-			
-			byte m[] = new byte[2];
-			m[0] = (byte) ('a' + getX());
-			m[1] = (byte) ('1' + getY());
-			return new String(m);
-		}
-
-		@Override
-		public String toString() {
-			return "Move{" +
-					"mMove=" + mMove +
-					'}';
-		}
-	}
-
-	// candidate move with evals
-	public class CandidateMove {
-		public Move mMove;
-		public boolean mHasEval;
-		public String mEvalShort;  
-		public String mEvalLong;
-		public boolean mBest;
-		
-		public CandidateMove(Move move) {
-			mMove = move;
-			mHasEval = false;
-		}
-		
-		public CandidateMove(Move move, String evalShort, String evalLong, boolean best) {
-			mMove = move;
-			mEvalShort = evalShort;
-			mEvalLong = evalLong;
-			mBest = best;
-			mHasEval = true;
-		}
-	}
+    public void clean() {
+        mHandler = null;
+    }
 
 
 	private transient GameState mInitialGameState;
@@ -599,7 +520,7 @@ public class ZebraEngine extends Thread {
 		Bundle b = new Bundle();
 		msg.setData(b);
 		// Log.d("ZebraEngine", String.format("Callback(%d,%s)", msgcode, data.toString()));
-		if( bInCallback && msgcode != MSG_ERROR ) {
+		if (bInCallback && msgcode != MSG_ERROR) {
 			fatalError("Recursive callback call");
 			new Exception().printStackTrace();
 		}
@@ -608,7 +529,7 @@ public class ZebraEngine extends Thread {
 
 		try {
 			bInCallback = true;
-			switch(msgcode) {
+			switch (msgcode) {
 			case MSG_ERROR: { 
 				b.putString("error", data.getString("error"));
 				if(getEngineState()==ES_INITIAL) {
@@ -656,7 +577,7 @@ public class ZebraEngine extends Thread {
 					zeArray = info.getJSONArray("moves");
 					len = zeArray.length();
 					moves = new byte[len];
-					assert( 2*len<=mCurrentGameState.mMoveSequence.length );
+					assert (2 * len <= mCurrentGameState.mMoveSequence.length);
 					for( int i=0; i<len; i++) {
 						moves[i] = (byte)zeArray.getInt(i);
 						mCurrentGameState.mMoveSequence[2*i] = moves[i];
@@ -677,7 +598,7 @@ public class ZebraEngine extends Thread {
 					zeArray = info.getJSONArray("moves");
 					len = zeArray.length();
 					moves = new byte[len];
-					assert( (2*len+1)<=mCurrentGameState.mMoveSequence.length );
+					assert ((2 * len + 1) <= mCurrentGameState.mMoveSequence.length);
 					for( int i=0; i<len; i++) {
 						moves[i] = (byte)zeArray.getInt(i);
 						mCurrentGameState.mMoveSequence[2*i+1] = moves[i];
@@ -832,7 +753,7 @@ public class ZebraEngine extends Thread {
 			} break;
 			
 			default: {
-				b.putString( "error", String.format("Unkown message ID %d", msgcode) );
+				b.putString("error", String.format("Unkown message ID %d", msgcode));
 				msg.setData(b);
 				mHandler.sendMessage(msg);
 			} break;

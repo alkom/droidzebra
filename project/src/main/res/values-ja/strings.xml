@@ -62,9 +62,11 @@
     <string name="dialog_ok">OK</string>
     <string name="menu_item_mail">メール</string>
     <string name="spash_layout_message_2">(しばらくお待ちください)</string>
-    <string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
+    <string name="display_depth">Mid: %1$d Exact: %2$d W/L: %3$d</string>
     <string name="settings_title">設定</string>
     <string name="mail_generated">作成：DroidZebra (https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra)</string>
     <string name="mail_date">日付:</string>
     <string name="mail_move">棋譜:</string>
+    <string name="somebody_wins">Somebody wins</string>
+    <string name="_00_00">00:00</string>
 </resources>

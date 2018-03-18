@@ -72,10 +72,10 @@ public class DroidZebraTest extends ActivityInstrumentationTestCase2<DroidZebra>
         assertSame(2, countSquares(this.getActivity().getBoard(), ZebraEngine.PLAYER_BLACK));
     }
 
-    private int countSquares(DroidZebra.BoardState[][] board, byte playerEmpty) {
+    private int countSquares(FieldState[][] board, byte playerEmpty) {
         int result = 0;
-        for (DroidZebra.BoardState[] row : board) {
-            for (DroidZebra.BoardState column : row) {
+        for (FieldState[] row : board) {
+            for (FieldState column : row) {
                 if (playerEmpty == column.getState()) {
                     result++;
                 }
@@ -84,10 +84,10 @@ public class DroidZebraTest extends ActivityInstrumentationTestCase2<DroidZebra>
         return result;
     }
 
-    private String asString(DroidZebra.BoardState[][] board) {
+    private String asString(FieldState[][] board) {
         StringBuilder builder = new StringBuilder();
-        for (DroidZebra.BoardState[] row : board) {
-            for (DroidZebra.BoardState column : row) {
+        for (FieldState[] row : board) {
+            for (FieldState column : row) {
                 switch (column.getState()) {
                     case ZebraEngine.PLAYER_WHITE:
                         builder.append("o");

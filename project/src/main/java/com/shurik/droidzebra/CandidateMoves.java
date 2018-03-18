@@ -8,16 +8,16 @@ import java.util.Observable;
 
 public class CandidateMoves extends Observable {
 
-    ZebraEngine.CandidateMove[] moves = new ZebraEngine.CandidateMove[]{};
+    CandidateMove[] moves = new CandidateMove[]{};
 
     public CandidateMoves() {
     }
 
-    public ZebraEngine.CandidateMove[] getMoves() {
+    public CandidateMove[] getMoves() {
         return moves;
     }
 
-    public void setMoves(ZebraEngine.CandidateMove[] moves) {
+    public void setMoves(CandidateMove[] moves) {
         this.moves = moves;
         super.setChanged();
         super.notifyObservers(moves);

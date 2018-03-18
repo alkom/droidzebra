@@ -8,13 +8,13 @@
               android:gravity="center"
               >
     <TextView android:id="@+id/gameover_text"
-    		  android:text="Somebody wins"
+        android:text="@string/somebody_wins"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               android:textColor="#FFF"
               android:gravity="center" android:textSize="36sp"/>
     <TextView android:id="@+id/gameover_score"
-    		  android:text="00:00"
+        android:text="@string/_00_00"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               android:textColor="#FFF"

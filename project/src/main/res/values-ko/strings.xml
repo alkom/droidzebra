@@ -62,9 +62,11 @@
     <string name="dialog_ok">네</string>
     <string name="menu_item_mail">이메일</string>
     <string name="spash_layout_message_2">잠시만 기다려주십시오</string>
-    <string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
+    <string name="display_depth">Mid: %1$d Exact: %2$d W/L: %3$d</string>
     <string name="settings_title">환경설정</string>
     <string name="mail_generated">드로이드제브라에 의해 생성됨 (https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra)</string>
     <string name="mail_date">날짜:</string>
     <string name="mail_move">수순:</string>
+    <string name="somebody_wins">Somebody wins</string>
+    <string name="_00_00">00:00</string>
 </resources>

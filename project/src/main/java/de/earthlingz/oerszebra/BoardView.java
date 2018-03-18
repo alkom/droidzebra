@@ -36,11 +36,11 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.shurik.droidzebra.CandidateMove;
 import com.shurik.droidzebra.EngineError;
+import com.shurik.droidzebra.InvalidMove;
+import com.shurik.droidzebra.Move;
 import com.shurik.droidzebra.ZebraEngine;
-import com.shurik.droidzebra.ZebraEngine.CandidateMove;
-import com.shurik.droidzebra.ZebraEngine.InvalidMove;
-import com.shurik.droidzebra.ZebraEngine.Move;
 //import android.util.Log;
 
 public class BoardView extends View {
@@ -158,7 +158,7 @@ public class BoardView extends View {
 	public Move getMoveFromCoord(float x, float y) throws InvalidMove {
 		int bx = (int)Math.floor((x - mBoardRect.left)/mSizeCell);
 		int by = (int)Math.floor((y - mBoardRect.top)/mSizeCell);
-		if(bx<0 || bx>=DroidZebra.boardSize || by<0 || by>=DroidZebra.boardSize) {
+		if (bx < 0 || bx >= BoardState.boardSize || by < 0 || by >= BoardState.boardSize) {
 			throw new InvalidMove();
 		}
 		return new Move(bx, by);
@@ -208,10 +208,11 @@ public class BoardView extends View {
 		
 		// draw the board
 		mPaint.setStrokeWidth(lineWidth);
-		for(int i = 0; i<=DroidZebra.boardSize; i++ ) {
+		int boardSize = BoardState.boardSize;
+		for (int i = 0; i <= boardSize; i++) {
 			mPaint.setColor(mColorLine);
-			canvas.drawLine(mBoardRect.left+i*mSizeCell, mBoardRect.top, mBoardRect.left+i*mSizeCell, mBoardRect.top+mSizeCell*DroidZebra.boardSize, mPaint);
-			canvas.drawLine(mBoardRect.left, mBoardRect.top+i*mSizeCell, mBoardRect.left+mSizeCell*DroidZebra.boardSize, mBoardRect.top+i*mSizeCell, mPaint);
+			canvas.drawLine(mBoardRect.left + i * mSizeCell, mBoardRect.top, mBoardRect.left + i * mSizeCell, mBoardRect.top + mSizeCell * boardSize, mPaint);
+			canvas.drawLine(mBoardRect.left, mBoardRect.top + i * mSizeCell, mBoardRect.left + mSizeCell * boardSize, mBoardRect.top + i * mSizeCell, mPaint);
 		}
 		canvas.drawCircle(mBoardRect.left+2*mSizeCell, mBoardRect.top+2*mSizeCell, gridCirclesRadius, mPaint);
 		canvas.drawCircle(mBoardRect.left+2*mSizeCell, mBoardRect.top+6*mSizeCell, gridCirclesRadius, mPaint);
@@ -219,7 +220,7 @@ public class BoardView extends View {
 		canvas.drawCircle(mBoardRect.left+6*mSizeCell, mBoardRect.top+6*mSizeCell, gridCirclesRadius, mPaint);
 
 		// draw guides
-		for(int i = 0; i<DroidZebra.boardSize; i++ ) {
+		for (int i = 0; i < boardSize; i++) {
 			mPaint.setTextSize(mSizeCell*0.3f);
 			mPaint.setColor(Color.BLACK);
 			canvas.drawText(String.valueOf(i+1), mBoardRect.left/2 + 1, mBoardRect.top + i*mSizeCell + mSizeCell/2 - (mFontMetrics.ascent+mFontMetrics.descent)/2 + 1, mPaint);
@@ -232,7 +233,7 @@ public class BoardView extends View {
 		// draw helpers for move selector
 		if( mMoveSelection != null ) {
 			if( mShowSelectionHelpers ) {
-				if( mDroidZebra.isValidMove(mMoveSelection) )
+				if (mDroidZebra.getState().isValidMove(mMoveSelection))
 					mPaint.setColor(mColorHelpersValid);
 				else
 					mPaint.setColor(mColorHelpersInvalid);
@@ -252,7 +253,7 @@ public class BoardView extends View {
 	        			mPaint
 	        		);
 			} else if( mShowSelection ) {
-				if( mDroidZebra.isValidMove(mMoveSelection) )
+				if (mDroidZebra.getState().isValidMove(mMoveSelection))
 					mPaint.setColor(mColorSelectionValid);
 				else
 					mPaint.setColor(mColorSelectionInvalid);
@@ -275,9 +276,9 @@ public class BoardView extends View {
 		float oval_x, oval_y;
 		float circle_r = mSizeCell/2-lineWidth*2;
 		int circle_color;
-		float oval_adjustment = (float)Math.abs(circle_r*Math.cos(Math.PI*mAnimationProgress)); 
-		for(int i = 0; i<DroidZebra.boardSize; i++ ) {
-			for(int j=0; j<DroidZebra.boardSize; j++) {
+		float oval_adjustment = (float)Math.abs(circle_r*Math.cos(Math.PI*mAnimationProgress));
+		for (int i = 0; i < boardSize; i++) {
+			for (int j = 0; j < boardSize; j++) {
 				if (getDroidZebra().getBoard()[i][j].getState() == ZebraEngine.PLAYER_EMPTY)
 					continue;
 				if(getDroidZebra().getBoard()[i][j].getState()==ZebraEngine.PLAYER_BLACK)
@@ -358,12 +359,12 @@ public class BoardView extends View {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
 		mSizeX = mSizeY = Math.min(getMeasuredWidth(), getMeasuredHeight());
-		mSizeCell = Math.min(mSizeX/(DroidZebra.boardSize+1), mSizeY/(DroidZebra.boardSize+1));
+		mSizeCell = Math.min(mSizeX / (BoardState.boardSize + 1), mSizeY / (BoardState.boardSize + 1));
 		lineWidth = Math.max(1f, mSizeCell/40f);
 		gridCirclesRadius = Math.max(3f, mSizeCell/13f);
 		mBoardRect.set(
-				mSizeX-mSizeCell/2-mSizeCell*DroidZebra.boardSize,
-				mSizeY-mSizeCell/2-mSizeCell*DroidZebra.boardSize,
+				mSizeX - mSizeCell / 2 - mSizeCell * BoardState.boardSize,
+				mSizeY - mSizeCell / 2 - mSizeCell * BoardState.boardSize,
 				mSizeX-mSizeCell/2,
 				mSizeY-mSizeCell/2
 			);
@@ -422,16 +423,16 @@ public class BoardView extends View {
 		boolean bMakeMove = (
 				keyCode == KeyEvent.KEYCODE_DPAD_CENTER
 				|| keyCode == KeyEvent.KEYCODE_SPACE );
-		
-		updateSelection(newMX, newMY, bMakeMove, true);
+
+        updateSelection(newMX, newMY, bMakeMove, true);
 
 		return false;
 	}
 
 
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		if(mIsAnimationRunning) return false;
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if(mIsAnimationRunning) return false;
 		
 		int action = event.getAction();
 		int bx = (int)Math.floor((event.getX() - mBoardRect.left)/mSizeCell);
@@ -440,13 +441,13 @@ public class BoardView extends View {
 		case MotionEvent.ACTION_DOWN:
 		case MotionEvent.ACTION_MOVE:
 			mShowSelectionHelpers = true;
-	        updateSelection(bx, by, false, true);
-			break;
-		case MotionEvent.ACTION_UP:
+            updateSelection(bx, by, false, true);
+            break;
+            case MotionEvent.ACTION_UP:
 			mShowSelectionHelpers = false;
-	        updateSelection(bx, by, true, true);
-			break;
-		} 
+            updateSelection(bx, by, true, true);
+            break;
+        }
 		return true;
 	}
 
@@ -461,10 +462,11 @@ public class BoardView extends View {
 		
 		switch(event.getAction()) {
 		case MotionEvent.ACTION_DOWN: {
-			updateSelection(mMoveSelection.getX(), mMoveSelection.getY(), true, true);
-		} break;
-		
-		case MotionEvent.ACTION_MOVE: { 
+            updateSelection(mMoveSelection.getX(), mMoveSelection.getY(), true, true);
+        }
+        break;
+
+            case MotionEvent.ACTION_MOVE: {
 			int newMX = mMoveSelection.getX();
 			int newMY = mMoveSelection.getY();
 			if( Math.abs(tx)>Math.abs(ty) ) {
@@ -478,29 +480,30 @@ public class BoardView extends View {
 		        else 
 		        	newMY--;
 			}
-			updateSelection(newMX, newMY, false, true);
-		} break;
-		
-		default:
+            updateSelection(newMX, newMY, false, true);
+        }
+        break;
+
+            default:
 			return false;
 		}
 
 		return true;
 	}
 
-	private void updateSelection(int bX, int bY, boolean bMakeMove, boolean bShowSelection ) {
-		boolean bInvalidate = false;
-		
-		if(bX<0 || bX>=DroidZebra.boardSize) 
+    private void updateSelection(int bX, int bY, boolean bMakeMove, boolean bShowSelection) {
+        boolean bInvalidate = false;
+
+		if (bX < 0 || bX >= BoardState.boardSize)
 			bX = mMoveSelection.getX();
 
-		if(bY<0 || bY>=DroidZebra.boardSize) 
+		if (bY < 0 || bY >= BoardState.boardSize)
 			bY = mMoveSelection.getY();
 
-		if( mShowSelection!=bShowSelection ) {
-			mShowSelection = bShowSelection;
-			bInvalidate = true;
-		}
+        if (mShowSelection != bShowSelection) {
+            mShowSelection = bShowSelection;
+            bInvalidate = true;
+        }
 
 		if( bX!=mMoveSelection.getX() || bY!=mMoveSelection.getY()) {
 			mMoveSelection = new Move(bX, bY);
@@ -511,8 +514,8 @@ public class BoardView extends View {
 		if( bMakeMove ) {
 			bInvalidate = true;
 			mShowSelectionHelpers = false;
-			
-			if( getDroidZebra().isValidMove(mMoveSelection) ) {
+
+			if (getDroidZebra().getState().isValidMove(mMoveSelection)) {
 				// if zebra is still thinking - no move is possible yet - throw a busy dialog
 				if( mDroidZebra.isThinking() && !mDroidZebra.isHumanToMove()) {
 					mDroidZebra.showBusyDialog();

@@ -27,7 +27,11 @@
 <CheckBoxPreference android:summary="@string/settings_engine_human_openings_summary" android:title="@string/settings_engine_human_openings_title" android:key="settings_engine_human_openings" android:defaultValue="false"></CheckBoxPreference>
 
 <CheckBoxPreference android:key="settings_engine_use_book" android:summary="@string/settings_engine_use_book_summary" android:title="@string/settings_engine_use_book_title" android:defaultValue="true"></CheckBoxPreference>
-<EditTextPreference android:key="settings_sendmail" android:title="@string/settings_sendmail_title" android:defaultValue="" android:maxLength="255" android:summary="@string/settings_sendmail_summary"/>	
+		<EditTextPreference
+			android:key="settings_sendmail"
+			android:title="@string/settings_sendmail_title"
+			android:maxLength="255"
+			android:summary="@string/settings_sendmail_summary" />
 </PreferenceCategory>
 	<PreferenceCategory android:title="@string/settings_ui_preferences">
 		<CheckBoxPreference android:key="settings_ui_display_moves"

@@ -25,7 +25,7 @@ android:
   - tools
   - build-tools-26.0.2
   - android-21
-  - android-19
+  - android-25
   - extra
   - ndk-bundle
   - sys-img-armeabi-v7a-android-21

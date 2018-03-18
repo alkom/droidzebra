@@ -61,17 +61,17 @@ public class StatusView extends View {
 		private float mScreenXend;
 		private float mScreenYend;
 		private int mScreenColor;
-		
-		public DrawLine(int id, float xstart, float ystart, float xend, float yend, int rcolor) {
-			super(id);
-			mXstart = xstart;
-			mYstart = ystart;
+
+        public DrawLine(int id, float xstart, float ystart, float xend, float yend, int rcolor) {
+            super(id);
+            mXstart = xstart;
+            mYstart = ystart;
 			mXend = xend;
 			mYend = yend;
-			mRColor = rcolor;
-		}
-		
-		@Override
+            mRColor = rcolor;
+        }
+
+        @Override
 		public void prepareDraw(float scaleW, float scaleH, Paint p) {
 			mScreenColor = getResources().getColor(mRColor);
 			mScreenXstart = mXstart*scaleW;
@@ -234,19 +234,19 @@ public class StatusView extends View {
 		;
 		
 	private  DrawElement[] mLayout = {
-		new DrawLine(ID_NONE, 0.0f, 0.0f, 1.0f, 0.0f, R.color.statuslinecolor),
-		new DrawLine(ID_NONE, 0.0f, 1.0f, 1.0f, 1.0f, R.color.statuslinecolor),
-		new DrawLine(ID_NONE, 0.0f, 0.0f, 0.0f, 1.0f, R.color.statuslinecolor),
-		new DrawLine(ID_NONE, 1.0f, 0.0f, 1.0f, 1.0f, R.color.statuslinecolor),
+            new DrawLine(ID_NONE, 0.0f, 0.0f, 1.0f, 0.0f, R.color.statuslinecolor),
+            new DrawLine(ID_NONE, 0.0f, 1.0f, 1.0f, 1.0f, R.color.statuslinecolor),
+            new DrawLine(ID_NONE, 0.0f, 0.0f, 0.0f, 1.0f, R.color.statuslinecolor),
+            new DrawLine(ID_NONE, 1.0f, 0.0f, 1.0f, 1.0f, R.color.statuslinecolor),
 
-		new DrawLine(ID_NONE, 0.5f*HSF, 0.0f, 0.5f*HSF, STATUS_POS_Y, R.color.statuslinecolor),
-		new DrawLine(ID_NONE, 0.0f, STATUS_POS_Y, 1.0f, STATUS_POS_Y, R.color.statuslinecolor),
+            new DrawLine(ID_NONE, 0.5f * HSF, 0.0f, 0.5f * HSF, STATUS_POS_Y, R.color.statuslinecolor),
+            new DrawLine(ID_NONE, 0.0f, STATUS_POS_Y, 1.0f, STATUS_POS_Y, R.color.statuslinecolor),
 
 		// moves panel
-		new DrawLine(ID_NONE, 0.12f*HSF, SCORE_BOX_START_Y, 0.48f*HSF, SCORE_BOX_START_Y, R.color.statuslinecolor),
-		new DrawLine(ID_NONE, 0.30f*HSF, SCORE_BOX_START_Y, 0.30f*HSF, SCORE_BOX_END_Y, R.color.statuslinecolor),
-		new DrawText(ID_NONE, 0.12f*HSF, 0.02f, 0.30f*HSF, SCORE_BOX_START_Y-0.02f, "B", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_FIT),
-		new DrawText(ID_NONE, 0.30f*HSF, 0.02f, 0.48f*HSF, SCORE_BOX_START_Y-0.02f, "W", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_FIT),
+            new DrawLine(ID_NONE, 0.12f * HSF, SCORE_BOX_START_Y, 0.48f * HSF, SCORE_BOX_START_Y, R.color.statuslinecolor),
+            new DrawLine(ID_NONE, 0.30f * HSF, SCORE_BOX_START_Y, 0.30f * HSF, SCORE_BOX_END_Y, R.color.statuslinecolor),
+            new DrawText(ID_NONE, 0.12f * HSF, 0.02f, 0.30f * HSF, SCORE_BOX_START_Y - 0.02f, "B", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_FIT),
+            new DrawText(ID_NONE, 0.30f*HSF, 0.02f, 0.48f*HSF, SCORE_BOX_START_Y-0.02f, "W", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_FIT),
 		
 		new DrawText(ID_SCORELINE_NUM_1, SCORE_BOX_NUM_START_X, SCORE_BOX_START_Y+0*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_NUM_END_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "12", R.color.statustextcolor, Paint.Align.RIGHT, 0),
 		new DrawText(ID_SCORELINE_NUM_2, SCORE_BOX_NUM_START_X, SCORE_BOX_START_Y+1*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_NUM_END_X, SCORE_BOX_START_Y+2*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "13", R.color.statustextcolor, Paint.Align.RIGHT, 0),
@@ -270,10 +270,10 @@ public class StatusView extends View {
 		new DrawText(ID_SCORE_SKILL, 0.48f, STATUS_POS_Y-0.25f, 0.92f, STATUS_POS_Y-0.15f, "Mid: 8  Exact: 16  W/L: 18", R.color.white, Paint.Align.CENTER, DrawText.FLAG_FIT),
 		
 		// status panel
-		new DrawLine(ID_NONE, 0.40f, STATUS_POS_Y, 0.40f, 1.0f, R.color.statuslinecolor),
-		new DrawLine(ID_NONE, 0.80f, STATUS_POS_Y, 0.80f, 1.0f, R.color.statuslinecolor),
-		new DrawText(ID_STATUS_OPENING, 0.0f, STATUS_POS_Y+0.04f, 0.40f, 1.0f-0.04f, "Some other opening", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
-		new DrawText(ID_STATUS_PV, 0.40f, STATUS_POS_Y+0.04f, 0.80f, 1.0f-0.04f, "a1 b1 -- c2", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
+            new DrawLine(ID_NONE, 0.40f, STATUS_POS_Y, 0.40f, 1.0f, R.color.statuslinecolor),
+            new DrawLine(ID_NONE, 0.80f, STATUS_POS_Y, 0.80f, 1.0f, R.color.statuslinecolor),
+            new DrawText(ID_STATUS_OPENING, 0.0f, STATUS_POS_Y + 0.04f, 0.40f, 1.0f - 0.04f, "Some other opening", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
+            new DrawText(ID_STATUS_PV, 0.40f, STATUS_POS_Y+0.04f, 0.80f, 1.0f-0.04f, "a1 b1 -- c2", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
 		new DrawText(ID_STATUS_EVAL, 0.80f, STATUS_POS_Y+0.04f, 1.0f, 1.0f-0.04f, "+5.4", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
 	};
 	private TreeMap<Integer, DrawElement> mDrawTextIDMap = new TreeMap<Integer, DrawElement>();

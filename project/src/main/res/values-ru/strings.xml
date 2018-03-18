@@ -62,10 +62,12 @@
     <string name="dialog_ok">OK</string>
     <string name="menu_item_mail">e-Mail</string>
     <string name="spash_layout_message_2">(это займет немного времени)</string>
-    <string name="display_depth" formatted="false">Mid: %d  Exact: %d  W/L: %d</string>
+    <string name="display_depth">Mid: %1$d Exact: %2$d W/L: %3$d</string>
     <string name="settings_title">Настройки</string>
     <string name="mail_generated">Сгенерировано с помощью Reversatile (https://play.google.com/store/apps/details?id=de.earthlingz.oerszebra)</string>
     <string name="mail_date">Дата:</string>
     <string name="mail_move">Последовательность ходов:</string>
+    <string name="somebody_wins">Somebody wins</string>
+    <string name="_00_00">00:00</string>
 
 </resources>
