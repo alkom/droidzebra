@@ -157,7 +157,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		return mZebraThread.isHumanToMove();
 	}
 
-	public void makeMove(Move mMoveSelection) throws InvalidMove, EngineError {
+	public void makeMove(Move mMoveSelection) throws InvalidMove {
 		mZebraThread.makeMove(mMoveSelection);
 	}
 
@@ -260,8 +260,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if( !mIsInitCompleted ) return false;
-		try {
-			switch (item.getItemId()) {
+		switch (item.getItemId()) {
 			case R.id.menu_new_game:
 				newGame();
 				return true;
@@ -278,22 +277,24 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 				// Launch Preference activity
 				Intent i = new Intent(this, SettingsPreferences.class);
 				startActivity(i);
-			} return true;
+			}
+			return true;
 			case R.id.menu_switch_sides: {
 				switchSides();
-			} break;
-            case R.id.menu_enter_moves: {
+			}
+			break;
+			case R.id.menu_enter_moves: {
 				enterMoves();
-			} break;
+			}
+			break;
 			case R.id.menu_mail: {
 				sendMail();
-			} return true;
+			}
+			return true;
 			case R.id.menu_hint: {
 				showHint();
-			} return true;
 			}
-		} catch (EngineError e) {
-			FatalError(e.getError());
+			return true;
 		}
 		return false;
 	}
@@ -747,11 +748,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-			try {
-				mZebraThread.undoMove();
-			} catch (EngineError e) {
-				FatalError(e.getError());
-			}
+			mZebraThread.undoMove();
 			return true;
 		}
 		return super.onKeyDown(keyCode, event);
