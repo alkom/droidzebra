@@ -22,6 +22,7 @@ import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -151,35 +152,54 @@ public class ZebraEngine extends Thread {
 
 		// first check if files exist on internal device
 		File pattern = new File(mContext.getFilesDir(), PATTERNS_FILE);
-		File book = new File(mContext.getFilesDir(), BOOK_FILE);
+        File book = new File(mContext.getFilesDir(), BOOK_FILE_COMPRESSED);
 		if( pattern.exists() && book.exists() ) {
 			mFilesDir = mContext.getFilesDir();
 			return true;
 		}
 		
 		// if not - try external folder
-		try {
-			if(android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
-				File extDir = new File(android.os.Environment.getExternalStorageDirectory(), "/DroidZebra/files/");
-				_prepareZebraFolder(extDir); //may throw
-				mFilesDir = extDir;
-			}
-		} catch (IOException e) {
-			mFilesDir = null;
-		}
-		
-		// if external did not work out - try internal
-		if(mFilesDir == null) {
-			try {
-				_prepareZebraFolder(mContext.getFilesDir());
-				mFilesDir = mContext.getFilesDir();
-			} catch (IOException e) {
-				fatalError(e.getMessage());
-				return false;
-			}
-		}
-		return true;
-	}
+        copyAsset(mContext.getAssets(), PATTERNS_FILE, mContext.getFilesDir());
+        copyAsset(mContext.getAssets(), BOOK_FILE_COMPRESSED, mContext.getFilesDir());
+
+        if (!pattern.exists() && !book.exists()) {
+            fatalError("Kann coeeffs.bin und book nicht finden");
+            return false;
+        }
+
+        mFilesDir = mContext.getFilesDir();
+        return true;
+    }
+
+    private boolean copyAsset(AssetManager assetManager,
+                              String fromAssetPath, File filesdir) {
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = assetManager.open(fromAssetPath);
+            File target = new File(filesdir, fromAssetPath);
+            out = new FileOutputStream(target);
+            copyFile(in, out);
+            in.close();
+            in = null;
+            out.flush();
+            out.close();
+            out = null;
+            return true;
+        } catch (Exception e) {
+            fatalError(e.toString());
+            Log.e(ZebraEngine.class.getSimpleName(), "copyAsset: " + fromAssetPath, e);
+            return false;
+        }
+    }
+
+    private static void copyFile(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while ((read = in.read(buffer)) != -1) {
+            out.write(buffer, 0, read);
+        }
+    }
 
 	public void waitForEngineState( int state, int milliseconds )
 	{
@@ -248,8 +268,7 @@ public class ZebraEngine extends Thread {
 		}
 	}
 
-	public void makeMove(Move move) throws InvalidMove, EngineError
-	{
+    public void makeMove(Move move) throws InvalidMove {
 		if(!isValidMove(move))
 			throw new InvalidMove();
 
@@ -276,8 +295,7 @@ public class ZebraEngine extends Thread {
 		setEngineState(ES_PLAY);
 	}
 
-	public void undoMove() throws EngineError
-	{
+    public void undoMove() {
 		// if thinking on human time - stop
 		if( mPlayerInfo[mSideToMove].skill==0
 			&& getEngineState()==ZebraEngine.ES_PLAYINPROGRESS ) {
@@ -300,8 +318,7 @@ public class ZebraEngine extends Thread {
 		setEngineState(ES_PLAY);
 	}
 
-	public void redoMove() throws EngineError
-	{
+    public void redoMove() {
 		// if thinking on human time - stop
 		if( mPlayerInfo[mSideToMove].skill==0
 			&& getEngineState()==ZebraEngine.ES_PLAYINPROGRESS ) {

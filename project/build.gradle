@@ -17,6 +17,7 @@ android {
         versionName androidGitVersion.name()
         versionCode androidGitVersion.code()
         ndk {
+            abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
         }
     }
     externalNativeBuild {
