@@ -96,9 +96,6 @@ public class ZebraEngine extends Thread {
 	UI_EVENT_REDO = 4
 	;
 
-	private static final String[] coeffAssets = { "coeffs2.bin" };
-	private static final String[] bookCompressedAssets = { "book.cmp.z",};
-
     public void clean() {
         mHandler = null;
     }
@@ -163,8 +160,11 @@ public class ZebraEngine extends Thread {
         copyAsset(mContext.getAssets(), BOOK_FILE_COMPRESSED, mContext.getFilesDir());
 
         if (!pattern.exists() && !book.exists()) {
-            fatalError("Kann coeeffs.bin und book nicht finden");
-            return false;
+            // will be recreated from resources, the next time, maybe
+            new File(mContext.getFilesDir(), PATTERNS_FILE).delete();
+            new File(mContext.getFilesDir(), BOOK_FILE).delete();
+            new File(mContext.getFilesDir(), BOOK_FILE_COMPRESSED).delete();
+            throw new IllegalStateException("Kann coeeffs.bin und book nicht finden");
         }
 
         mFilesDir = mContext.getFilesDir();
@@ -187,9 +187,8 @@ public class ZebraEngine extends Thread {
             out = null;
             return true;
         } catch (Exception e) {
-            fatalError(e.toString());
             Log.e(ZebraEngine.class.getSimpleName(), "copyAsset: " + fromAssetPath, e);
-            return false;
+            throw new IllegalStateException("Datei konnte nicht geladen werden: " + fromAssetPath, e);
         }
     }
 
@@ -805,59 +804,6 @@ public class ZebraEngine extends Thread {
 	
 	public boolean isHumanToMove() {
 		return mPlayerInfo[mSideToMove].skill==0;
-	}
-	
-	private void _prepareZebraFolder(File dir) throws IOException
-	{
-		File pattern = new File(dir, PATTERNS_FILE);
-		File book = new File(dir, BOOK_FILE);
-		File bookCompressed = new File(dir, BOOK_FILE_COMPRESSED);
-		
-		if( pattern.exists() && book.exists() )
-			return;
-
-		if( !dir.exists() && !dir.mkdirs() )
-			throw new IOException(String.format("Unable to create %s", dir));
-			
-		try {
-			_asset2File(coeffAssets, pattern);
-			_asset2File(bookCompressedAssets, bookCompressed);
-		} catch (IOException e) {
-			pattern.delete();
-			book.delete();
-			bookCompressed.delete();
-			throw e;
-		}
-	}
-	
-	private void _asset2File(String[] assets, File file) throws IOException {
-		if( !file.exists() || file.length()==0 ) {
-			// copy files
-			AssetManager assetManager = mContext.getAssets();
-			InputStream source = null;
-			OutputStream destination = null;
-			try {
-				destination = new FileOutputStream(file);
-				for(String sourceAsset:assets) {
-					source = assetManager.open(sourceAsset);
-					byte[] buffer = new byte[1024];
-					int len = source.read(buffer);
-					while (len != -1) {
-						destination.write(buffer, 0, len);
-						len = source.read(buffer);
-					}	
-				}
-			}
-			finally {
-				if(destination != null) {
-					try {
-						destination.close();
-					} catch (IOException e) {
-						fatalError(e.getMessage());
-					}
-				}
-			}
-		}
 	}
 
 	private void fatalError(String message) {
