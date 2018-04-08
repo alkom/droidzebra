@@ -32,12 +32,12 @@ import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.os.CountDownTimer;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.shurik.droidzebra.CandidateMove;
-import com.shurik.droidzebra.EngineError;
 import com.shurik.droidzebra.InvalidMove;
 import com.shurik.droidzebra.Move;
 import com.shurik.droidzebra.ZebraEngine;
@@ -523,8 +523,7 @@ public class BoardView extends View {
 		        	try {
 						getDroidZebra().makeMove(mMoveSelection);
 					} catch (InvalidMove e) {
-					} catch (EngineError e) {
-						getDroidZebra().FatalError(e.getError());
+                        Log.e("BoardView", e.getMessage(), e);
 					}
 				}
 			}
