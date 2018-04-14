@@ -1,5 +1,7 @@
 package de.earthlingz.oerszebra;
 
+import android.support.annotation.NonNull;
+
 import com.shurik.droidzebra.CandidateMove;
 import com.shurik.droidzebra.CandidateMoves;
 import com.shurik.droidzebra.Move;
@@ -58,15 +60,15 @@ public class BoardState {
         return mCandidateMoves.getMoves();
     }
 
-    public void setMoves(CandidateMove[] moves) {
+    public void setMoves(@NonNull CandidateMove[] moves) {
         mCandidateMoves.setMoves(moves);
     }
 
     public boolean isValidMove(Move move) {
-        if (mCandidateMoves == null)
-            return false;
         for (CandidateMove m : mCandidateMoves.getMoves()) {
-            if (m.mMove.getX() == move.getX() && m.mMove.getY() == move.getY()) return true;
+            if (m.mMove.getX() == move.getX() && m.mMove.getY() == move.getY()) {
+                return true;
+            }
         }
         return false;
     }

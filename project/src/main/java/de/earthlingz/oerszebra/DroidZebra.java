@@ -1098,6 +1098,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 				break;
 
 				case ZebraEngine.MSG_GAME_OVER: {
+					setCandidateMoves(new CandidateMove[]{});
 					int max = state.getmBoard().length * state.getmBoard().length;
 					if (state.getmBlackScore() + state.getmWhiteScore() < max) {
 						//adjust result
