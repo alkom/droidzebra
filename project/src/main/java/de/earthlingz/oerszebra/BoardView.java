@@ -346,8 +346,8 @@ public class BoardView extends View {
 		}
 
 		// draw last move marker
-		if( getDroidZebra().mSettingDisplayLastMove && getDroidZebra().getLastMove()!=null ) {
-			Move lm = getDroidZebra().getLastMove();
+        if (getDroidZebra().mSettingDisplayLastMove && getDroidZebra().getState().getmLastMove() != null) {
+            Move lm = getDroidZebra().getState().getmLastMove();
 			RectF cellRT = getCellRect(lm.getX(), lm.getY());
 			mPaint.setColor(Color.BLUE);
 			canvas.drawCircle(cellRT.left+mSizeCell/10, cellRT.bottom-mSizeCell/10, mSizeCell/10, mPaint);			
@@ -401,9 +401,6 @@ public class BoardView extends View {
 		
 		int newMX = mMoveSelection.getX();
 		int newMY = mMoveSelection.getY();
-		
-		newMX = mMoveSelection.getX();
-		newMY = mMoveSelection.getY();
 
 		switch(keyCode) {
 		case KeyEvent.KEYCODE_DPAD_LEFT:

@@ -215,16 +215,6 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		mBoardView.invalidate();
 	}
 
-	@Deprecated
-	public Move getLastMove() {
-		return state.getmLastMove();
-	}
-
-	@Deprecated
-	public void setLastMove(Move move) {
-		state.setmLastMove(move);
-	}
-
 	public boolean evalsDisplayEnabled() {
 		return mSettingZebraPracticeMode || mHintIsUp;
 	}
@@ -591,9 +581,9 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		StringBuilder sbMoves = new StringBuilder();
 		if(moves != null){
 
-			for(int i=0; i < moves.length; i++){
-				if(moves[i]!=0x00){
-					Move move = new Move(moves[i]);
+            for (byte move1 : moves) {
+                if (move1 != 0x00) {
+                    Move move = new Move(move1);
 					sbMoves.append(move.getText());
 					if (state.getmLastMove().getText().equals(move.getText())) {
 						break;
@@ -659,6 +649,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 				mZebraThread.join();
 				retry = false;
 			} catch (InterruptedException e) {
+                Log.wtf("wtf", e);
 			}
 		}
 		mZebraThread.clean();
@@ -787,6 +778,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		}
 
 		@Override
+        @NonNull
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
 	    	return new AlertDialog.Builder(getActivity())
 			.setTitle(R.string.app_name)
@@ -1125,14 +1117,14 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 				case ZebraEngine.MSG_PV: {
 					if (mSettingDisplayPV) {
 						byte[] pv = m.getData().getByteArray("pv");
-						String pvText = new String();
+                        StringBuilder pvText = new StringBuilder();
 						for (byte move : pv) {
-							pvText += new Move(move).getText();
-							pvText += " ";
+                            pvText.append(new Move(move).getText());
+                            pvText.append(" ");
 						}
 						mStatusView.setTextForID(
 								StatusView.ID_STATUS_PV,
-								pvText
+                                pvText.toString()
 						);
 					}
 				}
