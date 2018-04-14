@@ -1009,7 +1009,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 					if (sideToMove == ZebraEngine.PLAYER_BLACK) {
 						score = String.format("•%d", state.getmBlackScore());
 					} else {
-						score = String.format("%d", state.getmWhiteScore());
+						score = String.format("%d", state.getmBlackScore());
 					}
 					mStatusView.setTextForID(
 							StatusView.ID_SCORE_BLACK,
@@ -1019,7 +1019,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 					if (sideToMove == ZebraEngine.PLAYER_WHITE) {
 						score = String.format("%d•", state.getmWhiteScore());
 					} else {
-						score = String.format("%d", state.getmBlackScore());
+						score = String.format("%d", state.getmWhiteScore());
 					}
 					mStatusView.setTextForID(
 							StatusView.ID_SCORE_WHITE,
@@ -1093,11 +1093,20 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 
 				case ZebraEngine.MSG_LAST_MOVE: {
 					byte move = (byte) m.getData().getInt("move");
-					setLastMove(move == Move.PASS ? null : new Move(move));
+					state.setmLastMove(move == Move.PASS ? null : new Move(move));
 				}
 				break;
 
 				case ZebraEngine.MSG_GAME_OVER: {
+					int max = state.getmBoard().length * state.getmBoard().length;
+					if (state.getmBlackScore() + state.getmWhiteScore() < max) {
+						//adjust result
+						if (state.getmBlackScore() > state.getmWhiteScore()) {
+							state.setmBlackScore(max - state.getmWhiteScore());
+						} else {
+							state.setmWhiteScore(max - state.getmBlackScore());
+						}
+					}
 					showGameOverDialog();
 				}
 				break;
