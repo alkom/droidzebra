@@ -35,23 +35,17 @@ env:
 before_script:
 - echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
 - emulator -avd test -no-skin -no-audio -no-window &
+
+script:
+- ./gradlew build assembleRelease -Preversatile_key_alias=${reversatile_key_alias} -Preversatile_key_password=${reversatile_key_password} -Preversatile_keystore_password=${reversatile_keystore_password}
 - android-wait-for-emulator
 - adb shell input keyevent 82 &
 - adb logcat *:W | tee logcat.log > /dev/null 2>&1 &
-
-script: ./gradlew build connectedCheck
+- ./gradlew connectedCheck
 
 after_script:
 - git status
 - find . -name *.apk
-- cat logcat.log
-before_deploy:
-- export RELEASE_FILE="$(find . -type f -iname 'reversatile-release-*.apk')"
-- jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore keystore/zebra.jks -storepass $reversatile_keystore_password -keypass $reversatile_key_password $RELEASE_FILE $reversatile_key_alias
-# Verification
-- jarsigner -verify $RELEASE_FILE
-- ${ANDROID_HOME}/build-tools/27.0.3/zipalign -f 4 $RELEASE_FILE $RELEASE_FILE.signed
-- mv $RELEASE_FILE.signed $RELEASE_FILE
 deploy:
   provider: releases
   api_key:

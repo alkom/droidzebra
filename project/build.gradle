@@ -29,7 +29,7 @@ android {
 
     android.applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "reversatile-${variant.name}-${variant.versionName}.apk"
+            outputFileName = "reversatile-${variant.name}-${variant.versionName}${variant.variantData.isSigned() ?"-signed":"-unsigned"}.apk"
         }
     }
 }
