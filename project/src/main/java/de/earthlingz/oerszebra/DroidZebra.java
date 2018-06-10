@@ -58,9 +58,6 @@ import org.json.JSONObject;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
-
-import javax.inject.Inject;
-
 import de.earthlingz.oerszebra.parser.Gameparser;
 
 //import android.util.Log;
@@ -145,6 +142,8 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 
 	public DroidZebra() {
 		super();
+		this.setBoardState(ZebraServices.getBoardState());
+		this.setGameParser(ZebraServices.getGameParser());
 	}
 
 
@@ -165,12 +164,10 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		mZebraThread.zeJsonTest(json);
 	}
 
-	@Inject
 	void setBoardState(BoardState state) {
 		this.state = state;
 	}
 
-	@Inject
 	void setGameParser(Gameparser parser) {
 		this.parser = parser;
 	}
@@ -318,7 +315,6 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	{
 		super.onCreate(savedInstanceState);
 
-		((Reversatile) getApplication()).getGameComponent().inject(this);
 		initBoard();
 
 		clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
