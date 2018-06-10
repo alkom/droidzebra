@@ -13,7 +13,7 @@ android {
         javaMaxHeapSize "4g"
     }
     defaultConfig {
-        multiDexEnabled true
+        multiDexEnabled false
         versionName androidGitVersion.name()
         versionCode androidGitVersion.code()
         ndk {
