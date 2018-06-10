@@ -1,12 +1,12 @@
 package de.earthlingz.oerszebra;
 
-import android.app.Application;
+import android.support.multidex.MultiDexApplication;
 
 import de.earthlingz.oerszebra.components.DaggerGameComponent;
 import de.earthlingz.oerszebra.components.GameComponent;
 import de.earthlingz.oerszebra.modules.AppModule;
 
-public class Reversatile extends Application {
+public class Reversatile extends MultiDexApplication {
     private GameComponent mGameComponent;
 
     @Override
