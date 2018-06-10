@@ -9,7 +9,6 @@ before_install:
 - ls -ltr $ANDROID_NDK_HOME
 - ls -ltr $ANDROID_NDK_HOME/platforms
 - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
-- openssl aes-256-cbc -K $encrypted_03208d80b1d9_key -iv $encrypted_03208d80b1d9_iv -in keystore/zebra.jks.enc -out keystore/zebra.jks -d
 before_cache:
 - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 cache:
@@ -37,6 +36,8 @@ before_script:
 - emulator -avd test -no-skin -no-audio -no-window &
 
 script:
+- 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then openssl aes-256-cbc -K $encrypted_03208d80b1d9_key -iv $encrypted_03208d80b1d9_iv -in keystore/zebra.jks.enc -out keystore/zebra.jks -d
+; fi'
 - ./gradlew build assembleRelease -Preversatile_key_alias=${reversatile_key_alias} -Preversatile_key_password=${reversatile_key_password} -Preversatile_keystore_password=${reversatile_keystore_password}
 - android-wait-for-emulator
 - adb shell input keyevent 82 &
