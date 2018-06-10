@@ -66,7 +66,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 {
 	public static final String SHARED_PREFS_NAME="droidzebrasettings";
 
-	public static final String DEFAULT_SETTING_STRENGTH = "8|16|18";
+	public static final String DEFAULT_SETTING_STRENGTH = "8|16|0";
 	public static final boolean DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES  = false;
 	public static final String DEFAULT_SETTING_FORCE_OPENING = "None";
 	public static final boolean DEFAULT_SETTING_HUMAN_OPENINGS = false;
@@ -76,7 +76,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	public static final boolean DEFAULT_SETTING_DISPLAY_MOVES = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_LAST_MOVE = true;
 	public static final String DEFAULT_SETTING_SENDMAIL = "";
-	public static final boolean DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS = true;
+	public static final boolean DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS = false;
 	public static final String
 	SETTINGS_KEY_FUNCTION = "settings_engine_function",
 	SETTINGS_KEY_STRENGTH = "settings_engine_strength",
@@ -405,7 +405,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 			|| mSettingZebraDepthWLD != settingZebraDepthWLD
 			|| mSettingAutoMakeForcedMoves != settingAutoMakeForcedMoves
 			|| mSettingZebraRandomness != settingRandomness
-			|| mSettingZebraForceOpening != settingZebraForceOpening
+			|| !mSettingZebraForceOpening.equals(settingZebraForceOpening)
 			|| mSettingZebraHumanOpenings != settingZebraHumanOpenings
 			|| mSettingZebraPracticeMode != settingZebraPracticeMode
 			|| mSettingZebraUseBook != settingZebraUseBook

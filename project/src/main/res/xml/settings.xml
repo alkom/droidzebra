@@ -1,52 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-	<PreferenceCategory android:title="@string/settings_engine_preferences">
-		<ListPreference android:entries="@array/settings_engine_function_preferences"
-			android:dialogTitle="@string/settings_engine_function_dialog_title"
-			android:title="@string/settings_engine_function_title" android:key="settings_engine_function"
-			android:summary="@string/settings_engine_function_summary"
-			android:entryValues="@array/settings_engine_function_values"
-			android:defaultValue="1"></ListPreference>
-		<ListPreference android:title="@string/settings_strength_preference_title"
-			android:dialogTitle="@string/settings_strength_dialog_title"
-			android:entryValues="@array/settings_engine_strengh_values"
-			android:entries="@array/settings_engine_strengh_preferences"
-			android:summary="@string/setting_strength_preference_summary"
-			android:key="settings_engine_strength" android:defaultValue="1|1|1"></ListPreference>
-		<CheckBoxPreference android:key="settings_engine_practice_mode" android:title="@string/settings_engine_practice_mode_title" android:summary="@string/settings_engine_practice_mode_summary" android:defaultValue="false"></CheckBoxPreference><CheckBoxPreference android:key="settings_engine_auto_make_moves"
-			android:summary="@string/settings_engine_auto_make_moves_summary"
-			android:title="@string/settings_engine_auto_make_moves_title"
-			android:defaultValue="false"></CheckBoxPreference>
-		<ListPreference android:key="settings_engine_randomness"
-			android:entryValues="@array/settings_engine_randomness_values"
-			android:entries="@array/settings_engine_randomness_preferences"
-			android:title="@string/settings_engine_randomness_title"
-			android:dialogTitle="@string/settings_engine_randomness_title"
-			android:summary="@string/settings_engine_randomness_summary" android:defaultValue="3"></ListPreference>
-	<ListPreference android:title="@string/settings_engine_force_opening_title" android:key="settings_engine_force_opening" android:entryValues="@array/settings_engine_opening_values" android:entries="@array/settings_engine_opening_names" android:summary="@string/settings_engine_force_opening_summary" android:defaultValue="None"></ListPreference>
-<CheckBoxPreference android:summary="@string/settings_engine_human_openings_summary" android:title="@string/settings_engine_human_openings_title" android:key="settings_engine_human_openings" android:defaultValue="false"></CheckBoxPreference>
+    <PreferenceCategory android:title="@string/settings_engine_preferences">
+        <ListPreference
+            android:defaultValue="@string/default_engine_function"
+            android:dialogTitle="@string/settings_engine_function_dialog_title"
+            android:entries="@array/settings_engine_function_preferences"
+            android:entryValues="@array/settings_engine_function_values"
+            android:key="settings_engine_function"
+            android:summary="@string/settings_engine_function_summary"
+            android:title="@string/settings_engine_function_title"></ListPreference>
+        <ListPreference
+            android:defaultValue="@string/default_search_depth"
+            android:dialogTitle="@string/settings_strength_dialog_title"
+            android:entries="@array/settings_engine_strengh_preferences"
+            android:entryValues="@array/settings_engine_strengh_values"
+            android:key="settings_engine_strength"
+            android:summary="@string/setting_strength_preference_summary"
+            android:title="@string/settings_strength_preference_title"></ListPreference>
+        <CheckBoxPreference
+            android:defaultValue="@string/default_practice_mode"
+            android:key="settings_engine_practice_mode"
+            android:summary="@string/settings_engine_practice_mode_summary"
+            android:title="@string/settings_engine_practice_mode_title"></CheckBoxPreference>
+        <CheckBoxPreference
+            android:defaultValue="@string/default_auto_make_moves"
+            android:key="settings_engine_auto_make_moves"
+            android:summary="@string/settings_engine_auto_make_moves_summary"
+            android:title="@string/settings_engine_auto_make_moves_title"></CheckBoxPreference>
+        <ListPreference
+            android:defaultValue="@string/default_randomness"
+            android:dialogTitle="@string/settings_engine_randomness_title"
+            android:entries="@array/settings_engine_randomness_preferences"
+            android:entryValues="@array/settings_engine_randomness_values"
+            android:key="settings_engine_randomness"
+            android:summary="@string/settings_engine_randomness_summary"
+            android:title="@string/settings_engine_randomness_title"></ListPreference>
+        <ListPreference
+            android:defaultValue="@string/default_forced_opening"
+            android:entries="@array/settings_engine_opening_names"
+            android:entryValues="@array/settings_engine_opening_values"
+            android:key="settings_engine_force_opening"
+            android:summary="@string/settings_engine_force_opening_summary"
+            android:title="@string/settings_engine_force_opening_title"></ListPreference>
+        <CheckBoxPreference
+            android:defaultValue="@string/default_human_openings"
+            android:key="settings_engine_human_openings"
+            android:summary="@string/settings_engine_human_openings_summary"
+            android:title="@string/settings_engine_human_openings_title"></CheckBoxPreference>
 
-<CheckBoxPreference android:key="settings_engine_use_book" android:summary="@string/settings_engine_use_book_summary" android:title="@string/settings_engine_use_book_title" android:defaultValue="true"></CheckBoxPreference>
-		<EditTextPreference
-			android:key="settings_sendmail"
-			android:title="@string/settings_sendmail_title"
-			android:maxLength="255"
-			android:summary="@string/settings_sendmail_summary" />
-</PreferenceCategory>
-	<PreferenceCategory android:title="@string/settings_ui_preferences">
-		<CheckBoxPreference android:key="settings_ui_display_moves"
-			android:summary="@string/settings_ui_display_moves_summary"
-			android:title="@string/settings_ui_display_moves_title"
-			android:defaultValue="true"></CheckBoxPreference>
-		<CheckBoxPreference android:key="settings_ui_display_last_move"
-			android:summary="@string/settings_ui_display_last_move_summary"
-			android:title="@string/settings_ui_display_last_move_title"
-			android:defaultValue="true"></CheckBoxPreference>
-		<CheckBoxPreference android:title="@string/settings_ui_display_pv_title"
-			android:key="settings_ui_display_pv" android:summary="@string/settings_ui_display_pv_summary"
-			android:defaultValue="true"></CheckBoxPreference>
-		<CheckBoxPreference android:title="@string/settings_ui_display_enable_animations_title"
-			android:key="settings_ui_display_enable_animations" android:summary="@string/settings_ui_display_enable_animations_summary"
-			android:defaultValue="true"></CheckBoxPreference>
-	</PreferenceCategory>
+        <CheckBoxPreference
+            android:defaultValue="@string/default_use_book"
+            android:key="settings_engine_use_book"
+            android:summary="@string/settings_engine_use_book_summary"
+            android:title="@string/settings_engine_use_book_title"></CheckBoxPreference>
+        <EditTextPreference
+            android:key="settings_sendmail"
+            android:maxLength="255"
+            android:summary="@string/settings_sendmail_summary"
+            android:title="@string/settings_sendmail_title" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/settings_ui_preferences">
+        <CheckBoxPreference
+            android:defaultValue="@string/default_desplay_moves"
+            android:key="settings_ui_display_moves"
+            android:summary="@string/settings_ui_display_moves_summary"
+            android:title="@string/settings_ui_display_moves_title"></CheckBoxPreference>
+        <CheckBoxPreference
+            android:defaultValue="@string/default_display_last_move"
+            android:key="settings_ui_display_last_move"
+            android:summary="@string/settings_ui_display_last_move_summary"
+            android:title="@string/settings_ui_display_last_move_title"></CheckBoxPreference>
+        <CheckBoxPreference
+            android:defaultValue="@string/default_display_principal_variation"
+            android:key="settings_ui_display_pv"
+            android:summary="@string/settings_ui_display_pv_summary"
+            android:title="@string/settings_ui_display_pv_title"></CheckBoxPreference>
+        <CheckBoxPreference
+            android:defaultValue="@string/default_enable_animations"
+            android:key="settings_ui_display_enable_animations"
+            android:summary="@string/settings_ui_display_enable_animations_summary"
+            android:title="@string/settings_ui_display_enable_animations_title"></CheckBoxPreference>
+    </PreferenceCategory>
 </PreferenceScreen>
