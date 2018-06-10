@@ -18,8 +18,8 @@ buildscript {
      */
 
     repositories {
-        jcenter()
         google()
+        jcenter()
     }
 
     /**
@@ -48,7 +48,7 @@ plugins {
 
 allprojects {
    repositories {
-       jcenter()
        google()
+       jcenter()
    }
 }
