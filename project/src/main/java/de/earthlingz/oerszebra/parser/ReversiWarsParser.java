@@ -12,14 +12,14 @@ import java.util.regex.Pattern;
 
 public class ReversiWarsParser implements Parser {
 
-    private final static Pattern p = Pattern.compile("([ABCDEFGH][12345678])+");
+    private final static Pattern p = Pattern.compile("(D1|C4|E6|F5)([ABCDEFGH][12345678])+");
 
     @Override
     public LinkedList<Move> makeMoveList(String s) {
         LinkedList<Move> moves = new LinkedList<Move>();
 
-        Matcher matcher = p.matcher(s.toUpperCase());
-        if (!matcher.matches()) {
+        Matcher matcher = p.matcher(sanitize(s.toUpperCase()));
+        if (!matcher.find()) {
             return new LinkedList<Move>();
         }
         String group = matcher.group();
@@ -35,7 +35,13 @@ public class ReversiWarsParser implements Parser {
 
     @Override
     public boolean canParse(String s) {
-        Matcher matcher = p.matcher(s.toUpperCase());
-        return matcher.matches();
+        CharSequence sanitize = sanitize(s.toUpperCase());
+        Matcher matcher = p.matcher(sanitize);
+        return matcher.find();
+    }
+
+    private CharSequence sanitize(String s) {
+        String s1 = Pattern.quote(s);
+        return s1;
     }
 }

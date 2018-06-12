@@ -13,7 +13,7 @@ android {
         javaMaxHeapSize "4g"
     }
     defaultConfig {
-        multiDexEnabled true
+        multiDexEnabled false
         versionName androidGitVersion.name()
         versionCode androidGitVersion.code()
         ndk {
@@ -32,6 +32,10 @@ android {
             outputFileName = "reversatile-${variant.name}-${variant.versionName}${variant.variantData.isSigned() ?"-signed":"-unsigned"}.apk"
         }
     }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 repositories {
@@ -39,15 +43,12 @@ repositories {
 }
 
 dependencies {
+    api 'com.google.guava:guava:25.1-android'
+
     implementation  'com.android.support:appcompat-v7:25.4.0'
     implementation  'com.android.support:support-compat:25.4.0'
     implementation  'com.android.support:animated-vector-drawable:25.4.0'
     implementation  'com.android.support:support-v4:25.4.0'
-
-    implementation "com.google.dagger:dagger:2.15"
-    annotationProcessor "com.google.dagger:dagger-compiler:2.15"
-    annotationProcessor "com.google.dagger:dagger-android-processor:2.15"
-    implementation "com.google.dagger:dagger-android-support:2.15"
 
     // Required -- JUnit 4 framework
     testImplementation 'junit:junit:4.12'

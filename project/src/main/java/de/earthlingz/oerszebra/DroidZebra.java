@@ -58,9 +58,6 @@ import org.json.JSONObject;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
-
-import javax.inject.Inject;
-
 import de.earthlingz.oerszebra.parser.Gameparser;
 
 //import android.util.Log;
@@ -69,7 +66,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 {
 	public static final String SHARED_PREFS_NAME="droidzebrasettings";
 
-	public static final String DEFAULT_SETTING_STRENGTH = "8|16|18";
+	public static final String DEFAULT_SETTING_STRENGTH = "8|16|0";
 	public static final boolean DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES  = false;
 	public static final String DEFAULT_SETTING_FORCE_OPENING = "None";
 	public static final boolean DEFAULT_SETTING_HUMAN_OPENINGS = false;
@@ -79,7 +76,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	public static final boolean DEFAULT_SETTING_DISPLAY_MOVES = true;
 	public static final boolean DEFAULT_SETTING_DISPLAY_LAST_MOVE = true;
 	public static final String DEFAULT_SETTING_SENDMAIL = "";
-	public static final boolean DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS = true;
+	public static final boolean DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS = false;
 	public static final String
 	SETTINGS_KEY_FUNCTION = "settings_engine_function",
 	SETTINGS_KEY_STRENGTH = "settings_engine_strength",
@@ -145,6 +142,8 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 
 	public DroidZebra() {
 		super();
+		this.setBoardState(ZebraServices.getBoardState());
+		this.setGameParser(ZebraServices.getGameParser());
 	}
 
 
@@ -165,12 +164,10 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		mZebraThread.zeJsonTest(json);
 	}
 
-	@Inject
 	void setBoardState(BoardState state) {
 		this.state = state;
 	}
 
-	@Inject
 	void setGameParser(Gameparser parser) {
 		this.parser = parser;
 	}
@@ -318,7 +315,6 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	{
 		super.onCreate(savedInstanceState);
 
-		((Reversatile) getApplication()).getGameComponent().inject(this);
 		initBoard();
 
 		clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
@@ -409,7 +405,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 			|| mSettingZebraDepthWLD != settingZebraDepthWLD
 			|| mSettingAutoMakeForcedMoves != settingAutoMakeForcedMoves
 			|| mSettingZebraRandomness != settingRandomness
-			|| mSettingZebraForceOpening != settingZebraForceOpening
+			|| !mSettingZebraForceOpening.equals(settingZebraForceOpening)
 			|| mSettingZebraHumanOpenings != settingZebraHumanOpenings
 			|| mSettingZebraPracticeMode != settingZebraPracticeMode
 			|| mSettingZebraUseBook != settingZebraUseBook
