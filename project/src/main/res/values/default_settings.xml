@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="default_engine_function">0</string>
-    <string name="default_auto_make_moves">false</string>
-    <string name="default_randomness">3</string>
-    <string name="default_use_book">true</string>
-    <string name="default_desplay_moves">true</string>
-    <string name="default_display_last_move">true</string>
-    <string name="default_display_principal_variation">true</string>
-    <string name="default_enable_animations">false</string>
-    <string name="default_search_depth">8|16|0</string>
-    <string name="default_practice_mode">true</string>
-    <string name="default_human_openings">false</string>
-    <string name="default_forced_opening">None</string>
+    <string name="default_engine_function" translatable="false">0</string>
+    <string name="default_auto_make_moves" translatable="false">false</string>
+    <string name="default_randomness" translatable="false">3</string>
+    <string name="default_use_book" translatable="false">true</string>
+    <string name="default_display_moves" translatable="false">true</string>
+    <string name="default_display_last_move" translatable="false">true</string>
+    <string name="default_display_principal_variation" translatable="false">true</string>
+    <string name="default_enable_animations" translatable="false">false</string>
+    <string name="default_search_depth" translatable="false">8|16|0</string>
+    <string name="default_practice_mode" translatable="false">true</string>
+    <string name="default_human_openings" translatable="false">false</string>
+    <string name="default_forced_opening" translatable="false">None</string>
 </resources>

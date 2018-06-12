@@ -61,7 +61,7 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/settings_ui_preferences">
         <CheckBoxPreference
-            android:defaultValue="@string/default_desplay_moves"
+            android:defaultValue="@string/default_display_moves"
             android:key="settings_ui_display_moves"
             android:summary="@string/settings_ui_display_moves_summary"
             android:title="@string/settings_ui_display_moves_title"></CheckBoxPreference>
