@@ -1,13 +1,17 @@
 language: android
 jdk: oraclejdk8
 before_install:
-- rm -fr $HOME/android-ndk-r16b
-- curl -L http://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip -O
-- unzip -oq android-ndk-r16b-linux-x86_64.zip
-- rm android-ndk-r16b-linux-x86_64.zip
-- export ANDROID_NDK_HOME=./android-ndk-r16b
-- ls -ltr $ANDROID_NDK_HOME
-- ls -ltr $ANDROID_NDK_HOME/platforms
+- export ANDROID_NDK_HOME=./android-ndk-r17b
+
+- 'if [[ ! -d $ANDROID_NDK_HOME ]] ;
+   then
+    rm -fr $HOME/android-ndk-r17b;
+    curl -L https://dl.google.com/android/repository/android-ndk-r17b-linux-x86_64.zip -O;
+    unzip -oq android-ndk-r17b-linux-x86_64.zip;
+    ls -ltr $ANDROID_NDK_HOME;
+    ls -ltr $ANDROID_NDK_HOME/platforms;
+    rm android-ndk-r17b-linux-x86_64.zip;
+  fi'
 - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
 before_cache:
 - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -16,6 +20,8 @@ cache:
   - $HOME/.gradle/daemon
   - $HOME/.gradle/native
   - $HOME/.gradle/wrapper
+  - $HOME/.gradle/caches/
+  - $HOME/android-ndk-r17b
   - $HOME/.m2
 android:
   components:
