@@ -334,10 +334,13 @@ JNIFn(droidzebra,ZebraEngine,zeSetPlayerInfo)(
 	player_increment[_player] = _time_increment;
 }
 
-JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeSetAutoMakeMoves)( JNIEnv* env, jobject thiz, int _auto_make_moves )
-{
-	auto_make_forced_moves = _auto_make_moves;
+
+JNIEXPORT void JNICALL
+Java_com_shurik_droidzebra_ZebraEngine_zeSetAutoMakeMoves(JNIEnv *env, jobject instance,
+														  jint auto_make_moves) {
+
+	auto_make_forced_moves = auto_make_moves;
+
 }
 
 JNIEXPORT void
@@ -355,26 +358,26 @@ JNIFn(droidzebra,ZebraEngine,zeSetPerturbation)( JNIEnv* env, jobject thiz, jflo
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeSetHumanOpenings)( JNIEnv* env, jobject thiz, int enable )
+JNIFn(droidzebra,ZebraEngine,zeSetHumanOpenings)( JNIEnv* env, jobject thiz, jint enable )
 {
 	s_human_opening = enable;
 	//toggle_human_openings(s_human_opening);
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeSetPracticeMode)( JNIEnv* env, jobject thiz, int enable )
+JNIFn(droidzebra,ZebraEngine,zeSetPracticeMode)( JNIEnv* env, jobject thiz, jint enable )
 {
 	s_practice_mode = enable;
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeSetUseBook)( JNIEnv* env, jobject thiz, int enable )
+JNIFn(droidzebra,ZebraEngine,zeSetUseBook)( JNIEnv* env, jobject thiz, jint enable )
 {
 	s_use_book = enable;
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeSetForcedOpening)( JNIEnv* env, jobject thiz, jobject opening_name )
+JNIFn(droidzebra,ZebraEngine,zeSetForcedOpening)( JNIEnv* env, jobject thiz, jstring opening_name )
 {
 	int i;
 	const char* str = NULL;
@@ -827,4 +830,3 @@ int _droidzebra_can_redo(void)
 {
 	return s_undo_stack_pointer>0;
 }
-
