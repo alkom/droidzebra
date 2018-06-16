@@ -2,13 +2,14 @@ language: android
 jdk: oraclejdk8
 before_install:
 - export ANDROID_NDK_HOME=./android-ndk-r17b
-- ls -ltr $ANDROID_NDK_HOME
-- ls -ltr $ANDROID_NDK_HOME/platforms
+
 - 'if [[ ! -d $ANDROID_NDK_HOME ]] ;
    then
     rm -fr $HOME/android-ndk-r17b
     curl -L https://dl.google.com/android/repository/android-ndk-r17b-linux-x86_64.zip -O
     unzip -oq android-ndk-r17b-linux-x86_64.zip
+    ls -ltr $ANDROID_NDK_HOME
+    ls -ltr $ANDROID_NDK_HOME/platforms
     rm android-ndk-r17b-linux-x86_64.zip
   fi'
 - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
