@@ -42,11 +42,16 @@ before_script:
 - emulator -avd test -no-skin -no-audio -no-window &
 
 script:
-- 'if [ "$TRAVIS_PULL_REQUEST" != "false" ];
+- echo  pr $TRAVIS_PULL_REQUEST
+- 'if [ "$TRAVIS_PULL_REQUEST" == "false" ] ;
    then
+     echo building signed release;
      openssl aes-256-cbc -K $encrypted_03208d80b1d9_key -iv $encrypted_03208d80b1d9_iv -in keystore/zebra.jks.enc -out keystore/zebra.jks -d;
      ./gradlew build assembleRelease -Preversatile_key_alias=${reversatile_key_alias} -Preversatile_key_password=${reversatile_key_password} -Preversatile_keystore_password=${reversatile_keystore_password};
-   else
+  fi'
+- 'if [ "$TRAVIS_PULL_REQUEST" == "true" ] ;
+   then
+     echo building unsigned debug;
      ./gradlew build assembleDebug;
   fi'
 - android-wait-for-emulator
