@@ -12,12 +12,13 @@
         android:name="android.hardware.touchscreen"
         android:required="false" />
     <application
-        android:name=".Reversatile"
+        android:name="Reversatile"
         android:allowBackup="true"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:theme="@style/CustomActionBarTheme"
-        android:extractNativeLibs="false">
+        android:extractNativeLibs="false"
+        android:fullBackupContent="@xml/backup_descriptor">
         <activity
             android:name="de.earthlingz.oerszebra.DroidZebra"
             android:configChanges="keyboardHidden|orientation"
