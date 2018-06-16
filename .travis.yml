@@ -42,7 +42,7 @@ before_script:
 - emulator -avd test -no-skin -no-audio -no-window &
 
 script:
-- echo "PULLREQUEST: $TRAVIS_PULL_REQUEST"
+- echo  pr $TRAVIS_PULL_REQUEST
 - 'if [ "$TRAVIS_PULL_REQUEST" == "false" ] ;
    then
      echo building signed release;
