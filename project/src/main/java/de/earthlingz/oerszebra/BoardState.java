@@ -1,6 +1,7 @@
 package de.earthlingz.oerszebra;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.shurik.droidzebra.CandidateMove;
 import com.shurik.droidzebra.CandidateMoves;
@@ -32,6 +33,7 @@ public class BoardState {
         this.mBoard = mBoard;
     }
 
+    @Nullable
     public Move getmLastMove() {
         return mLastMove;
     }

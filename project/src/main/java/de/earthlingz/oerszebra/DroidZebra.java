@@ -21,11 +21,9 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ClipboardManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -45,6 +43,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.common.base.Objects;
 import com.shurik.droidzebra.CandidateMove;
 import com.shurik.droidzebra.EngineError;
 import com.shurik.droidzebra.GameState;
@@ -53,11 +52,10 @@ import com.shurik.droidzebra.Move;
 import com.shurik.droidzebra.PlayerInfo;
 import com.shurik.droidzebra.ZebraEngine;
 
-import org.json.JSONObject;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
+
 import de.earthlingz.oerszebra.parser.Gameparser;
 
 //import android.util.Log;
@@ -131,9 +129,8 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 
 	private BoardView mBoardView;
 	private StatusView mStatusView;
-	private SharedPreferences mSettings;
 
-	private BoardState state;
+	private BoardState state = ZebraServices.getBoardState();
 
 	private int mSettingZebraDepth = 1;
 	private int mSettingZebraDepthExact = 1;
@@ -142,7 +139,6 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 
 	public DroidZebra() {
 		super();
-		this.setBoardState(ZebraServices.getBoardState());
 		this.setGameParser(ZebraServices.getGameParser());
 	}
 
@@ -160,11 +156,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		mZebraThread.makeMove(mMoveSelection);
 	}
 
-	public void zeJsonTest(JSONObject json) {
-		mZebraThread.zeJsonTest(json);
-	}
-
-	void setBoardState(BoardState state) {
+	void setBoardState(@NonNull BoardState state) {
 		this.state = state;
 	}
 
@@ -173,17 +165,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	}
 
 	private void newCompletionPort(final int zebraEngineStatus, final Runnable completion) {
-		new AsyncTask<Void, Void, Void>() {
-			@Override
-			protected Void doInBackground(Void... p) {
-				mZebraThread.waitForEngineState(zebraEngineStatus);
-				return null;
-			}
-			@Override
-			protected void onPostExecute(Void result) {
-				completion.run();
-			}
-		}
+		new CompletionAsyncTask(zebraEngineStatus, completion, getEngine())
 		.execute();
 	}
 
@@ -222,12 +204,10 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		}
 		newCompletionPort(
 				ZebraEngine.ES_READY2PLAY,
-				new Runnable() {
-					@Override public void run() {
-						DroidZebra.this.initBoard();
-						DroidZebra.this.loadSettings();
-						DroidZebra.this.mZebraThread.setEngineState(ZebraEngine.ES_PLAY);
-					}
+				() -> {
+					DroidZebra.this.initBoard();
+					DroidZebra.this.loadSettings();
+					DroidZebra.this.mZebraThread.setEngineState(ZebraEngine.ES_PLAY);
 				}
 		);
 	}
@@ -325,7 +305,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		mZebraThread = new ZebraEngine(this, new DroidZebraHandler());
 
 		// preferences
-		mSettings = getSharedPreferences(SHARED_PREFS_NAME, 0);
+		SharedPreferences mSettings = getSharedPreferences(SHARED_PREFS_NAME, 0);
 		mSettings.registerOnSharedPreferenceChangeListener(this);
 
         Intent intent = getIntent();
@@ -350,19 +330,17 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 
 		newCompletionPort(
 				ZebraEngine.ES_READY2PLAY,
-				new Runnable() {
-					@Override public void run() {
-						DroidZebra.this.setContentView(R.layout.board_layout);
-						new ActionBarHelper(DroidZebra.this).show();
-						DroidZebra.this.mBoardView = (BoardView) DroidZebra.this.findViewById(R.id.board);
-						DroidZebra.this.mStatusView = (StatusView) DroidZebra.this.findViewById(R.id.status_panel);
-						DroidZebra.this.mBoardView.setDroidZebra(DroidZebra.this);
-						DroidZebra.this.mBoardView.requestFocus();
-						DroidZebra.this.initBoard();
-						DroidZebra.this.loadSettings();
-						DroidZebra.this.mZebraThread.setEngineState(ZebraEngine.ES_PLAY);
-						DroidZebra.this.mIsInitCompleted = true;
-					}
+				() -> {
+					DroidZebra.this.setContentView(R.layout.board_layout);
+					new ActionBarHelper(DroidZebra.this).show();
+					DroidZebra.this.mBoardView = (BoardView) DroidZebra.this.findViewById(R.id.board);
+					DroidZebra.this.mStatusView = (StatusView) DroidZebra.this.findViewById(R.id.status_panel);
+					DroidZebra.this.mBoardView.setDroidZebra(DroidZebra.this);
+					DroidZebra.this.mBoardView.requestFocus();
+					DroidZebra.this.initBoard();
+					DroidZebra.this.loadSettings();
+					DroidZebra.this.mZebraThread.setEngineState(ZebraEngine.ES_PLAY);
+					DroidZebra.this.mIsInitCompleted = true;
 				}
 		);
 	}
@@ -581,7 +559,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
                 if (move1 != 0x00) {
                     Move move = new Move(move1);
 					sbMoves.append(move.getText());
-					if (state.getmLastMove().getText().equals(move.getText())) {
+					if (Objects.equal(state.getmLastMove(), move)) {
 						break;
 					}
 				}
@@ -711,11 +689,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 		alertDialog.setTitle("Zebra Error");
 		alertDialog.setMessage(msg);
-		alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						DroidZebra.this.finish();
-					}
-				}
+		alertDialog.setPositiveButton("OK", (dialog, id) -> DroidZebra.this.finish()
 		);
 		alertDialog.show();
 	}
@@ -779,11 +753,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	    	return new AlertDialog.Builder(getActivity())
 			.setTitle(R.string.app_name)
 			.setMessage(R.string.dialog_pass_text)
-			.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						getDroidZebra().mZebraThread.setEngineState(ZebraEngine.ES_PLAY);
-					}
-				}
+					.setPositiveButton(R.string.dialog_ok, (dialog, id) -> getDroidZebra().mZebraThread.setEngineState(ZebraEngine.ES_PLAY)
 			)
 			.create();
 	    }
@@ -828,49 +798,37 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 			Button button;
 			button = (Button) v.findViewById(R.id.gameover_choice_new_game);
 			button.setOnClickListener(
-					new View.OnClickListener() {
-						public void onClick(View v) {
-							dismiss();
-							getDroidZebra().newGame();
-						}
+					v15 -> {
+						dismiss();
+						getDroidZebra().newGame();
 					});
 
 			button = (Button) v.findViewById(R.id.gameover_choice_switch);
 			button.setOnClickListener(
-					new View.OnClickListener() {
-						public void onClick(View v) {
-							dismiss();
-							getDroidZebra().switchSides();
-						}
+					v12 -> {
+						dismiss();
+						getDroidZebra().switchSides();
 					});
 
 			button = (Button) v.findViewById(R.id.gameover_choice_cancel);
 			button.setOnClickListener(
-					new View.OnClickListener() {
-						public void onClick(View v) {
-							dismiss();
-						}
-					});
+					v1 -> dismiss());
 
 			button = (Button) v.findViewById(R.id.gameover_choice_options);
 			button.setOnClickListener(
-					new View.OnClickListener() {
-						public void onClick(View v) {
-							dismiss();
+					v13 -> {
+						dismiss();
 
-							// start settings
-							Intent i = new Intent(getDroidZebra(), SettingsPreferences.class);
-							startActivity(i);
-						}
+						// start settings
+						Intent i = new Intent(getDroidZebra(), SettingsPreferences.class);
+						startActivity(i);
 					});
 
 			button = (Button) v.findViewById(R.id.gameover_choice_email);
 			button.setOnClickListener(
-					new View.OnClickListener() {
-						public void onClick(View v) {
-							dismiss();
-							getDroidZebra().sendMail();
-						}
+					v14 -> {
+						dismiss();
+						getDroidZebra().sendMail();
 					});
 
 			refreshContent(v);
@@ -902,11 +860,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			return new AlertDialog.Builder(getActivity())
 					.setTitle(R.string.dialog_quit_title)
-					.setPositiveButton( R.string.dialog_quit_button_quit, new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog, int id) {
-									getDroidZebra().finish();
-								}
-							}
+					.setPositiveButton(R.string.dialog_quit_button_quit, (dialog, id) -> getDroidZebra().finish()
 					)
 					.setNegativeButton( R.string.dialog_quit_button_cancel, null )
 					.create();
@@ -961,16 +915,6 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 			return pd;
 		}
 	}
-	
-	/* requires api level 5 
-	@Override
-	public void onBackPressed() {
-		try {
-			mZebraThread.undoMove();
-		} catch (EngineError e) {
-			FatalError(e.msg);
-		}
-	} */
 
 	class DroidZebraHandler extends Handler {
 		@Override
