@@ -74,6 +74,22 @@ public class DroidZebraTest extends ActivityInstrumentationTestCase2<DroidZebra>
         assertSame(2, countSquares(this.getActivity().getBoard(), ZebraEngine.PLAYER_BLACK));
     }
 
+    public void testIssue22() throws InterruptedException {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.setType("message/rfc822");
+        intent.putExtra(Intent.EXTRA_TEXT, "D3C5F6F5F4C3C4D2E2B4D1F3B5E3F2F1A4D6E6E7F7B6E8C6B3A5D7A3E1A6G1A2C2C7B8D8C8G8G6H6G5H5G4H4H3G7H8F8H7A8A7B7A1B2G3G2H2H1C1B1");
+
+        this.getActivity().onNewIntent(intent);
+        Thread.sleep(500);
+        //this.getActivity().getEngine().waitForEngineState(ZebraEngine.ES_USER_INPUT_WAIT);
+        Log.i("Board: ", asString(this.getActivity().getBoard()));
+
+        assertSame(0, countSquares(this.getActivity().getBoard(), ZebraEngine.PLAYER_EMPTY));
+        assertSame(32, countSquares(this.getActivity().getBoard(), ZebraEngine.PLAYER_WHITE));
+        assertSame(32, countSquares(this.getActivity().getBoard(), ZebraEngine.PLAYER_BLACK));
+    }
+
     private int countSquares(FieldState[][] board, byte playerEmpty) {
         int result = 0;
         for (FieldState[] row : board) {

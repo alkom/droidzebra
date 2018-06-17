@@ -12,23 +12,24 @@ import java.util.regex.Pattern;
 
 public class ReversiWarsParser implements Parser {
 
-    private final static Pattern p = Pattern.compile("(D1|C4|E6|F5)([ABCDEFGH][12345678])+");
+    private final static Pattern p = Pattern.compile("(D3|C4|E6|F5)([ABCDEFGH][12345678])+");
 
     @Override
     public LinkedList<Move> makeMoveList(String s) {
-        LinkedList<Move> moves = new LinkedList<Move>();
+        LinkedList<Move> moves = new LinkedList<>();
 
         Matcher matcher = p.matcher(sanitize(s.toUpperCase()));
         if (!matcher.find()) {
-            return new LinkedList<Move>();
+            return new LinkedList<>();
         }
         String group = matcher.group();
         System.out.println("Match: " + group);
         for (int i = 0; i < group.length(); i += 2) {
             int first = group.charAt(i) - 65;
             int second = Integer.valueOf("" + group.charAt(i + 1)) - 1;
-            moves.add(new Move(first, second));
-            System.out.println(first + "/" + second);
+            Move e = new Move(first, second);
+            moves.add(e);
+            // System.out.println(first + "/" + second + "--> " + e.getText());
         }
         return moves;
     }
@@ -41,7 +42,6 @@ public class ReversiWarsParser implements Parser {
     }
 
     private CharSequence sanitize(String s) {
-        String s1 = Pattern.quote(s);
-        return s1;
+        return Pattern.quote(s);
     }
 }
