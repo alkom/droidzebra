@@ -90,6 +90,7 @@ public class DroidZebraTest extends ActivityInstrumentationTestCase2<DroidZebra>
         assertSame(32, countSquares(this.getActivity().getBoard(), ZebraEngine.PLAYER_BLACK));
     }
 
+
     private int countSquares(FieldState[][] board, byte playerEmpty) {
         int result = 0;
         for (FieldState[] row : board) {
