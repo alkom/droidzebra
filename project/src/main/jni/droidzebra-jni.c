@@ -181,11 +181,7 @@ JNIFn(droidzebra,ZebraEngine,zeGlobalInit)(
 JNIEXPORT void
 JNIFn(droidzebra,ZebraEngine,zeGlobalTerminate)( JNIEnv* env, jobject thiz )
 {
-	DROIDZEBRA_JNI_SETUP;
-
 	global_terminate();
-
-	DROIDZEBRA_JNI_CLEAN;
 }
 
 JNIEXPORT void
@@ -223,6 +219,26 @@ fatal_error( const char *format, ... ) {
 
 	/* not reached (theoretically) */
 	exit( EXIT_FAILURE );
+}
+
+/* callback */
+void
+critical_error(const char *format, ...) {
+	char errmsg[1024];
+	va_list arg_ptr;
+	jobject json;
+
+	DROIDZEBRA_CHECK_JNI;
+
+	va_start(arg_ptr, format);
+	vsprintf(errmsg, format, arg_ptr);
+	va_end(arg_ptr);
+
+	json = droidzebra_json_create(s_env, NULL);
+	if (!json) exit(EXIT_FAILURE);
+	droidzebra_json_put_string(s_env, json, "error", errmsg);
+	json = droidzebra_RPC_callback(MSG_ERROR, json);
+	(*s_env)->DeleteLocalRef(s_env, json);
 }
 
 jobject droidzebra_RPC_callback(jint message, jobject json)
@@ -605,8 +621,11 @@ AGAIN:
 				}
 			} else {
 				curr_move = provided_move[provided_move_index];
-				if ( !valid_move( curr_move, side_to_move ) )
-					fatal_error( "Invalid move %c%c in move sequence", TO_SQUARE( curr_move ));
+				if (!valid_move(curr_move, side_to_move)) {
+					critical_error("Invalid move %c%c in move sequence", TO_SQUARE(curr_move));
+					force_exit = 1;
+					break;
+				}
 			}
 
 			move_stop = get_real_timer();

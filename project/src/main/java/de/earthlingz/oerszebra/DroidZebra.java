@@ -52,6 +52,7 @@ import com.shurik.droidzebra.Move;
 import com.shurik.droidzebra.PlayerInfo;
 import com.shurik.droidzebra.ZebraEngine;
 
+import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
@@ -136,6 +137,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	private int mSettingZebraDepthExact = 1;
 	private int mSettingZebraDepthWLD = 1;
 	private Gameparser parser;
+    private WeakReference<AlertDialog> alert = null;
 
 	public DroidZebra() {
 		super();
@@ -322,7 +324,10 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
                 Log.e("intent", "unknown intent");
             }
         } else 	if( savedInstanceState != null
-            && savedInstanceState.containsKey("moves_played_count") ) {
+                && savedInstanceState.containsKey("moves_played_count")
+                && savedInstanceState.getInt("moves_played_count") > 0) {
+            Log.i("moves_play_count", String.valueOf(savedInstanceState.getInt("moves_played_count")));
+            Log.i("moves_played", String.valueOf(savedInstanceState.getInt("moves_played")));
             mZebraThread.setInitialGameState(savedInstanceState.getInt("moves_played_count"), savedInstanceState.getByteArray("moves_played"));
         }
 
@@ -452,7 +457,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 				break;
 			}
 		} catch (EngineError e) {
-			FatalError(e.getError());
+            showAlertDialog(e.getError());
 		}
 
 		mStatusView.setTextForID(
@@ -685,13 +690,19 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 			loadSettings();
 	}
 
-	public void FatalError(String msg) {
+    public void showAlertDialog(String msg) {
+        DroidZebra.this.newGame();
 		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 		alertDialog.setTitle("Zebra Error");
 		alertDialog.setMessage(msg);
-		alertDialog.setPositiveButton("OK", (dialog, id) -> DroidZebra.this.finish()
-		);
-		alertDialog.show();
+        alertDialog.setPositiveButton("OK", (dialog, id) -> {
+            alert = null;
+        });
+        alert = new WeakReference<>(alertDialog.show());
+    }
+
+    public WeakReference<AlertDialog> getAlert() {
+        return alert;
 	}
 
 	@Override
@@ -922,7 +933,8 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 			// block messages if waiting for something
 			switch (m.what) {
 				case ZebraEngine.MSG_ERROR: {
-					FatalError(m.getData().getString("error"));
+                    showAlertDialog(m.getData().getString("error"));
+                    mZebraThread.setInitialGameState(new LinkedList<>());
 				}
 				break;
 				case ZebraEngine.MSG_MOVE_START: {
