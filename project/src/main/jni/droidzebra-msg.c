@@ -16,8 +16,6 @@
 */
 
 
-#include "zebra/porting.h"
-
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -212,6 +210,13 @@ droidzebra_msg_game_over(void)
 	droidzebra_message(MSG_GAME_OVER, NULL);
 }
 
+
+void
+droidzebra_msg_analyze(char *message) {
+    char json_buffer[64];
+    sprintf(json_buffer, "{\"analyze\":%d}", message);
+    droidzebra_message(MSG_MOVE_START, json_buffer);
+}
 
 // MSG_MOVE_START
 void

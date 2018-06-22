@@ -50,22 +50,22 @@
 
 #define DEFAULT_HASH_BITS         18
 #define DEFAULT_RANDOM            TRUE
-#define DEFAULT_SLACK             0.25
+#define DEFAULT_SLACK             0
 #define DEFAULT_PERTURBATION      0
 #define DEFAULT_WLD_ONLY          FALSE
 #define SEPARATE_TABLES           FALSE
-#define INFINIT_TIME              10000000.0
+#define INFINIT_TIME              10000000
 
 #define USE_LOG					  FALSE
 
 // --
-static double player_time[3], player_increment[3];
+static int player_time[3], player_increment[3];
 static int skill[3];
 static int wld_skill[3], exact_skill[3];
 static int force_exit = 0;
 static int auto_make_forced_moves = 0;
-static float s_slack = DEFAULT_SLACK;
-static float s_perturbation = DEFAULT_PERTURBATION;
+static int s_slack = DEFAULT_SLACK;
+static int s_perturbation = DEFAULT_PERTURBATION;
 static int s_human_opening = FALSE;
 static int s_practice_mode = FALSE;
 static const char* s_forced_opening_seq = NULL;
@@ -131,7 +131,7 @@ JNIFn(droidzebra,ZebraEngine,zeJsonTest)( JNIEnv* env, jobject thiz, jobject jso
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeGlobalInit)( 
+JNIFn(droidzebra, ZebraEngine, zeGlobalInit)(
 		JNIEnv* env,
 		jobject thiz,
 		jstring files_dir
@@ -146,7 +146,7 @@ JNIFn(droidzebra,ZebraEngine,zeGlobalInit)(
 	display_pv = DEFAULT_DISPLAY_PV;
 	skill[BLACKSQ] = skill[WHITESQ] = -1;
 	player_time[BLACKSQ] = player_time[WHITESQ] = INFINIT_TIME;
-	player_increment[BLACKSQ] = player_increment[WHITESQ] = 0.0;
+    player_increment[BLACKSQ] = player_increment[WHITESQ] = 0;
 
 
 	const char* str;
@@ -174,7 +174,7 @@ JNIFn(droidzebra,ZebraEngine,zeGlobalInit)(
 	init_learn(binbookpath, TRUE);
 
 	time(&timer);
-	my_srandom(timer);
+    my_srandom((int) timer);
 	DROIDZEBRA_JNI_CLEAN;
 }
 
@@ -185,13 +185,13 @@ JNIFn(droidzebra,ZebraEngine,zeGlobalTerminate)( JNIEnv* env, jobject thiz )
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeForceReturn)(JNIEnv* env, jobject thiz)
+JNIFn(droidzebra, ZebraEngine, zeForceReturn)(JNIEnv *env, jobject instance)
 {
 	force_return = 1;
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeForceExit)(JNIEnv* env, jobject thiz)
+JNIFn(droidzebra, ZebraEngine, zeForceExit)(JNIEnv *env, jobject instance)
 {
 	force_return = 1;
 	force_exit = 1;
@@ -239,6 +239,250 @@ critical_error(const char *format, ...) {
 	droidzebra_json_put_string(s_env, json, "error", errmsg);
 	json = droidzebra_RPC_callback(MSG_ERROR, json);
 	(*s_env)->DeleteLocalRef(s_env, json);
+}
+
+JNIEXPORT void
+JNIFn(droidzebra, ZebraEngine, zeAnalyzeGame)(JNIEnv *env, jobject thiz, jint providedMoveCount,
+                                              jbyteArray providedMoves) {
+    EvaluationType best_info1, best_info2, played_info1, played_info2;
+    const char *black_name, *white_name;
+    const char *opening_name;
+    double move_start, move_stop;
+    int i;
+    int side_to_move, opponent;
+    int curr_move, resp_move;
+    int timed_search;
+    int black_hash1, black_hash2, white_hash1, white_hash2;
+    int col, row;
+    int empties;
+    unsigned int best_trans1, best_trans2, played_trans1, played_trans2;
+    char output_stream[1024];
+
+    DROIDZEBRA_JNI_SETUP;
+
+
+
+    /* copy provided moves */
+    int provided_move_index = 0;
+    int provided_move_count = 0;
+    int provided_move[65];
+
+    if (providedMoveCount > 0 && providedMoves) {
+        jbyte *providedMovesJNI;
+        provided_move_count = providedMoveCount;
+        i = (*env)->GetArrayLength(env, providedMoves);
+        if (provided_move_count > i)
+            fatal_error("Provided move count is greater than array size %d>%d", provided_move_count,
+                        i);
+        if (provided_move_count > 64)
+            fatal_error("Provided move count is greater that 64: %d", provided_move_count);
+        providedMovesJNI = (*env)->GetByteArrayElements(env, providedMoves, 0);
+        if (!providedMovesJNI)
+            fatal_error("failed to get provide moves (jni)");
+        for (i = 0; i < provided_move_count; i++) {
+            provided_move[i] = providedMovesJNI[i];
+        }
+        (*env)->ReleaseByteArrayElements(env, providedMoves, providedMovesJNI, 0);
+    }
+
+    game_init(NULL, &side_to_move);
+    setup_hash(TRUE);
+    clear_stored_game();
+
+    reset_book_search();
+    //set_move_list( black_moves, white_moves, score_sheet_row );
+    //set_evals( 0.0, 0.0 );
+
+    for (i = 0; i < 60; i++) {
+        black_moves[i] = PASS;
+        white_moves[i] = PASS;
+    }
+
+
+    best_trans1 = (unsigned int) my_random();
+    best_trans2 = (unsigned int) my_random();
+    played_trans1 = (unsigned int) my_random();
+    played_trans2 = (unsigned int) my_random();
+
+    while (game_in_progress() && (disks_played < provided_move_count)) {
+        remove_coeffs(disks_played);
+        if (SEPARATE_TABLES) {  /* Computer players won't share hash tables */
+            if (side_to_move == BLACKSQ) {
+                hash1 ^= black_hash1;
+                hash2 ^= black_hash2;
+            } else {
+                hash1 ^= white_hash1;
+                hash2 ^= white_hash2;
+            }
+        }
+        generate_all(side_to_move);
+
+        if (side_to_move == BLACKSQ)
+            score_sheet_row++;
+
+        if (move_count[disks_played] != 0) {
+            move_start = get_real_timer();
+            clear_panic_abort();
+
+/*			if ( echo ) {
+				set_move_list( black_moves, white_moves, score_sheet_row );
+				set_times( floor( player_time[BLACKSQ] ),
+						   floor( player_time[WHITESQ] ) );
+				opening_name = find_opening_name();
+				if ( opening_name != NULL )
+					printf( "\nOpening: %s\n", opening_name );
+
+				display_board( stdout, board, side_to_move, TRUE, use_timer, TRUE );
+			}*/
+
+            /* Check what the Thor opening statistics has to say */
+
+            (void) choose_thor_opening_move(board, side_to_move, FALSE);
+
+
+            start_move(player_time[side_to_move],
+                       player_increment[side_to_move],
+                       disks_played + 4);
+            determine_move_time(player_time[side_to_move],
+                                player_increment[side_to_move],
+                                disks_played + 4);
+            timed_search = (skill[side_to_move] >= 60);
+            toggle_experimental(FALSE);
+
+            empties = 60 - disks_played;
+
+            /* Determine the score for the move actually played.
+               A private hash transformation is used so that the parallel
+           search trees - "played" and "best" - don't clash. This way
+           all scores are comparable. */
+
+            set_hash_transformation(played_trans1, played_trans2);
+
+            curr_move = provided_move[disks_played];
+            opponent = OPP(side_to_move);
+            (void) make_move(side_to_move, curr_move, TRUE);
+            if (empties > wld_skill[side_to_move]) {
+                reset_counter(&nodes);
+                resp_move = compute_move(opponent, FALSE, player_time[opponent],
+                                         player_increment[opponent], timed_search,
+                                         s_use_book, skill[opponent] - 2,
+                                         exact_skill[opponent] - 1,
+                                         wld_skill[opponent] - 1, TRUE,
+                                         &played_info1);
+            }
+            reset_counter(&nodes);
+            resp_move = compute_move(opponent, FALSE, player_time[opponent],
+                                     player_increment[opponent], timed_search,
+                                     s_use_book, skill[opponent] - 1,
+                                     exact_skill[opponent] - 1,
+                                     wld_skill[opponent] - 1, TRUE, &played_info2);
+
+            unmake_move(side_to_move, curr_move);
+
+            /* Determine the 'best' move and its score. For midgame moves,
+           search twice to dampen oscillations. Unless we're in the endgame
+           region, a private hash transform is used - see above. */
+
+            if (empties > wld_skill[side_to_move]) {
+                set_hash_transformation(best_trans1, best_trans2);
+                reset_counter(&nodes);
+                curr_move =
+                        compute_move(side_to_move, FALSE, player_time[side_to_move],
+                                     player_increment[side_to_move], timed_search,
+                                     s_use_book, skill[side_to_move] - 1,
+                                     exact_skill[side_to_move], wld_skill[side_to_move],
+                                     TRUE, &best_info1);
+            }
+            reset_counter(&nodes);
+            curr_move =
+                    compute_move(side_to_move, FALSE, player_time[side_to_move],
+                                 player_increment[side_to_move], timed_search,
+                                 s_use_book, skill[side_to_move],
+                                 exact_skill[side_to_move], wld_skill[side_to_move],
+                                 TRUE, &best_info2);
+
+            /* Output the two score-move pairs */
+            sprintf(output_stream, "%c%c ", TO_SQUARE(curr_move));
+            if (empties <= exact_skill[side_to_move])
+                sprintf(output_stream, "%+6d", best_info2.score / 128);
+            else if (empties <= wld_skill[side_to_move]) {
+                if (best_info2.res == WON_POSITION)
+                    strcat("    +1", output_stream);
+                else if (best_info2.res == LOST_POSITION)
+                    strcat("    -1", output_stream);
+                else
+                    strcat("     0", output_stream);
+            } else {
+                /* If the played move is the best, output the already calculated
+                   score for the best move - that way we avoid a subtle problem:
+                   Suppose (N-1)-ply move is X but N-ply move is Y, where Y is
+                   the best move. Then averaging the corresponding scores won't
+                   coincide with the N-ply averaged score for Y. */
+                if ((curr_move == provided_move[disks_played]) &&
+                    (resp_move != PASS))
+                    sprintf(output_stream, "%6.2f",
+                            -(played_info1.score + played_info2.score) / (2 * 128.0));
+                else
+                    sprintf(output_stream, "%6.2f",
+                            (best_info1.score + best_info2.score) / (2 * 128.0));
+            }
+
+            curr_move = provided_move[disks_played];
+
+            sprintf(output_stream, "       %c%c ", TO_SQUARE(curr_move));
+            if (resp_move == PASS)
+                sprintf(output_stream, "     ?");
+            else if (empties <= exact_skill[side_to_move])
+                sprintf(output_stream, "%+6d", -played_info2.score / 128);
+            else if (empties <= wld_skill[side_to_move]) {
+                if (played_info2.res == WON_POSITION)
+                    strcat("    -1", output_stream);
+                else if (played_info2.res == LOST_POSITION)
+                    strcat("    +1", output_stream);
+                else
+                    strcat("     0", output_stream);
+            } else
+                sprintf(output_stream, "%6.2f",
+                        -(played_info1.score + played_info2.score) / (2 * 128.0));
+            strcat("\n", output_stream);
+
+            if (!valid_move(curr_move, side_to_move))
+                fatal_error("Invalid move %c%c in move sequence",
+                            TO_SQUARE(curr_move));
+
+            move_stop = get_real_timer();
+            if (player_time[side_to_move] != INFINIT_TIME)
+                player_time[side_to_move] -= (move_stop - move_start);
+
+            (void) make_move(side_to_move, curr_move, TRUE);
+            if (side_to_move == BLACKSQ)
+                black_moves[score_sheet_row] = curr_move;
+            else {
+                if (white_moves[score_sheet_row] != PASS)
+                    score_sheet_row++;
+                white_moves[score_sheet_row] = curr_move;
+            }
+        } else {
+            if (side_to_move == BLACKSQ)
+                black_moves[score_sheet_row] = PASS;
+            else
+                white_moves[score_sheet_row] = PASS;
+        }
+
+        side_to_move = OPP(side_to_move);
+    } //END While
+
+    if (side_to_move == BLACKSQ)
+        score_sheet_row++;
+
+    set_move_list(black_moves, white_moves, score_sheet_row);
+
+    droidzebra_enable_messaging(TRUE);
+    droidzebra_msg_analyze(output_stream);
+    //TODO callback
+    //display_board( stdout, board, side_to_move, TRUE, use_timer, TRUE );
+    DROIDZEBRA_JNI_CLEAN
+
 }
 
 jobject droidzebra_RPC_callback(jint message, jobject json)
@@ -301,7 +545,6 @@ void droidzebra_message(int category, const char* json_str)
 int droidzebra_message_debug(const char* format, ...)
 {
 	char errmsg[1024];
-	int retval = -1;
 
 	va_list arg_ptr;
 	jobject json;
@@ -309,7 +552,7 @@ int droidzebra_message_debug(const char* format, ...)
 	DROIDZEBRA_CHECK_JNI;
 
 	va_start( arg_ptr, format );
-	retval = vsprintf( errmsg, format, arg_ptr );
+    int retval = vsprintf(errmsg, format, arg_ptr);
 	va_end( arg_ptr );
 
 	json = droidzebra_json_create(s_env, NULL);
@@ -326,14 +569,13 @@ int droidzebra_message_debug(const char* format, ...)
 
 JNIEXPORT void
 JNIFn(droidzebra,ZebraEngine,zeSetPlayerInfo)(
-		JNIEnv* env,
-		jobject thiz,
-		jint _player,
-		jint _skill,
-		jint _exact_skill,
-		jint _wld_skill,
-		jint _time,
-		jint _time_increment
+        JNIEnv *env, jobject instance,
+        jint _player,
+        jint _skill,
+        jint _exact_skill,
+        jint _wld_skill,
+        jint _time,
+        jint _time_increment
 )
 {
 	if( _player!=BLACKSQ && _player!=WHITESQ && _player!=EMPTY ) {
@@ -353,47 +595,45 @@ JNIFn(droidzebra,ZebraEngine,zeSetPlayerInfo)(
 
 JNIEXPORT void JNICALL
 Java_com_shurik_droidzebra_ZebraEngine_zeSetAutoMakeMoves(JNIEnv *env, jobject instance,
-														  jint auto_make_moves) {
+                                                          jint auto_make_moves) {
 
 	auto_make_forced_moves = auto_make_moves;
 
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeSetSlack)( JNIEnv* env, jobject thiz, jfloat slack )
+JNIFn(droidzebra, ZebraEngine, zeSetSlack)(JNIEnv *env, jobject instance, jint slack)
 {
 	s_slack = slack;
-	//set_slack( floor( s_slack * 128.0 ) );
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeSetPerturbation)( JNIEnv* env, jobject thiz, jfloat perturbation )
+JNIFn(droidzebra, ZebraEngine, zeSetPerturbation)(JNIEnv *env, jobject instance, jint perturbation)
 {
 	s_perturbation = perturbation;
-	//set_perturbation( floor( s_perturbation * 128.0 ) );
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeSetHumanOpenings)( JNIEnv* env, jobject thiz, jint enable )
+JNIFn(droidzebra, ZebraEngine, zeSetHumanOpenings)(JNIEnv *env, jobject instance, jint enable)
 {
 	s_human_opening = enable;
-	//toggle_human_openings(s_human_opening);
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeSetPracticeMode)( JNIEnv* env, jobject thiz, jint enable )
+JNIFn(droidzebra, ZebraEngine, zeSetPracticeMode)(JNIEnv *env, jobject instance, jint enable)
 {
 	s_practice_mode = enable;
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeSetUseBook)( JNIEnv* env, jobject thiz, jint enable )
+JNIFn(droidzebra, ZebraEngine, zeSetUseBook)(JNIEnv *env, jobject instance, jint enable)
 {
 	s_use_book = enable;
 }
 
 JNIEXPORT void
-JNIFn(droidzebra,ZebraEngine,zeSetForcedOpening)( JNIEnv* env, jobject thiz, jstring opening_name )
+JNIFn(droidzebra, ZebraEngine, zeSetForcedOpening)(JNIEnv *env, jobject instance,
+                                                   jstring opening_name)
 {
 	int i;
 	const char* str = NULL;
@@ -412,9 +652,8 @@ JNIFn(droidzebra,ZebraEngine,zeSetForcedOpening)( JNIEnv* env, jobject thiz, jst
 }
 
 JNIEXPORT jboolean
-JNIFn(droidzebra,ZebraEngine,zeGameInProgress)( JNIEnv* env, jobject thiz )
-{
-	return game_in_progress()? JNI_TRUE : JNI_FALSE;
+JNIFn(droidzebra, ZebraEngine, zeGameInProgress)(JNIEnv *env, jobject instance) {
+    return (jboolean) (game_in_progress() ? JNI_TRUE : JNI_FALSE);
 }
 
 JNIEXPORT void
@@ -470,8 +709,8 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz, jint providedMo
 	game_init( NULL, &side_to_move );
 	setup_hash( TRUE );
 	clear_stored_game();
-	set_slack( floor( s_slack * 128.0 ) );
-	set_perturbation( floor( s_perturbation * 128.0 ) );
+    set_slack(s_slack * 128);
+    set_perturbation(s_perturbation * 128);
 	toggle_human_openings( s_human_opening );
 	set_forced_opening( s_forced_opening_seq );
 	opening_name = NULL;
@@ -537,8 +776,8 @@ AGAIN:
 		// echo
 		droidzebra_msg_candidate_moves();
 		set_move_list( black_moves, white_moves, score_sheet_row );
-		set_times( floor( player_time[BLACKSQ] ),
-				floor( player_time[WHITESQ] ) );
+        set_times(player_time[BLACKSQ],
+                  player_time[WHITESQ]);
 		op = find_opening_name();
 		if ( op != NULL && (!opening_name || strcmp(op, opening_name)) ) {
 			opening_name = op;
@@ -670,7 +909,7 @@ AGAIN:
 		score_sheet_row++;
 
 	set_move_list( black_moves, white_moves, score_sheet_row );
-	set_times( floor( player_time[BLACKSQ] ), floor( player_time[WHITESQ] ) );
+    set_times(player_time[BLACKSQ], player_time[WHITESQ]);
 	droidzebra_msg_opening_name(opening_name);
 	display_board( stdout, board, side_to_move, TRUE, TRUE, TRUE );
 
@@ -792,8 +1031,8 @@ void _droidzebra_redo_turn(int* side_to_move)
 
 void _droidzebra_on_settings_change(void)
 {
-	set_slack( floor( s_slack * 128.0 ) );
-	set_perturbation( floor( s_perturbation * 128.0 ) );
+    set_slack(s_slack * 128);
+    set_perturbation(s_perturbation * 128);
 	toggle_human_openings( s_human_opening );
 	set_forced_opening( s_forced_opening_seq );
 }
@@ -814,8 +1053,8 @@ void _droidzebra_compute_evals(int side_to_move)
 
 	memcpy(full_pv, stored_pv, sizeof(full_pv));
 	full_pv_depth = stored_pv_depth;
-	set_slack( floor( s_slack * 128.0 ) );
-	set_perturbation( floor( s_perturbation * 128.0 ) );
+    set_slack(s_slack * 128);
+    set_perturbation(s_perturbation * 128);
 	toggle_human_openings( s_human_opening );
 	set_forced_opening( s_forced_opening_seq );
 

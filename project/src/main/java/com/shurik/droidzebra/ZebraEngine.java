@@ -17,11 +17,7 @@
 
 package com.shurik.droidzebra;
 
-import android.content.Context;
-import android.content.res.AssetManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -77,6 +73,7 @@ public class ZebraEngine extends Thread {
 	MSG_EVAL_TEXT = 11,
 	MSG_PV = 12,
 	MSG_CANDIDATE_EVALS = 13,
+			MSG_ANALYZE_GAME = 14,
 	MSG_DEBUG = 65535;
 
 	// engine state
@@ -118,10 +115,10 @@ public class ZebraEngine extends Thread {
 	private int mSideToMove = PLAYER_ZEBRA;
 
 	// context
-	private Context mContext;
+	private GameContext mContext;
 	
 	// message sink
-	private Handler mHandler;
+	private GameMessageService mHandler;
 
 	// files folder
 	private File mFilesDir;
@@ -137,10 +134,13 @@ public class ZebraEngine extends Thread {
 	
 	private boolean bInCallback = false;
 
-	public ZebraEngine(Context context, Handler handler)
+	public ZebraEngine(GameContext context)
 	{
 		mContext = context;
-		mHandler = handler;
+	}
+
+	public void setHandler(GameMessageService mHandler) {
+		this.mHandler = mHandler;
 	}
 
 	public boolean initFiles()
@@ -156,8 +156,8 @@ public class ZebraEngine extends Thread {
 		}
 		
 		// if not - try external folder
-        copyAsset(mContext.getAssets(), PATTERNS_FILE, mContext.getFilesDir());
-        copyAsset(mContext.getAssets(), BOOK_FILE_COMPRESSED, mContext.getFilesDir());
+		copyAsset(mContext, PATTERNS_FILE, mContext.getFilesDir());
+		copyAsset(mContext, BOOK_FILE_COMPRESSED, mContext.getFilesDir());
 
         if (!pattern.exists() && !book.exists()) {
             // will be recreated from resources, the next time, maybe
@@ -171,8 +171,8 @@ public class ZebraEngine extends Thread {
         return true;
     }
 
-    private boolean copyAsset(AssetManager assetManager,
-                              String fromAssetPath, File filesdir) {
+	private void copyAsset(GameContext assetManager,
+						   String fromAssetPath, File filesdir) {
         InputStream in = null;
         OutputStream out = null;
         try {
@@ -185,7 +185,6 @@ public class ZebraEngine extends Thread {
             out.flush();
             out.close();
             out = null;
-            return true;
         } catch (Exception e) {
             Log.e(ZebraEngine.class.getSimpleName(), "copyAsset: " + fromAssetPath, e);
             throw new IllegalStateException("Datei konnte nicht geladen werden: " + fromAssetPath, e);
@@ -374,11 +373,11 @@ public class ZebraEngine extends Thread {
 			zeSetAutoMakeMoves(0);
 	}
 
-	public void setSlack(float _slack) {
+	public void setSlack(int _slack) {
 		zeSetSlack(_slack);
 	}
 
-	public void setPerturbation(float _perturbation) {
+	public void setPerturbation(int _perturbation) {
 		zeSetPerturbation(_perturbation);
 	}
 
@@ -511,7 +510,11 @@ public class ZebraEngine extends Thread {
 			zeGlobalTerminate();
 		}
 	}
-	
+
+	public void analyzeGame(List<Move> moves) {
+		byte[] bytes = toByte(moves);
+		zeAnalyzeGame(moves.size(), bytes);
+	}
 
 
 	private byte[] toByte(List<Move> moves) {
@@ -532,9 +535,7 @@ public class ZebraEngine extends Thread {
 	// called by native code - see droidzebra-msg.c
 	private JSONObject Callback(int msgcode, JSONObject data) {
 		JSONObject retval = null;
-		Message msg = mHandler.obtainMessage(msgcode);
-		Bundle b = new Bundle();
-		msg.setData(b);
+		GameMessage msg = mHandler.obtainMessage(msgcode);
 		// Log.d("ZebraEngine", String.format("Callback(%d,%s)", msgcode, data.toString()));
 		if (bInCallback && msgcode != MSG_ERROR) {
 			fatalError("Recursive callback call");
@@ -546,8 +547,8 @@ public class ZebraEngine extends Thread {
 		try {
 			bInCallback = true;
 			switch (msgcode) {
-			case MSG_ERROR: { 
-				b.putString("error", data.getString("error"));
+			case MSG_ERROR: {
+				msg.putString("error", data.getString("error"));
 				if(getEngineState()==ES_INITIAL) {
 					// delete .bin files if initialization failed 
 					// will be recreated from resources
@@ -559,7 +560,7 @@ public class ZebraEngine extends Thread {
 			} break;
 
 			case MSG_DEBUG: {
-				b.putString("message", data.getString("message"));
+				msg.putString("message", data.getString("message"));
 				mHandler.sendMessage(msg);
 			} break;
 
@@ -577,8 +578,8 @@ public class ZebraEngine extends Thread {
 						newBoard[i*BOARD_SIZE+j] = (byte)row.getInt(j);
 					}
 				}
-				b.putByteArray("board", newBoard);
-				b.putInt("side_to_move", data.getInt("side_to_move"));
+				msg.putByteArray("board", newBoard);
+				msg.putInt("side_to_move", data.getInt("side_to_move"));
 				mCurrentGameState.mDisksPlayed = data.getInt("disks_played");
 				
 				// black info
@@ -599,7 +600,7 @@ public class ZebraEngine extends Thread {
 						mCurrentGameState.mMoveSequence[2*i] = moves[i];
 					}
 					black.putByteArray("moves", moves);
-					b.putBundle("black", black);
+					msg.putBundle("black", black);
 				}
 
 				// white info
@@ -620,7 +621,7 @@ public class ZebraEngine extends Thread {
 						mCurrentGameState.mMoveSequence[2*i+1] = moves[i];
 					}
 					white.putByteArray("moves", moves);
-					b.putBundle("white", white);
+					msg.putBundle("white", white);
 				}
 				
 				mHandler.sendMessage(msg);
@@ -635,7 +636,7 @@ public class ZebraEngine extends Thread {
 					mValidMoves[i] = jscmoves.getJSONObject(i).getInt("move");
 					cmoves[i] = new CandidateMove(new Move(jscmove.getInt("move")));
 				}
-				msg.obj = cmoves;
+				msg.setObject(cmoves);
 				mHandler.sendMessage(msg);
 			} break;
 
@@ -665,14 +666,21 @@ public class ZebraEngine extends Thread {
 				waitForEngineState(ES_PLAY);				
 				setEngineState(ES_PLAYINPROGRESS);
 			} break;
+				case MSG_ANALYZE_GAME: {
+					setEngineState(ES_USER_INPUT_WAIT);
+					mHandler.sendMessage(msg);
+					waitForEngineState(ES_PLAY);
+					setEngineState(ES_PLAYINPROGRESS);
+				}
+				break;
 
 			case MSG_OPENING_NAME: {
-				b.putString("opening", data.getString("opening"));
+				msg.putString("opening", data.getString("opening"));
 				mHandler.sendMessage(msg);
 			} break;
 
 			case MSG_LAST_MOVE: {
-				b.putInt("move", data.getInt("move"));
+				msg.putInt("move", data.getInt("move"));
 				mHandler.sendMessage(msg);
 			} break;
 
@@ -737,7 +745,7 @@ public class ZebraEngine extends Thread {
 			} break;			
 
 			case MSG_EVAL_TEXT: {
-				b.putString("eval", data.getString("eval"));
+				msg.putString("eval", data.getString("eval"));
 				mHandler.sendMessage(msg);
 			} break;			
 
@@ -747,7 +755,7 @@ public class ZebraEngine extends Thread {
 				byte[] moves = new byte[len];
 				for( int i=0; i<len; i++)
 					moves[i] = (byte)zeArray.getInt(i);
-				b.putByteArray("pv", moves);
+				msg.putByteArray("pv", moves);
 				mHandler.sendMessage(msg);
 			} break;
 			
@@ -763,21 +771,19 @@ public class ZebraEngine extends Thread {
 							(jsceval.getInt("best")!=0)
 						);
 				}
-				msg.obj = cmoves;
+				msg.setObject(cmoves);
 				mHandler.sendMessage(msg);
 				
 			} break;
 			
 			default: {
-				b.putString("error", String.format("Unkown message ID %d", msgcode));
-				msg.setData(b);
+				msg.putString("error", String.format("Unkown message ID %d", msgcode));
 				mHandler.sendMessage(msg);
 			} break;
 			}
 		} catch (JSONException e) {
-			msg.what = MSG_ERROR;
-			b.putString( "error", "JSONException:" + e.getMessage());
-			msg.setData(b);
+			msg.setCode(MSG_ERROR);
+			msg.putString("error", "JSONException:" + e.getMessage());
 			mHandler.sendMessage(msg);
 		} finally {
 			bInCallback = false;
@@ -832,13 +838,17 @@ public class ZebraEngine extends Thread {
 	);    
 	private native void zePlay(int providedMoveCount, byte[] providedMoves);
 	private native void zeSetAutoMakeMoves(int auto_make_moves);
-	private native void zeSetSlack(float slack);
-	private native void zeSetPerturbation(float perturbation);
+
+	private native void zeSetSlack(int slack);
+
+	private native void zeSetPerturbation(int perturbation);
 	private native void zeSetForcedOpening(String opening_name);
 	private native void zeSetHumanOpenings(int enable);
 	private native void zeSetPracticeMode(int enable);
 	private native void zeSetUseBook(int enable);
 	private native boolean zeGameInProgress();
+
+	private native void zeAnalyzeGame(int providedMoveCount, byte[] providedMoves);
 	
 	public native void zeJsonTest(JSONObject json);
 
