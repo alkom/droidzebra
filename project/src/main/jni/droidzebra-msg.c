@@ -214,7 +214,7 @@ droidzebra_msg_game_over(void)
 void
 droidzebra_msg_analyze(char *message) {
     char json_buffer[64];
-    sprintf(json_buffer, "{\"analyze\":%d}", message);
+    sprintf(json_buffer, "{\"analyze\":%s}", message);
     droidzebra_message(MSG_MOVE_START, json_buffer);
 }
 

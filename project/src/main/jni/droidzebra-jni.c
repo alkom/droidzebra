@@ -407,11 +407,11 @@ JNIFn(droidzebra, ZebraEngine, zeAnalyzeGame)(JNIEnv *env, jobject thiz, jint pr
                 sprintf(output_stream, "%+6d", best_info2.score / 128);
             else if (empties <= wld_skill[side_to_move]) {
                 if (best_info2.res == WON_POSITION)
-                    strcat("    +1", output_stream);
+                    strcat(output_stream, "    +1");
                 else if (best_info2.res == LOST_POSITION)
-                    strcat("    -1", output_stream);
+                    strcat(output_stream, "    -1");
                 else
-                    strcat("     0", output_stream);
+                    strcat(output_stream, "     0");
             } else {
                 /* If the played move is the best, output the already calculated
                    score for the best move - that way we avoid a subtle problem:
@@ -436,11 +436,11 @@ JNIFn(droidzebra, ZebraEngine, zeAnalyzeGame)(JNIEnv *env, jobject thiz, jint pr
                 sprintf(output_stream, "%+6d", -played_info2.score / 128);
             else if (empties <= wld_skill[side_to_move]) {
                 if (played_info2.res == WON_POSITION)
-                    strcat("    -1", output_stream);
+                    strcat(output_stream, "    -1");
                 else if (played_info2.res == LOST_POSITION)
-                    strcat("    +1", output_stream);
+                    strcat(output_stream, "    +1");
                 else
-                    strcat("     0", output_stream);
+                    strcat(output_stream, "     0");
             } else
                 sprintf(output_stream, "%6.2f",
                         -(played_info1.score + played_info2.score) / (2 * 128.0));
