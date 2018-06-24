@@ -80,7 +80,8 @@ public class BoardView extends View {
 	private CountDownTimer mAnimationTimer = null;
 	private boolean mIsAnimationRunning = false;
 	private double mAnimationProgress = 0;
-	
+	private DroidZebra statusView;
+
 	public BoardView(Context context) {
 		super(context);
 		initBoardView();
@@ -527,7 +528,7 @@ public class BoardView extends View {
 		}
 		
 	    if( bInvalidate ) {
-			invalidate();
+			post(this::invalidate);
 		}
 	}
 
@@ -539,8 +540,11 @@ public class BoardView extends View {
 			mAnimationProgress = 0;
 			mAnimationTimer.start();
 		} else {
-			invalidate();
+			post(this::invalidate);
 		}
 	}
-	
+
+	public void setStatusView(DroidZebra statusView) {
+		this.statusView = statusView;
+	}
 }

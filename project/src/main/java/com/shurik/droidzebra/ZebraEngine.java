@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 //import android.util.Log;
 
 // DroidZebra -> ZebraEngine:public -async-> ZebraEngine thread(jni) -> Callback() -async-> DroidZebra:Handler 
@@ -57,7 +58,7 @@ public class ZebraEngine extends Thread {
 	private int mMovesWithoutInput = 0;
 	
 	// messages
-	static public final int 
+	private static final int
 	MSG_ERROR = 0,
 	MSG_BOARD = 1,
 	MSG_CANDIDATE_MOVES = 2,
@@ -534,7 +535,6 @@ public class ZebraEngine extends Thread {
 	// called by native code - see droidzebra-msg.c
 	private JSONObject Callback(int msgcode, JSONObject data) {
 		JSONObject retval = null;
-		GameMessage msg = mHandler.obtainMessage(msgcode);
 		// Log.d("ZebraEngine", String.format("Callback(%d,%s)", msgcode, data.toString()));
 		if (bInCallback && msgcode != MSG_ERROR) {
 			fatalError("Recursive callback call");
@@ -547,7 +547,6 @@ public class ZebraEngine extends Thread {
 			bInCallback = true;
 			switch (msgcode) {
 			case MSG_ERROR: {
-				msg.putString("error", data.getString("error"));
 				if(getEngineState()==ES_INITIAL) {
 					// delete .bin files if initialization failed 
 					// will be recreated from resources
@@ -555,12 +554,11 @@ public class ZebraEngine extends Thread {
 					new File(mFilesDir, BOOK_FILE).delete();
 					new File(mFilesDir, BOOK_FILE_COMPRESSED).delete();
 				}
-				mHandler.sendMessage(msg);
+				mHandler.sendError(data.getString("error"));
 			} break;
 
 			case MSG_DEBUG: {
-				msg.putString("message", data.getString("message"));
-				mHandler.sendMessage(msg);
+				mHandler.sendDebug(data.getString("message"));
 			} break;
 
 			case MSG_BOARD: {
@@ -623,9 +621,8 @@ public class ZebraEngine extends Thread {
 					}
 					white.setMoves(moves);
 					board.setWhitePlayer(white);
-					msg.setObject(board);
 				}
-				mHandler.sendMessage(msg);
+				mHandler.sendBoard(board);
 			} break;
 
 			case MSG_CANDIDATE_MOVES: {
@@ -637,8 +634,7 @@ public class ZebraEngine extends Thread {
 					mValidMoves[i] = jscmoves.getJSONObject(i).getInt("move");
 					cmoves[i] = new CandidateMove(new Move(jscmove.getInt("move")));
 				}
-				msg.setObject(cmoves);
-				mHandler.sendMessage(msg);
+				getGameState().setCandidateMoves(cmoves);
 			} break;
 
 			case MSG_GET_USER_INPUT: {
@@ -663,34 +659,34 @@ public class ZebraEngine extends Thread {
 
 			case MSG_PASS: {
 				setEngineState(ES_USER_INPUT_WAIT);
-				mHandler.sendMessage(msg);
+				mHandler.sendPass();
 				waitForEngineState(ES_PLAY);				
 				setEngineState(ES_PLAYINPROGRESS);
 			} break;
 				case MSG_ANALYZE_GAME: {
 					setEngineState(ES_USER_INPUT_WAIT);
-					mHandler.sendMessage(msg);
+					//mHandler.sendMessage(msg);
 					waitForEngineState(ES_PLAY);
 					setEngineState(ES_PLAYINPROGRESS);
 				}
 				break;
 
 			case MSG_OPENING_NAME: {
-				msg.putString("opening", data.getString("opening"));
-				mHandler.sendMessage(msg);
+				getGameState().setOpening(data.getString("opening"));
+				mHandler.sendBoard(getGameState());
 			} break;
 
 			case MSG_LAST_MOVE: {
-				msg.putInt("move", data.getInt("move"));
-				mHandler.sendMessage(msg);
+				getGameState().setLastMove(data.getInt("move"));
+				mHandler.sendBoard(getGameState());
 			} break;
 
 			case MSG_GAME_START: {
-				mHandler.sendMessage(msg);
+				mHandler.sendGameStart();
 			} break;
 
 			case MSG_GAME_OVER: {
-				mHandler.sendMessage(msg);
+				mHandler.sendGameOver();
 			} break;
 
 			case MSG_MOVE_START: {
@@ -725,7 +721,7 @@ public class ZebraEngine extends Thread {
 							mPlayerInfo[PLAYER_ZEBRA].playerTimeIncrement
 					);
 				}
-				mHandler.sendMessage(msg);
+				mHandler.sendMoveStart();
 			} break;
 
 			case MSG_MOVE_END: {
@@ -742,12 +738,11 @@ public class ZebraEngine extends Thread {
 				// this counter is reset by user input
 				mMovesWithoutInput += 1;
 
-				mHandler.sendMessage(msg);
+				mHandler.sendMoveEnd();
 			} break;			
 
 			case MSG_EVAL_TEXT: {
-				msg.putString("eval", data.getString("eval"));
-				mHandler.sendMessage(msg);
+				mHandler.sendEval(data.getString("eval"));
 			} break;			
 
 			case MSG_PV: {
@@ -756,8 +751,7 @@ public class ZebraEngine extends Thread {
 				byte[] moves = new byte[len];
 				for( int i=0; i<len; i++)
 					moves[i] = (byte)zeArray.getInt(i);
-				msg.putByteArray("pv", moves);
-				mHandler.sendMessage(msg);
+				mHandler.sendPv(moves);
 			} break;
 			
 			case MSG_CANDIDATE_EVALS: {
@@ -772,20 +766,16 @@ public class ZebraEngine extends Thread {
 							(jsceval.getInt("best")!=0)
 						);
 				}
-				msg.setObject(cmoves);
-				mHandler.sendMessage(msg);
-				
+				getGameState().setCandidateMoves(cmoves);
+				mHandler.sendBoard(getGameState());
 			} break;
 			
 			default: {
-				msg.putString("error", String.format("Unkown message ID %d", msgcode));
-				mHandler.sendMessage(msg);
+				mHandler.sendError(String.format(Locale.getDefault(), "Unkown message ID %d", msgcode));
 			} break;
 			}
 		} catch (JSONException e) {
-			msg.setCode(MSG_ERROR);
-			msg.putString("error", "JSONException:" + e.getMessage());
-			mHandler.sendMessage(msg);
+			mHandler.sendError("JSONException:" + e.getMessage());
 		} finally {
 			bInCallback = false;
 		}

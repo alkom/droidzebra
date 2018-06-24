@@ -302,7 +302,7 @@ public class StatusView extends View {
 			de.setText(text);
 			if( getWidth()>0 && getHeight()>0 ) {
 				de.prepareDraw(getWidth()-1, getHeight()-1, mPaint);
-				de.invalidate();
+				post(this::invalidate);
 			}
 		}
 	}

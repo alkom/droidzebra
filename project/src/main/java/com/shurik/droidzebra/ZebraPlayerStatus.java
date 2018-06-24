@@ -4,7 +4,7 @@ public class ZebraPlayerStatus {
     private String time;
     private float eval;
     private int discCount;
-    private byte[] moves;
+    private byte[] moves = new byte[0];
 
     public void setTime(String time) {
         this.time = time;

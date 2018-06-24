@@ -76,6 +76,9 @@ public class BoardState {
     }
 
     public void setBoard(byte[] board) {
+        if (board == null) {
+            return;
+        }
         for (int i = 0; i < boardSize; i++)
             for (int j = 0; j < boardSize; j++) {
                 mBoard[i][j].set(board[i * boardSize + j]);

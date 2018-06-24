@@ -3,10 +3,13 @@ package com.shurik.droidzebra;
 public class ZebraBoard {
     private byte[] board;
     private int sideToMove;
-    private ZebraPlayerStatus blackPlayer;
-    private ZebraPlayerStatus whitePlayer;
+    private ZebraPlayerStatus blackPlayer = new ZebraPlayerStatus();
+    private ZebraPlayerStatus whitePlayer = new ZebraPlayerStatus();
     private int disksPlayed;
-    private byte[] moveSequence;
+    private byte[] moveSequence = new byte[0];
+    private CandidateMove[] candidateMoves = new CandidateMove[0];
+    private String opening;
+    private int lastMove;
 
     public void setBoard(byte[] board) {
         this.board = board;
@@ -54,5 +57,29 @@ public class ZebraBoard {
 
     public byte[] getMoveSequence() {
         return moveSequence;
+    }
+
+    public void setCandidateMoves(CandidateMove[] candidateMoves) {
+        this.candidateMoves = candidateMoves;
+    }
+
+    public CandidateMove[] getCandidateMoves() {
+        return candidateMoves;
+    }
+
+    public void setOpening(String opening) {
+        this.opening = opening;
+    }
+
+    public String getOpening() {
+        return opening;
+    }
+
+    public void setLastMove(int lastMove) {
+        this.lastMove = lastMove;
+    }
+
+    public int getLastMove() {
+        return lastMove;
     }
 }

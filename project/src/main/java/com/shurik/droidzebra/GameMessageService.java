@@ -1,7 +1,23 @@
 package com.shurik.droidzebra;
 
 public interface GameMessageService {
-    GameMessage obtainMessage(int msgcode);
+    void sendError(String error);
 
-    boolean sendMessage(GameMessage msg);
+    void sendDebug(String debug);
+
+    void sendBoard(ZebraBoard board);
+
+    void sendPass();
+
+    void sendGameStart();
+
+    void sendGameOver();
+
+    void sendMoveStart();
+
+    void sendMoveEnd();
+
+    void sendEval(String eval);
+
+    void sendPv(byte[] moves);
 }
