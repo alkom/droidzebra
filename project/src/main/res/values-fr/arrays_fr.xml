@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string-array name="settings_engine_strengh_preferences">
+<item>1 coup</item>
+<item>2 coups</item>
+<item>3 coups</item>
+<item>4 coups</item>
+<item>4 coups + 12 parfaits</item>
+<item>6 coups</item>
+<item>6 coups + derniers 14 parfaits</item>
+<item>8 coups + derniers 16 parfaits</item>
+<item>12 coups + derniers 18 parfaits</item>
+<item>16 coups + derniers 20 parfaits</item>
+<item>20 coups + derniers 22 parfaits</item>
+</string-array>
+<string-array name="settings_engine_strengh_values">
+<item>1|1|1</item>
+<item>1|2|2</item>
+<item>3|3|3</item>
+<item>4|4|4</item>
+<item>4|12|12</item>
+<item>6|6|6</item>
+    <item>6|14|0</item>
+    <item>8|16|0</item>
+    <item>12|18|0</item>
+    <item>16|20|0</item>
+    <item>20|22|0</item>
+</string-array>
+<string-array name="settings_engine_function_preferences">
+<item>Zebra est inactif</item>
+<item>Zebra joue les blancs</item>
+<item>Zebra joue les noirs</item>
+<item>Zebra contre Zebra</item>
+</string-array>
+<string-array  name="settings_engine_function_values">
+<item>0</item>
+<item>1</item>
+<item>2</item>
+<item>3</item>
+</string-array>
+<string-array name="settings_engine_randomness_values">
+<item>0</item>
+<item>1</item>
+<item>2</item>
+<item>3</item>
+<item>4</item>
+</string-array>
+<string-array name="settings_engine_randomness_preferences">
+<item>Aucun</item>
+<item>Un peu  (1–2 pions)</item>
+<item>Moyen (4–5 pions)</item>
+<item>Grand (6–8 pions)</item>
+<item>Enorme (10–16 pions)</item>
+</string-array>
+<string-array name="settings_engine_opening_values"> 
+<!--  !!!DO NOT TRANSLATE _values arrays!!! -->
+<item>None</item>
+<item>Aircraft / Feldborg</item>
+<item>Aubrey (Feldborg continuation)</item>
+<item>Aubrey / Tanaka</item>
+<item>Bat (Kling Alternative)</item>
+<item>Bat (Kling Continuation)</item>
+<item>Bat (Piau Continuation 2)</item>
+<item>Bent ganglion</item>
+<item>Berner</item>
+<item>Bhagat</item>
+<item>Brightstein</item>
+<item>Brightwell</item>
+<item>Buffalo / Kenichi Variation</item>
+<item>Cat</item>
+<item>Central Rose-Bill / Dead draw</item>
+<item>Chimney</item>
+<item>Comp\'Oth</item>
+<item>Cow</item>
+<item>Cow Bat / Bat / Cambridge</item>
+<item>Diagonal Opening</item>
+<item>F.A.T. draw</item>
+<item>Flat</item>
+<item>Ganglion / No-Cat</item>
+<item>Greenberg / Dawg</item>
+<item>Hamilton</item>
+<item>Heath / Tobidashi</item>
+<item>Heath-Bat</item>
+<item>Heath-Chimney</item>
+<item>Hokuriku Buffalo</item>
+<item>Horse</item>
+<item>Iago</item>
+<item>Inoue</item>
+<item>Ishii</item>
+<item>Italian</item>
+<item>Iwasaki variation</item>
+<item>Kung</item>
+<item>Landau</item>
+<item>Leader\'s Tiger</item>
+<item>Lightning bolt</item>
+<item>Lollipop</item>
+<item>Lysons</item>
+<item>Mainline Tiger</item>
+<item>Maruoka</item>
+<item>Maruoka Buffalo</item>
+<item>Melnikov / Bat (Piau Continuation 1)</item>
+<item>Mimura variation II</item>
+<item>Murakami Variation</item>
+<item>No-Cat (Continuation)</item>
+<item>No-Kung</item>
+<item>No-Kung (Continuation)</item>
+<item>Parallel Opening</item>
+<item>Perpendicular Opening</item>
+<item>Pyramid / Checkerboarding Peasant</item>
+<item>Raccoon Dog</item>
+<item>Ralle</item>
+<item>Rocket</item>
+<item>Rose</item>
+<item>Rose-Bill</item>
+<item>Rose-Birth</item>
+<item>Rose-Tamenori-Kling</item>
+<item>Rose-birdie / Rose-Tamenori</item>
+<item>Rose-v-Toth</item>
+<item>Rotating Flat</item>
+<item>Rotating Flat (Kling Continuation)</item>
+<item>Sailboat</item>
+<item>Sakaguchi</item>
+<item>Semi-Wing Variation</item>
+<item>Shaman / Danish</item>
+<item>Snake / Peasant</item>
+<item>Stephenson</item>
+<item>Swallow</item>
+<item>Tamenori</item>
+<item>Tanida</item>
+<item>Tanida Buffalo</item>
+<item>Tiger</item>
+<item>Wing Variation</item>
+<item>X-square Opening</item>
+<!--  !!!DO NOT TRANSLATE _values  arrays!!! -->
+</string-array>
+
+<string-array name="settings_engine_opening_names">
+<item>Aucune</item>
+<item>Aircraft / Feldborg</item>
+<item>Aubrey (Feldborg Suite)</item>
+<item>Aubrey / Tanaka</item>
+<item>Bat (Kling Variation)</item>
+<item>Bat (Kling Suite)</item>
+<item>Bat (Piau Suite 2)</item>
+<item>Bent ganglion</item>
+<item>Berner</item>
+<item>Bhagat</item>
+<item>Brightstein</item>
+<item>Brightwell</item>
+<item>Buffalo / Kenichi Variation</item>
+<item>Cat</item>
+<item>Central Rose-Bill / Dead draw</item>
+<item>Chimney</item>
+<item>Comp\'Oth</item>
+<item>Cow</item>
+<item>Cow Bat / Bat / Cambridge</item>
+<item>Diagonal Opening</item>
+<item>F.A.T. draw</item>
+<item>Flat</item>
+<item>Ganglion / No-Cat</item>
+<item>Greenberg / Dawg</item>
+<item>Hamilton</item>
+<item>Heath / Tobidashi</item>
+<item>Heath-Bat</item>
+<item>Heath-Chimney</item>
+<item>Hokuriku Buffalo</item>
+<item>Horse</item>
+<item>Iago</item>
+<item>Inoue</item>
+<item>Ishii</item>
+<item>Italian</item>
+<item>Iwasaki variation</item>
+<item>Kung</item>
+<item>Landau</item>
+<item>Leader\'s Tiger</item>
+<item>Lightning bolt</item>
+<item>Lollipop</item>
+<item>Lysons</item>
+<item>Mainline Tiger</item>
+<item>Maruoka</item>
+<item>Maruoka Buffalo</item>
+<item>Melnikov / Bat (Piau Suite 1)</item>
+<item>Mimura variation II</item>
+<item>Murakami Variation</item>
+<item>No-Cat (Suite)</item>
+<item>No-Kung</item>
+<item>No-Kung (Suite)</item>
+<item>Parallel Opening</item>
+<item>Perpendicular Opening</item>
+<item>Pyramid / Checkerboarding Peasant</item>
+<item>Raccoon Dog</item>
+<item>Ralle</item>
+<item>Rocket</item>
+<item>Rose</item>
+<item>Rose-Bill</item>
+<item>Rose-Birth</item>
+<item>Rose-Tamenori-Kling</item>
+<item>Rose-birdie / Rose-Tamenori</item>
+<item>Rose-v-Toth</item>
+<item>Rotating Flat</item>
+<item>Rotating Flat (Kling Suite)</item>
+<item>Sailboat</item>
+<item>Sakaguchi</item>
+<item>Semi-Wing Variation</item>
+<item>Shaman / Danish</item>
+<item>Snake / Peasant</item>
+<item>Stephenson</item>
+<item>Swallow</item>
+<item>Tamenori</item>
+<item>Tanida</item>
+<item>Tanida Buffalo</item>
+<item>Tiger</item>
+<item>Wing Variation</item>
+<item>X-square Opening</item>
+</string-array>
+</resources>

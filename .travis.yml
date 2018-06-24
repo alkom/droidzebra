@@ -1,0 +1,78 @@
+language: android
+jdk: oraclejdk8
+before_install:
+- export ANDROID_NDK_HOME=./android-ndk-r17b
+
+- 'if [[ ! -d "$ANDROID_NDK_HOME" ]] ;
+    then
+     echo not found $ANDROID_NDK_HOME;
+   fi'
+- 'if [[ ! -d "$ANDROID_NDK_HOME" ]] ;
+   then
+    rm -fr $ANDROID_NDK_HOME;
+    curl -L https://dl.google.com/android/repository/android-ndk-r17b-linux-x86_64.zip -O;
+    unzip -oq android-ndk-r17b-linux-x86_64.zip;
+    ls -ltr $ANDROID_NDK_HOME;
+    ls -ltr $ANDROID_NDK_HOME/platforms;
+    rm android-ndk-r17b-linux-x86_64.zip;
+  fi'
+- export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
+before_cache:
+- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+cache:
+  directories:
+  - $HOME/.gradle/daemon
+  - $HOME/.gradle/native
+  - $HOME/.gradle/wrapper
+  - $HOME/.gradle/caches/
+  - $ANDROID_NDK_HOME
+  - $HOME/.m2
+android:
+  components:
+  - tools
+  - platform-tools
+  - tools
+  - build-tools-27.0.3
+  - android-21
+  - extra
+  - ndk-bundle
+  - sys-img-armeabi-v7a-android-21
+env:
+  global:
+  - ADB_INSTALL_TIMEOUT=8
+before_script:
+- echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
+- emulator -avd test -no-skin -no-audio -no-window &
+
+script:
+- echo  pr $TRAVIS_PULL_REQUEST
+- 'if [ "$TRAVIS_PULL_REQUEST" == "false" ] ;
+   then
+     echo building signed release;
+     openssl aes-256-cbc -K $encrypted_03208d80b1d9_key -iv $encrypted_03208d80b1d9_iv -in keystore/zebra.jks.enc -out keystore/zebra.jks -d;
+     ./gradlew build assembleRelease -Preversatile_key_alias=${reversatile_key_alias} -Preversatile_key_password=${reversatile_key_password} -Preversatile_keystore_password=${reversatile_keystore_password};
+  fi'
+- 'if [ "$TRAVIS_PULL_REQUEST" == "true" ] ;
+   then
+     echo building unsigned debug;
+     ./gradlew build assembleDebug;
+  fi'
+- android-wait-for-emulator
+- adb shell input keyevent 82 &
+- adb logcat *:W | $ANDROID_NDK_HOME/ndk-stack -sym project/build/intermediates/ndkBuild/debug/obj/local | tee logcat.log > /dev/null 2>&1 &
+- ./gradlew connectedCheck
+
+after_script:
+- git status
+- find . -name *.apk
+deploy:
+  provider: releases
+  api_key:
+    secure: OzY2HHyFmcop+412mV/XXSrbqb8T6T4K5ATr8rP4YZXWnrtRU7HvAcfYkQQNvU5d+9pBA2D6nP3ZW7R9Ia/rdT/ysylJtOM3hR+8wwVNKoa8unxHzUgQgn3txxos1VxLON5vzR4lhyNpo8j+Di3Xcb5EVw/+g7HKbr7pytAkBnvAdv4vGW4B0SFwiFpHrSLlW/5uL8BKGmi/oG4sJGKNt5UE6Z0RCtj7YgesNyDwMGtMvGBXj5PdISgETCy3ZdYCRR1G7Y4Oeqfw3LAmv9C54MrFZlNdXzAbuGhEXKy8UDLD0uYWXOsxq9xpmfE3Xw79HCqqmHXfMmuf1IO3Tgit1a/aN6CWC33fH+cMt3h9C0ulGHnrUpLKNC7xlQeP66TjPDtYQYhvnAGF8Ps7yYyjpExrREsh9ShKJPVhtfWCPQQCaCygcWTUD4JLwRr4gy0d14cpOUNVIJ5ja/u+oGCy16VZ7PFeOLiZbZQ8IWrYSRh1Rdxn/9q0ac8hAlj24QwIDTbhAHh+JgRbkCxIAPiZ+bDQCkLKe6MM9Vt7H9Yox2f83cIVfPLj9bZKRb2FuLRWtXezB41pU7Hk/+AnfLyM/hyELKE8tCe8h6yQCEIB/iPiCd1SbCYmZ0gChz4egaBCAQgJXJ+mQd8XjYnrbERbG6HK/GHsH66WLQKMbwpRVKY=
+  file_glob: true
+  file: "./project/build/outputs/apk/release/reversatile-release-*.apk"
+  skip_cleanup: true
+  on:
+    repo: oers/oerszebra
+    tags: true
+
