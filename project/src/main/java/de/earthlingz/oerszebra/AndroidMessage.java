@@ -35,11 +35,6 @@ class AndroidMessage implements GameMessage {
     }
 
     @Override
-    public void putBundle(String key, Bundle value) {
-        bundle.putBundle(key, value);
-    }
-
-    @Override
     public void setCode(int code) {
         message.what = code;
     }
@@ -70,12 +65,6 @@ class AndroidMessage implements GameMessage {
     @Nullable
     public byte[] getByteArray(String key) {
         return bundle.getByteArray(key);
-    }
-
-    @Override
-    @Nullable
-    public Bundle getBundle(String key) {
-        return bundle.getBundle(key);
     }
 
     @Override

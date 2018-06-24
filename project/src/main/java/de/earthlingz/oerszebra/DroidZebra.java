@@ -44,10 +44,10 @@ import android.widget.TextView;
 import com.google.common.base.Objects;
 import com.shurik.droidzebra.CandidateMove;
 import com.shurik.droidzebra.EngineError;
-import com.shurik.droidzebra.GameState;
 import com.shurik.droidzebra.InvalidMove;
 import com.shurik.droidzebra.Move;
 import com.shurik.droidzebra.PlayerInfo;
+import com.shurik.droidzebra.ZebraBoard;
 import com.shurik.droidzebra.ZebraEngine;
 
 import java.lang.ref.WeakReference;
@@ -488,11 +488,11 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		Date nowTime = calendar.getTime();
 		StringBuilder sbBlackPlayer = new StringBuilder();
 		StringBuilder sbWhitePlayer = new StringBuilder();
-		GameState gs = mZebraThread.getGameState();
+		ZebraBoard gs = mZebraThread.getGameState();
 		SharedPreferences settings = getSharedPreferences(SHARED_PREFS_NAME, 0);
 		byte[] moves = null;
 		if( gs != null ) {
-			moves = gs.mMoveSequence;
+			moves = gs.getMoveSequence();
 		}
 
 		Intent intent = new Intent();
@@ -761,10 +761,10 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		GameState gs = mZebraThread.getGameState();
+		ZebraBoard gs = mZebraThread.getGameState();
 		if (gs != null) {
-			outState.putByteArray("moves_played", gs.mMoveSequence);
-			outState.putInt("moves_played_count", gs.mDisksPlayed);
+			outState.putByteArray("moves_played", gs.getMoveSequence());
+			outState.putInt("moves_played_count", gs.getDisksPlayed());
 			outState.putInt("version", 1);
 		}
 	}

@@ -1,6 +1,5 @@
 package de.earthlingz.oerszebra;
 
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -9,6 +8,7 @@ import com.shurik.droidzebra.CandidateMove;
 import com.shurik.droidzebra.GameMessage;
 import com.shurik.droidzebra.GameMessageService;
 import com.shurik.droidzebra.Move;
+import com.shurik.droidzebra.ZebraBoard;
 import com.shurik.droidzebra.ZebraEngine;
 
 import java.util.LinkedList;
@@ -49,13 +49,14 @@ public class DroidZebraHandler implements GameMessageHandler, GameMessageService
             }
             break;
             case ZebraEngine.MSG_BOARD: {
+                ZebraBoard board = (ZebraBoard) m.getObject();
                 String score;
-                int sideToMove = m.getInt("side_to_move");
+                int sideToMove = board.getSideToMove();
 
-                state.setBoard(m.getByteArray("board"));
+                state.setBoard(board.getBoard());
 
-                state.setmBlackScore(m.getBundle("black").getInt("disc_count"));
-                state.setmWhiteScore(m.getBundle("white").getInt("disc_count"));
+                state.setmBlackScore(board.getBlackPlayer().getDiscCount());
+                state.setmWhiteScore(board.getWhitePlayer().getDiscCount());
 
                 if (sideToMove == ZebraEngine.PLAYER_BLACK) {
                     score = String.format(Locale.getDefault(), "•%d", state.getmBlackScore());
@@ -78,8 +79,8 @@ public class DroidZebraHandler implements GameMessageHandler, GameMessageService
                 );
 
                 int iStart, iEnd;
-                byte[] black_moves = getByteArray(m, "black");
-                byte[] white_moves = getByteArray(m, "white");
+                byte[] black_moves = board.getBlackPlayer().getMoves();
+                byte[] white_moves = board.getWhitePlayer().getMoves();
 
                 iEnd = black_moves.length;
                 iStart = Math.max(0, iEnd - 4);
@@ -228,18 +229,6 @@ public class DroidZebraHandler implements GameMessageHandler, GameMessageService
             break;
         }
         return true;
-    }
-
-    private byte[] getByteArray(GameMessage m, String bundle) {
-        Bundle bun = m.getBundle(bundle);
-        if (bun == null) {
-            return new byte[0];
-        }
-        byte[] moves = bun.getByteArray("moves");
-        if (moves == null) {
-            return new byte[0];
-        }
-        return moves;
     }
 
     @Override

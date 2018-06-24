@@ -17,7 +17,6 @@
 
 package com.shurik.droidzebra;
 
-import android.os.Bundle;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -98,8 +97,8 @@ public class ZebraEngine extends Thread {
     }
 
 
-	private transient GameState mInitialGameState;
-	private transient GameState mCurrentGameState;
+	private transient ZebraBoard mInitialGameState;
+	private transient ZebraBoard mCurrentGameState;
 	
 	// current move
 	private JSONObject mPendingEvent= null;
@@ -359,9 +358,9 @@ public class ZebraEngine extends Thread {
                 stopGame();
                 waitForEngineState(ZebraEngine.ES_READY2PLAY);
             }
-            mInitialGameState = new GameState();
-            mInitialGameState.mDisksPlayed = moves.size();
-            mInitialGameState.mMoveSequence = toByte(moves);
+		mInitialGameState = new ZebraBoard();
+		mInitialGameState.setDisksPlayed(moves.size());
+		mInitialGameState.setMoveSequence(toByte(moves));
             setEngineState(ES_PLAY);
     }
 
@@ -427,15 +426,15 @@ public class ZebraEngine extends Thread {
 	
 	// gamestate manipulators
 	public void setInitialGameState(int moveCount, byte[] moves) {
-		mInitialGameState = new GameState();
-		mInitialGameState.mDisksPlayed = moveCount; 
-		mInitialGameState.mMoveSequence = new byte[moveCount];
+		mInitialGameState = new ZebraBoard();
+		mInitialGameState.setDisksPlayed(moveCount);
+		mInitialGameState.setMoveSequence(new byte[moveCount]);
 		for(int i=0; i<moveCount; i++) {
-			mInitialGameState.mMoveSequence[i] = moves[i];
+			mInitialGameState.getMoveSequence()[i] = moves[i];
 		}
 	}
-	
-	public GameState getGameState() {
+
+	public ZebraBoard getGameState() {
 		return mCurrentGameState;
 	}
 	
@@ -489,13 +488,13 @@ public class ZebraEngine extends Thread {
 						mPlayerInfo[PLAYER_ZEBRA].playerTime,
 						mPlayerInfo[PLAYER_ZEBRA].playerTimeIncrement
 				);
-				
-				mCurrentGameState = new GameState();
-				mCurrentGameState.mDisksPlayed = 0;
-				mCurrentGameState.mMoveSequence = new byte[2*BOARD_SIZE*BOARD_SIZE];
+
+				mCurrentGameState = new ZebraBoard();
+				mCurrentGameState.setDisksPlayed(0);
+				mCurrentGameState.setMoveSequence(new byte[2 * BOARD_SIZE * BOARD_SIZE]);
 
 				if( mInitialGameState != null )
-					zePlay(mInitialGameState.mDisksPlayed, mInitialGameState.mMoveSequence);
+					zePlay(mInitialGameState.getDisksPlayed(), mInitialGameState.getMoveSequence());
 				else
 					zePlay(0, null);
 				
@@ -578,52 +577,54 @@ public class ZebraEngine extends Thread {
 						newBoard[i*BOARD_SIZE+j] = (byte)row.getInt(j);
 					}
 				}
-				msg.putByteArray("board", newBoard);
-				msg.putInt("side_to_move", data.getInt("side_to_move"));
-				mCurrentGameState.mDisksPlayed = data.getInt("disks_played");
-				
+
+				//update the current game state
+				ZebraBoard board = getGameState();
+				board.setBoard(newBoard);
+				board.setSideToMove(data.getInt("side_to_move"));
+				board.setDisksPlayed(data.getInt("disks_played"));
+
 				// black info
 				{
-					Bundle black = new Bundle();
+					ZebraPlayerStatus black = new ZebraPlayerStatus();
 					info = data.getJSONObject("black");
-					black.putString("time", info.getString("time"));
-					black.putFloat("eval", (float)info.getDouble("eval"));
-					black.putInt("disc_count", info.getInt("disc_count"));
-					black.putString("time", info.getString("time"));
-					
+					black.setTime(info.getString("time"));
+					black.setEval((float) info.getDouble("eval"));
+					black.setDiscCount(info.getInt("disc_count"));
+
 					zeArray = info.getJSONArray("moves");
 					len = zeArray.length();
 					moves = new byte[len];
-					assert (2 * len <= mCurrentGameState.mMoveSequence.length);
+					assert (2 * len <= mCurrentGameState.getMoveSequence().length);
 					for( int i=0; i<len; i++) {
 						moves[i] = (byte)zeArray.getInt(i);
-						mCurrentGameState.mMoveSequence[2*i] = moves[i];
+						mCurrentGameState.getMoveSequence()[2 * i] = moves[i];
 					}
-					black.putByteArray("moves", moves);
-					msg.putBundle("black", black);
+					black.setMoves(moves);
+					board.setBlackPlayer(black);
 				}
 
 				// white info
 				{
-					Bundle white = new Bundle();
+					ZebraPlayerStatus white = new ZebraPlayerStatus();
 					info = data.getJSONObject("white");
-					white.putString("time", info.getString("time"));
-					white.putFloat("eval", (float)info.getDouble("eval"));
-					white.putInt("disc_count", info.getInt("disc_count"));
-					white.putString("time", info.getString("time"));
-					
+					white.setTime(info.getString("time"));
+					white.setEval((float) info.getDouble("eval"));
+					white.setDiscCount(info.getInt("disc_count"));
+					;
+
 					zeArray = info.getJSONArray("moves");
 					len = zeArray.length();
 					moves = new byte[len];
-					assert ((2 * len + 1) <= mCurrentGameState.mMoveSequence.length);
+					assert ((2 * len + 1) <= mCurrentGameState.getMoveSequence().length);
 					for( int i=0; i<len; i++) {
 						moves[i] = (byte)zeArray.getInt(i);
-						mCurrentGameState.mMoveSequence[2*i+1] = moves[i];
+						mCurrentGameState.getMoveSequence()[2 * i + 1] = moves[i];
 					}
-					white.putByteArray("moves", moves);
-					msg.putBundle("white", white);
+					white.setMoves(moves);
+					board.setWhitePlayer(white);
+					msg.setObject(board);
 				}
-				
 				mHandler.sendMessage(msg);
 			} break;
 
