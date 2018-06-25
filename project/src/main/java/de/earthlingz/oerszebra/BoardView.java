@@ -431,7 +431,7 @@ public class BoardView extends View {
 				updateSelection(bx, by, false, true);
 				break;
 			case MotionEvent.ACTION_UP:
-                super.performClick();
+                //super.performClick(); makes the gui slow. Why?
 				mShowSelectionHelpers = false;
 				updateSelection(bx, by, true, true);
 				break;

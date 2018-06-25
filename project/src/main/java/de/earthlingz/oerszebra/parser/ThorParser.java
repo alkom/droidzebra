@@ -16,7 +16,7 @@ public class ThorParser implements Parser {
 
     @Override
     public LinkedList<Move> makeMoveList(String s) {
-        LinkedList<Move> moves = new LinkedList<Move>();
+        LinkedList<Move> moves = new LinkedList<>();
 
         String sanitized = s.replace("\n", " ").replace("\r", " ");
         String input = sanitized.toLowerCase();

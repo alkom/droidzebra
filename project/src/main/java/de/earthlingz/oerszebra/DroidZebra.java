@@ -30,25 +30,12 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.Button;
 import android.widget.TextView;
-
 import com.google.common.base.Objects;
-import com.shurik.droidzebra.CandidateMove;
-import com.shurik.droidzebra.EngineError;
-import com.shurik.droidzebra.InvalidMove;
-import com.shurik.droidzebra.Move;
-import com.shurik.droidzebra.PlayerInfo;
-import com.shurik.droidzebra.ZebraBoard;
-import com.shurik.droidzebra.ZebraEngine;
+import com.shurik.droidzebra.*;
+import de.earthlingz.oerszebra.parser.Gameparser;
 
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
@@ -56,16 +43,8 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.Locale;
 
-import de.earthlingz.oerszebra.parser.Gameparser;
-
-import static de.earthlingz.oerszebra.GameSettingsConstants.FUNCTION_HUMAN_VS_HUMAN;
-import static de.earthlingz.oerszebra.GameSettingsConstants.FUNCTION_ZEBRA_BLACK;
-import static de.earthlingz.oerszebra.GameSettingsConstants.FUNCTION_ZEBRA_VS_ZEBRA;
-import static de.earthlingz.oerszebra.GameSettingsConstants.FUNCTION_ZEBRA_WHITE;
-import static de.earthlingz.oerszebra.GlobalSettingsLoader.DEFAULT_SETTING_SENDMAIL;
-import static de.earthlingz.oerszebra.GlobalSettingsLoader.SETTINGS_KEY_FUNCTION;
-import static de.earthlingz.oerszebra.GlobalSettingsLoader.SETTINGS_KEY_SENDMAIL;
-import static de.earthlingz.oerszebra.GlobalSettingsLoader.SHARED_PREFS_NAME;
+import static de.earthlingz.oerszebra.GameSettingsConstants.*;
+import static de.earthlingz.oerszebra.GlobalSettingsLoader.*;
 
 //import android.util.Log;
 
@@ -227,14 +206,19 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
 		Log.i("Intent", type + " " + action);
 
 		if (Intent.ACTION_SEND.equals(action) && type != null) {
-			if ("text/plain".equals(type)) {
-				setUpBoard(intent.getDataString()); // Handle text being sent
-			} else 	if ("message/rfc822".equals(type)) {
-				Log.i("Intent", intent.getStringExtra(Intent.EXTRA_TEXT));
-				setUpBoard(intent.getStringExtra(Intent.EXTRA_TEXT)); // Handle text being sent
-			}
-			else  {
-				Log.e("intent", "unknown intent");
+			switch (type) {
+				case "text/plain":
+					setUpBoard(intent.getDataString()); // Handle text being sent
+
+					break;
+				case "message/rfc822":
+					Log.i("Intent", intent.getStringExtra(Intent.EXTRA_TEXT));
+					setUpBoard(intent.getStringExtra(Intent.EXTRA_TEXT)); // Handle text being sent
+
+					break;
+				default:
+					Log.e("intent", "unknown intent");
+					break;
 			}
 		} else {
 			Log.e("intent", "unknown intent");

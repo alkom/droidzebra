@@ -117,10 +117,9 @@ public class DroidZebraHandler implements ZebraEngineMessageHander, GameMessageR
 
         state.setMoves(candidateMoves);
         for (CandidateMove eval : candidateMoves) {
-            CandidateMove[] moves = currentMoves;
-            for (int i = 0; i < moves.length; i++) {
-                if (moves[i].mMove.mMove == eval.mMove.mMove) {
-                    moves[i] = eval;
+            for (int i = 0; i < currentMoves.length; i++) {
+                if (currentMoves[i].mMove.mMove == eval.mMove.mMove) {
+                    currentMoves[i] = eval;
                     break;
                 }
             }

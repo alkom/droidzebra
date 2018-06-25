@@ -122,7 +122,7 @@ public class ZebraEngine extends Thread {
 	// synchronization
 	static private final Object  mJNILock = new Object();
 
-	private transient Object mEngineStateEvent = new Object();
+    private final transient Object mEngineStateEvent = new Object();
 
 	private int mEngineState = ES_INITIAL;
 
@@ -169,18 +169,9 @@ public class ZebraEngine extends Thread {
 
 	private void copyAsset(GameContext assetManager,
 						   String fromAssetPath, File filesdir) {
-        InputStream in = null;
-        OutputStream out = null;
-        try {
-            in = assetManager.open(fromAssetPath);
-            File target = new File(filesdir, fromAssetPath);
-            out = new FileOutputStream(target);
+        File target = new File(filesdir, fromAssetPath);
+        try (InputStream in = assetManager.open(fromAssetPath); OutputStream out = new FileOutputStream(target)) {
             copyFile(in, out);
-            in.close();
-            in = null;
-            out.flush();
-            out.close();
-            out = null;
         } catch (Exception e) {
             Log.e(ZebraEngine.class.getSimpleName(), "copyAsset: " + fromAssetPath, e);
             throw new IllegalStateException("Datei konnte nicht geladen werden: " + fromAssetPath, e);
@@ -202,7 +193,9 @@ public class ZebraEngine extends Thread {
 				try {
 					mEngineStateEvent.wait(milliseconds);
 				} catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
 				}
+
 		}
 	}
 
@@ -213,6 +206,7 @@ public class ZebraEngine extends Thread {
 				try {
 					mEngineStateEvent.wait();
 				} catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
 				}
 		}
 	}
