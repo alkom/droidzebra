@@ -414,8 +414,12 @@ public class BoardView extends View {
 		return false;
 	}
 
+    @Override
+    public boolean performClick() {
+        return super.performClick();
+    }
 
-	@Override
+    @Override
 	public boolean onTouchEvent(MotionEvent event) {
 		int action = event.getAction();
 		int bx = (int) Math.floor((event.getX() - mBoardRect.left) / mSizeCell);
@@ -427,6 +431,7 @@ public class BoardView extends View {
 				updateSelection(bx, by, false, true);
 				break;
 			case MotionEvent.ACTION_UP:
+                super.performClick();
 				mShowSelectionHelpers = false;
 				updateSelection(bx, by, true, true);
 				break;

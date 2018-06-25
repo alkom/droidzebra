@@ -18,6 +18,7 @@
 package com.shurik.droidzebra;
 
 import android.util.Log;
+import de.earthlingz.oerszebra.BuildConfig;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -590,7 +591,9 @@ public class ZebraEngine extends Thread {
 					zeArray = info.getJSONArray("moves");
 					len = zeArray.length();
 					moves = new byte[len];
-					assert (2 * len <= mCurrentGameState.getMoveSequence().length);
+					if (BuildConfig.DEBUG && !(2 * len <= mCurrentGameState.getMoveSequence().length)) {
+						throw new AssertionError();
+					}
 					for( int i=0; i<len; i++) {
 						moves[i] = (byte)zeArray.getInt(i);
 						mCurrentGameState.getMoveSequence()[2 * i] = moves[i];
@@ -610,7 +613,9 @@ public class ZebraEngine extends Thread {
                     zeArray = info.getJSONArray("moves");
 					len = zeArray.length();
 					moves = new byte[len];
-					assert ((2 * len + 1) <= mCurrentGameState.getMoveSequence().length);
+					if (BuildConfig.DEBUG && !(2 * len <= mCurrentGameState.getMoveSequence().length)) {
+						throw new AssertionError();
+					}
 					for( int i=0; i<len; i++) {
 						moves[i] = (byte)zeArray.getInt(i);
 						mCurrentGameState.getMoveSequence()[2 * i + 1] = moves[i];
