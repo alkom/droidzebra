@@ -2,7 +2,6 @@ package de.earthlingz.oerszebra;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-
 import com.shurik.droidzebra.CandidateMove;
 import com.shurik.droidzebra.CandidateMoves;
 import com.shurik.droidzebra.Move;
@@ -75,14 +74,22 @@ public class BoardState {
         return false;
     }
 
-    public void setBoard(byte[] board) {
+    public boolean updateBoard(byte[] board) {
         if (board == null) {
-            return;
+            return false;
         }
-        for (int i = 0; i < boardSize; i++)
+
+        boolean changed = false;
+        for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                mBoard[i][j].set(board[i * boardSize + j]);
+                byte newState = board[i * boardSize + j];
+                FieldState oldState = mBoard[i][j];
+                changed |= oldState.mState != newState;
+                oldState.set(newState);
             }
+        }
+        return changed;
+
     }
 
     public void reset() {

@@ -20,4 +20,6 @@ public interface GameMessageService {
     void sendEval(String eval);
 
     void sendPv(byte[] moves);
+
+    void exec(Runnable r);
 }

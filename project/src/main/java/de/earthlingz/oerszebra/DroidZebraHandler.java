@@ -1,13 +1,9 @@
 package de.earthlingz.oerszebra;
 
 import android.util.Log;
+import com.shurik.droidzebra.*;
 
-import com.shurik.droidzebra.CandidateMove;
-import com.shurik.droidzebra.GameMessageService;
-import com.shurik.droidzebra.Move;
-import com.shurik.droidzebra.ZebraBoard;
-import com.shurik.droidzebra.ZebraEngine;
-
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Locale;
 
@@ -16,6 +12,8 @@ public class DroidZebraHandler implements GameMessageService {
     private BoardState state;
     private ZebraEngine mZebraThread;
     private GameController controller;
+
+    android.os.Handler handler = new android.os.Handler();
 
     DroidZebraHandler(BoardState state, GameController controller, ZebraEngine mZebraThread) {
         this.controller = controller;
@@ -40,7 +38,11 @@ public class DroidZebraHandler implements GameMessageService {
         String score;
         int sideToMove = board.getSideToMove();
 
-        state.setBoard(board.getBoard());
+        //triggers animations
+        boolean boardChanged = state.updateBoard(board.getBoard());
+
+        //simpleredraw
+        boolean doValidate = false;
 
         state.setmBlackScore(board.getBlackPlayer().getDiscCount());
         state.setmWhiteScore(board.getWhitePlayer().getDiscCount());
@@ -108,9 +110,14 @@ public class DroidZebraHandler implements GameMessageService {
 
         byte move = (byte) board.getLastMove();
         state.setmLastMove(move == Move.PASS ? null : new Move(move));
-        state.setMoves(board.getCandidateMoves());
-        for (CandidateMove eval : board.getCandidateMoves()) {
-            CandidateMove[] moves = state.getMoves();
+        CandidateMove[] currentMoves = state.getMoves();
+        CandidateMove[] candidateMoves = board.getCandidateMoves();
+
+        doValidate = Arrays.deepEquals(currentMoves, candidateMoves);
+
+        state.setMoves(candidateMoves);
+        for (CandidateMove eval : candidateMoves) {
+            CandidateMove[] moves = currentMoves;
             for (int i = 0; i < moves.length; i++) {
                 if (moves[i].mMove.mMove == eval.mMove.mMove) {
                     moves[i] = eval;
@@ -126,7 +133,11 @@ public class DroidZebraHandler implements GameMessageService {
             );
         }
 
-        controller.getBoardView().onBoardStateChanged();
+        if (boardChanged) {
+            controller.getBoardView().onBoardStateChanged();
+        } else if (doValidate) {
+            controller.getBoardView().invalidate();
+        }
     }
 
     @Override
@@ -194,5 +205,10 @@ public class DroidZebraHandler implements GameMessageService {
             );
         }
 
+    }
+
+    @Override
+    public void exec(Runnable r) {
+        handler.post(r);
     }
 }
