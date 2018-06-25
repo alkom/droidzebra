@@ -519,7 +519,7 @@ public class BoardView extends View {
     private void cancelAnimation() {
         if (mIsAnimationRunning.get()) {
             mAnimationTimer.cancel();
-            mIsAnimationRunning.set(true);
+            mIsAnimationRunning.set(false);
             mAnimationProgress = 0;
         }
     }
@@ -531,6 +531,7 @@ public class BoardView extends View {
 			mIsAnimationRunning.set(true);
 			mAnimationProgress = 0;
 			mAnimationTimer.start();
+            //will call invalidate from the animation threads
 		} else {
 			invalidate();
 		}
