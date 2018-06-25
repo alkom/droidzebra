@@ -1,6 +1,6 @@
 package com.shurik.droidzebra;
 
-public interface GameMessageService {
+public interface ZebraEngineMessageHander {
     void sendError(String error);
 
     void sendDebug(String debug);
@@ -20,6 +20,4 @@ public interface GameMessageService {
     void sendEval(String eval);
 
     void sendPv(byte[] moves);
-
-    void exec(Runnable r);
 }

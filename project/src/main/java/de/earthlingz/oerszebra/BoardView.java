@@ -30,6 +30,8 @@ import com.shurik.droidzebra.CandidateMove;
 import com.shurik.droidzebra.InvalidMove;
 import com.shurik.droidzebra.Move;
 import com.shurik.droidzebra.ZebraEngine;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 //import android.util.Log;
 
 public class BoardView extends View {
@@ -67,7 +69,7 @@ public class BoardView extends View {
 	private boolean mShowSelectionHelpers = false;// highlight row/column
 
 	private CountDownTimer mAnimationTimer = null;
-	private boolean mIsAnimationRunning = false;
+	private AtomicBoolean mIsAnimationRunning = new AtomicBoolean(false);
 	private double mAnimationProgress = 0;
 	public BoardView(Context context) {
 		super(context);
@@ -120,7 +122,7 @@ public class BoardView extends View {
 			}
 
 			public void onFinish() {
-				mIsAnimationRunning = false;
+				mIsAnimationRunning.set(false);
 				invalidate();
 			}
 		};
@@ -273,7 +275,7 @@ public class BoardView extends View {
 					circle_color = Color.BLACK;
 				else
 					circle_color = Color.WHITE;
-				if (mIsAnimationRunning && getDroidZebra().getBoard()[i][j].isFlipped()) {
+				if (mIsAnimationRunning.get() && getDroidZebra().getBoard()[i][j].isFlipped()) {
 					oval_x = mBoardRect.left + i * mSizeCell + mSizeCell / 2;
 					oval_y = mBoardRect.top + j * mSizeCell + mSizeCell / 2;
 					mTempRect.set(
@@ -385,7 +387,7 @@ public class BoardView extends View {
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent msg) {
 		// Log.d("BoardView", String.format("onKeyDown: %d", keyCode));
-		if (mIsAnimationRunning) return false;
+		if (mIsAnimationRunning.get()) return false;
 
 		int newMX = mMoveSelection.getX();
 		int newMY = mMoveSelection.getY();
@@ -417,7 +419,7 @@ public class BoardView extends View {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		if (mIsAnimationRunning) return false;
+		if (mIsAnimationRunning.get()) return false;
 
 		int action = event.getAction();
 		int bx = (int) Math.floor((event.getX() - mBoardRect.left) / mSizeCell);
@@ -438,7 +440,7 @@ public class BoardView extends View {
 
 	@Override
 	public boolean onTrackballEvent(MotionEvent event) {
-		if (mIsAnimationRunning) return false;
+		if (mIsAnimationRunning.get()) return false;
 
 		float tx = event.getX();
 		float ty = event.getY();
@@ -521,9 +523,9 @@ public class BoardView extends View {
 
 	public void onBoardStateChanged() {
 		if (getDroidZebra().settingsProvider.isSettingDisplayEnableAnimations()) {
-			if (mIsAnimationRunning)
+			if (mIsAnimationRunning.get())
 				mAnimationTimer.cancel();
-			mIsAnimationRunning = true;
+			mIsAnimationRunning.set(true);
 			mAnimationProgress = 0;
 			mAnimationTimer.start();
 		} else {

@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Locale;
 
-public class DroidZebraHandler implements GameMessageService {
+public class DroidZebraHandler implements ZebraEngineMessageHander, GameMessageReceiver {
 
     private BoardState state;
     private ZebraEngine mZebraThread;
@@ -23,18 +23,18 @@ public class DroidZebraHandler implements GameMessageService {
     }
 
     @Override
-    public void sendError(String error) {
+    public void onError(String error) {
         controller.showAlertDialog(error);
         mZebraThread.setInitialGameState(new LinkedList<>());
     }
 
     @Override
-    public void sendDebug(String debug) {
+    public void onDebug(String debug) {
         Log.v("OersZebra", debug);
     }
 
     @Override
-    public void sendBoard(ZebraBoard board) {
+    public void onBoard(ZebraBoard board) {
         String score;
         int sideToMove = board.getSideToMove();
 
@@ -141,17 +141,17 @@ public class DroidZebraHandler implements GameMessageService {
     }
 
     @Override
-    public void sendPass() {
+    public void onPass() {
         controller.showPassDialog();
     }
 
     @Override
-    public void sendGameStart() {
+    public void onGameStart() {
         // noop
     }
 
     @Override
-    public void sendGameOver() {
+    public void onGameOver() {
         controller.setCandidateMoves(new CandidateMove[]{});
         int max = state.getmBoard().length * state.getmBoard().length;
         if (state.getmBlackScore() + state.getmWhiteScore() < max) {
@@ -166,12 +166,12 @@ public class DroidZebraHandler implements GameMessageService {
     }
 
     @Override
-    public void sendMoveStart() {
+    public void onMoveStart() {
 
     }
 
     @Override
-    public void sendMoveEnd() {
+    public void onMoveEnd() {
         controller.dismissBusyDialog();
         if (controller.isHintUp()) {
             controller.setHintUp(false);
@@ -182,7 +182,7 @@ public class DroidZebraHandler implements GameMessageService {
     }
 
     @Override
-    public void sendEval(String eval) {
+    public void onEval(String eval) {
         if (controller.getSettingDisplayPV()) {
             controller.getStatusView().setTextForID(
                     StatusView.ID_STATUS_EVAL,
@@ -192,7 +192,7 @@ public class DroidZebraHandler implements GameMessageService {
     }
 
     @Override
-    public void sendPv(byte[] pv) {
+    public void onPv(byte[] pv) {
         if (controller.getSettingDisplayPV() && pv != null) {
             StringBuilder pvText = new StringBuilder();
             for (byte move : pv) {
@@ -208,7 +208,53 @@ public class DroidZebraHandler implements GameMessageService {
     }
 
     @Override
-    public void exec(Runnable r) {
-        handler.post(r);
+    public void sendError(String error) {
+        handler.post(() -> onError(error));
+    }
+
+    @Override
+    public void sendDebug(String debug) {
+        handler.post(() -> onDebug(debug));
+    }
+
+    @Override
+    public void sendBoard(ZebraBoard board) {
+        handler.post(() -> onBoard(board));
+    }
+
+    @Override
+    public void sendPass() {
+        handler.post(this::onPass);
+    }
+
+    @Override
+    public void sendGameStart() {
+        handler.post(this::onGameStart);
+    }
+
+    @Override
+    public void sendGameOver() {
+        handler.post(this::onGameOver);
+    }
+
+    @Override
+    public void sendMoveStart() {
+        handler.post(this::onMoveStart);
+    }
+
+    @Override
+    public void sendMoveEnd() {
+        handler.post(this::onMoveEnd);
+
+    }
+
+    @Override
+    public void sendEval(String eval) {
+        handler.post(() -> onEval(eval));
+    }
+
+    @Override
+    public void sendPv(byte[] moves) {
+        handler.post(() -> onPv(moves));
     }
 }

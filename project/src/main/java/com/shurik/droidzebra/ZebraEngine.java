@@ -18,16 +18,11 @@
 package com.shurik.droidzebra;
 
 import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -118,7 +113,7 @@ public class ZebraEngine extends Thread {
 	private GameContext mContext;
 	
 	// message sink
-	private GameMessageService mHandler;
+	private ZebraEngineMessageHander mHandler;
 
 	// files folder
 	private File mFilesDir;
@@ -139,7 +134,7 @@ public class ZebraEngine extends Thread {
 		mContext = context;
 	}
 
-	public void setHandler(GameMessageService mHandler) {
+	public void setHandler(ZebraEngineMessageHander mHandler) {
 		this.mHandler = mHandler;
 	}
 
@@ -555,12 +550,12 @@ public class ZebraEngine extends Thread {
 					new File(mFilesDir, BOOK_FILE_COMPRESSED).delete();
 				}
                 String error = data.getString("error");
-                mHandler.exec(() -> mHandler.sendError(error));
+				mHandler.sendError(error);
 			} break;
 
 			case MSG_DEBUG: {
                 String debug = data.getString("message");
-                mHandler.exec(() -> mHandler.sendDebug(debug));
+				mHandler.sendDebug(debug);
 			} break;
 
 			case MSG_BOARD: {
@@ -623,7 +618,7 @@ public class ZebraEngine extends Thread {
 					white.setMoves(moves);
 					board.setWhitePlayer(white);
 				}
-                mHandler.exec(() -> mHandler.sendBoard(board));
+				mHandler.sendBoard(board);
 			} break;
 
 			case MSG_CANDIDATE_MOVES: {
@@ -660,7 +655,7 @@ public class ZebraEngine extends Thread {
 
 			case MSG_PASS: {
 				setEngineState(ES_USER_INPUT_WAIT);
-                mHandler.exec(() -> mHandler.sendPass());
+				mHandler.sendPass();
 				waitForEngineState(ES_PLAY);				
 				setEngineState(ES_PLAYINPROGRESS);
 			} break;
@@ -674,20 +669,20 @@ public class ZebraEngine extends Thread {
 
 			case MSG_OPENING_NAME: {
 				getGameState().setOpening(data.getString("opening"));
-                mHandler.exec(() -> mHandler.sendBoard(getGameState()));
+				mHandler.sendBoard(getGameState());
 			} break;
 
 			case MSG_LAST_MOVE: {
 				getGameState().setLastMove(data.getInt("move"));
-                mHandler.exec(() -> mHandler.sendBoard(getGameState()));
+				mHandler.sendBoard(getGameState());
 			} break;
 
 			case MSG_GAME_START: {
-                mHandler.exec(() -> mHandler.sendGameStart());
+				mHandler.sendGameStart();
 			} break;
 
 			case MSG_GAME_OVER: {
-                mHandler.exec(() -> mHandler.sendGameOver());
+				mHandler.sendGameOver();
 			} break;
 
 			case MSG_MOVE_START: {
@@ -722,7 +717,7 @@ public class ZebraEngine extends Thread {
 							mPlayerInfo[PLAYER_ZEBRA].playerTimeIncrement
 					);
 				}
-                mHandler.exec(() -> mHandler.sendMoveStart());
+				mHandler.sendMoveStart();
 			} break;
 
 			case MSG_MOVE_END: {
@@ -739,12 +734,12 @@ public class ZebraEngine extends Thread {
 				// this counter is reset by user input
 				mMovesWithoutInput += 1;
 
-                mHandler.exec(() -> mHandler.sendMoveEnd());
+				mHandler.sendMoveEnd();
 			} break;			
 
 			case MSG_EVAL_TEXT: {
                 String eval = data.getString("eval");
-                mHandler.exec(() -> mHandler.sendEval(eval));
+				mHandler.sendEval(eval);
 			} break;			
 
 			case MSG_PV: {
@@ -753,7 +748,7 @@ public class ZebraEngine extends Thread {
 				byte[] moves = new byte[len];
 				for( int i=0; i<len; i++)
 					moves[i] = (byte)zeArray.getInt(i);
-                mHandler.exec(() -> mHandler.sendPv(moves));
+				mHandler.sendPv(moves);
 			} break;
 			
 			case MSG_CANDIDATE_EVALS: {
@@ -769,15 +764,15 @@ public class ZebraEngine extends Thread {
 						);
 				}
 				getGameState().setCandidateMoves(cmoves);
-                mHandler.exec(() -> mHandler.sendBoard(getGameState()));
+				mHandler.sendBoard(getGameState());
 			} break;
 			
 			default: {
-                mHandler.exec(() -> mHandler.sendError(String.format(Locale.getDefault(), "Unkown message ID %d", msgcode)));
+				mHandler.sendError(String.format(Locale.getDefault(), "Unkown message ID %d", msgcode));
 			} break;
 			}
 		} catch (JSONException e) {
-            mHandler.exec(() -> mHandler.sendError("JSONException:" + e.getMessage()));
+			mHandler.sendError("JSONException:" + e.getMessage());
 		} finally {
 			bInCallback = false;
 		}
