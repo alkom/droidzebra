@@ -3,7 +3,6 @@ package de.earthlingz.oerszebra;
 import android.content.Intent;
 import android.test.ActivityInstrumentationTestCase2;
 import android.util.Log;
-
 import com.shurik.droidzebra.ZebraEngine;
 
 /**
@@ -54,8 +53,8 @@ public class DroidZebraTest extends ActivityInstrumentationTestCase2<DroidZebra>
         assertSame(3, countSquares(this.getActivity().getBoard(), ZebraEngine.PLAYER_EMPTY));
         assertSame(58, countSquares(this.getActivity().getBoard(), ZebraEngine.PLAYER_WHITE));
         assertSame(3, countSquares(this.getActivity().getBoard(), ZebraEngine.PLAYER_BLACK));
-        assertSame(this.getActivity().getState().getmBlackScore(), 3);
-        assertSame(this.getActivity().getState().getmWhiteScore(), 61);
+        assertSame(this.getActivity().getState().getBlackScore(), 3);
+        assertSame(this.getActivity().getState().getWhiteScore(), 61);
     }
 
     public void testSkipCompleteGame() throws InterruptedException {

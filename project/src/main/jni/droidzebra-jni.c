@@ -747,43 +747,46 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz, jint providedMo
 AGAIN:
     curr_move = PASS;
 	while ( game_in_progress() && !force_exit ) {
-		force_return = 0;
-		silent = (provided_move_index < provided_move_count);
+        force_return = 0;
+        silent = (provided_move_index < provided_move_count);
 
-		droidzebra_enable_messaging(!silent);
+        droidzebra_enable_messaging(!silent);
 
-		droidzebra_msg_move_start(side_to_move);
+        droidzebra_msg_move_start(side_to_move);
 
-		remove_coeffs( disks_played );
-		clear_evaluated();
+        remove_coeffs(disks_played);
+        clear_evaluated();
 
-		if ( SEPARATE_TABLES ) {  /* Computer players won't share hash tables */
-			if ( side_to_move == BLACKSQ ) {
-				hash1 ^= black_hash1;
-				hash2 ^= black_hash2;
-			}
-			else {
-				hash1 ^= white_hash1;
-				hash2 ^= white_hash2;
-			}
-		}
+        if (SEPARATE_TABLES) {  /* Computer players won't share hash tables */
+            if (side_to_move == BLACKSQ) {
+                hash1 ^= black_hash1;
+                hash2 ^= black_hash2;
+            } else {
+                hash1 ^= white_hash1;
+                hash2 ^= white_hash2;
+            }
+        }
 
-		generate_all( side_to_move );
+        generate_all(side_to_move);
 
-		if ( side_to_move == BLACKSQ )
-			score_sheet_row++;
+        if (side_to_move == BLACKSQ)
+            score_sheet_row++;
 
-		// echo
-		droidzebra_msg_candidate_moves();
-		set_move_list( black_moves, white_moves, score_sheet_row );
+        // echo
+        droidzebra_msg_candidate_moves();
+        set_move_list(black_moves, white_moves, score_sheet_row);
         set_times(player_time[BLACKSQ],
                   player_time[WHITESQ]);
-		op = find_opening_name();
-		if ( op != NULL && (!opening_name || strcmp(op, opening_name)) ) {
-			opening_name = op;
-		}
-		droidzebra_msg_opening_name(opening_name);
-		droidzebra_msg_last_move(disks_played>0? get_stored_move(disks_played-1) : PASS);
+        op = find_opening_name();
+        if (op != NULL && (!opening_name || strcmp(op, opening_name))) {
+            opening_name = op;
+        }
+        droidzebra_msg_opening_name(opening_name);
+        droidzebra_msg_last_move(disks_played > 0 ? get_stored_move(disks_played - 1) : PASS);
+        droidzebra_msg_next_move(
+                _droidzebra_can_redo() && get_stored_move(disks_played) > 0 && disks_played < 60 ? get_stored_move(
+                        disks_played) : PASS);
+
 		display_board( stdout, board, side_to_move, TRUE, TRUE, TRUE );
 		// echo
 

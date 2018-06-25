@@ -101,7 +101,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
 	}
 
 	public FieldState[][] getBoard() {
-		return state.getmBoard();
+        return state.getBoard();
 	}
 
 
@@ -417,7 +417,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
                 if (move1 != 0x00) {
                     Move move = new Move(move1);
 					sbMoves.append(move.getText());
-					if (Objects.equal(state.getmLastMove(), move)) {
+                    if (Objects.equal(state.getLastMove(), move)) {
 						break;
 					}
 				}
@@ -427,9 +427,9 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
 		sb.append("\r\n\r\n");
 		sb.append(sbBlackPlayer.toString());
 		sb.append("  (B)  ");
-		sb.append(state.getmBlackScore());
+        sb.append(state.getBlackScore());
 		sb.append(":");
-		sb.append(state.getmWhiteScore());
+        sb.append(state.getWhiteScore());
 		sb.append("  (W)  ");
 		sb.append(sbWhitePlayer.toString());
 
@@ -665,8 +665,8 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
 
 		public void refreshContent(View dialog) {
 			int winner;
-			int blackScore = getDroidZebra().state.getmBlackScore();
-			int whiteScore = getDroidZebra().state.getmWhiteScore();
+            int blackScore = getDroidZebra().state.getBlackScore();
+            int whiteScore = getDroidZebra().state.getWhiteScore();
 			if (whiteScore > blackScore)
 				winner =R.string.gameover_text_white_wins;
 			else if (whiteScore < blackScore)

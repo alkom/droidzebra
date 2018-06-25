@@ -44,13 +44,13 @@ public class DroidZebraHandler implements ZebraEngineMessageHander, GameMessageR
         //simpleredraw
         boolean doValidate = false;
 
-        state.setmBlackScore(board.getBlackPlayer().getDiscCount());
-        state.setmWhiteScore(board.getWhitePlayer().getDiscCount());
+        state.setBlackScore(board.getBlackPlayer().getDiscCount());
+        state.setWhiteScore(board.getWhitePlayer().getDiscCount());
 
         if (sideToMove == ZebraEngine.PLAYER_BLACK) {
-            score = String.format(Locale.getDefault(), "•%d", state.getmBlackScore());
+            score = String.format(Locale.getDefault(), "•%d", state.getBlackScore());
         } else {
-            score = String.format(Locale.getDefault(), "%d", state.getmBlackScore());
+            score = String.format(Locale.getDefault(), "%d", state.getBlackScore());
         }
         controller.getStatusView().setTextForID(
                 StatusView.ID_SCORE_BLACK,
@@ -58,9 +58,9 @@ public class DroidZebraHandler implements ZebraEngineMessageHander, GameMessageR
         );
 
         if (sideToMove == ZebraEngine.PLAYER_WHITE) {
-            score = String.format(Locale.getDefault(), "%d•", state.getmWhiteScore());
+            score = String.format(Locale.getDefault(), "%d•", state.getWhiteScore());
         } else {
-            score = String.format(Locale.getDefault(), "%d", state.getmWhiteScore());
+            score = String.format(Locale.getDefault(), "%d", state.getWhiteScore());
         }
         controller.getStatusView().setTextForID(
                 StatusView.ID_SCORE_WHITE,
@@ -109,7 +109,11 @@ public class DroidZebraHandler implements ZebraEngineMessageHander, GameMessageR
         }
 
         byte move = (byte) board.getLastMove();
-        state.setmLastMove(move == Move.PASS ? null : new Move(move));
+        state.setLastMove(move == Move.PASS ? null : new Move(move));
+
+        byte moveNext = (byte) board.getNextMove();
+        state.setNextMove(moveNext == Move.PASS ? null : new Move(moveNext));
+
         CandidateMove[] currentMoves = state.getMoves();
         CandidateMove[] candidateMoves = board.getCandidateMoves();
 
@@ -152,13 +156,13 @@ public class DroidZebraHandler implements ZebraEngineMessageHander, GameMessageR
     @Override
     public void onGameOver() {
         controller.setCandidateMoves(new CandidateMove[]{});
-        int max = state.getmBoard().length * state.getmBoard().length;
-        if (state.getmBlackScore() + state.getmWhiteScore() < max) {
+        int max = state.getBoard().length * state.getBoard().length;
+        if (state.getBlackScore() + state.getWhiteScore() < max) {
             //adjust result
-            if (state.getmBlackScore() > state.getmWhiteScore()) {
-                state.setmBlackScore(max - state.getmWhiteScore());
+            if (state.getBlackScore() > state.getWhiteScore()) {
+                state.setBlackScore(max - state.getWhiteScore());
             } else {
-                state.setmWhiteScore(max - state.getmBlackScore());
+                state.setWhiteScore(max - state.getBlackScore());
             }
         }
         controller.showGameOverDialog();

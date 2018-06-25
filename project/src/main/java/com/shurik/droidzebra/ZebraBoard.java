@@ -10,6 +10,7 @@ public class ZebraBoard {
     private CandidateMove[] candidateMoves = new CandidateMove[0];
     private String opening;
     private int lastMove;
+    private int nextMove;
 
     public void setBoard(byte[] board) {
         this.board = board;
@@ -81,5 +82,13 @@ public class ZebraBoard {
 
     public int getLastMove() {
         return lastMove;
+    }
+
+    public void setNextMove(int nextMove) {
+        this.nextMove = nextMove;
+    }
+
+    public int getNextMove() {
+        return nextMove;
     }
 }

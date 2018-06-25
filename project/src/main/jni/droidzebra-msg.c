@@ -196,6 +196,14 @@ droidzebra_msg_last_move(int move)
 	droidzebra_message(MSG_LAST_MOVE, json_buffer);
 }
 
+// MSG_LAST_MOVE
+void
+droidzebra_msg_next_move(int move) {
+    char json_buffer[64];
+    sprintf(json_buffer, "{\"move\":%d}", move);
+    droidzebra_message(MSG_NEXT_MOVE, json_buffer);
+}
+
 // MSG_GAME_START
 void
 droidzebra_msg_game_start(void)
