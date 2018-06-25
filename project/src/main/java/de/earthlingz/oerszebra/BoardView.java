@@ -386,8 +386,6 @@ public class BoardView extends View {
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent msg) {
-		// Log.d("BoardView", String.format("onKeyDown: %d", keyCode));
-		if (mIsAnimationRunning.get()) return false;
 
 		int newMX = mMoveSelection.getX();
 		int newMY = mMoveSelection.getY();
@@ -419,8 +417,6 @@ public class BoardView extends View {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		if (mIsAnimationRunning.get()) return false;
-
 		int action = event.getAction();
 		int bx = (int) Math.floor((event.getX() - mBoardRect.left) / mSizeCell);
 		int by = (int) Math.floor((event.getY() - mBoardRect.top) / mSizeCell);
@@ -440,8 +436,6 @@ public class BoardView extends View {
 
 	@Override
 	public boolean onTrackballEvent(MotionEvent event) {
-		if (mIsAnimationRunning.get()) return false;
-
 		float tx = event.getX();
 		float ty = event.getY();
 
@@ -503,6 +497,7 @@ public class BoardView extends View {
 			mShowSelectionHelpers = false;
 
 			if (getDroidZebra().getState().isValidMove(mMoveSelection)) {
+                cancelAnimation();
 				// if zebra is still thinking - no move is possible yet - throw a busy dialog
 				if (mDroidZebra.isThinking() && !mDroidZebra.isHumanToMove()) {
 					mDroidZebra.showBusyDialog();
@@ -520,6 +515,14 @@ public class BoardView extends View {
 			invalidate();
 		}
 	}
+
+    private void cancelAnimation() {
+        if (mIsAnimationRunning.get()) {
+            mAnimationTimer.cancel();
+            mIsAnimationRunning.set(true);
+            mAnimationProgress = 0;
+        }
+    }
 
 	public void onBoardStateChanged() {
 		if (getDroidZebra().settingsProvider.isSettingDisplayEnableAnimations()) {

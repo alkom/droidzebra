@@ -80,14 +80,25 @@ public class BoardState {
         }
 
         boolean changed = false;
-        for (int i = 0; i < boardSize; i++) {
-            for (int j = 0; j < boardSize; j++) {
+        //only update the board if anything has changed
+        for (int i = 0; !changed && i < boardSize; i++) {
+            for (int j = 0; !changed && j < boardSize; j++) {
                 byte newState = board[i * boardSize + j];
-                FieldState oldState = mBoard[i][j];
-                changed |= oldState.mState != newState;
-                oldState.set(newState);
+                if (mBoard[i][j].mState != newState) {
+                    changed = true;
+                }
             }
         }
+
+        if (changed) {
+            for (int i = 0; i < boardSize; i++) {
+                for (int j = 0; j < boardSize; j++) {
+                    byte newState = board[i * boardSize + j];
+                    mBoard[i][j].set(newState); //this also remembers if a flip has happened
+                }
+            }
+        }
+
         return changed;
 
     }
