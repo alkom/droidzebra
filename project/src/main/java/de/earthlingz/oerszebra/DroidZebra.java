@@ -58,66 +58,18 @@ import java.util.Locale;
 
 import de.earthlingz.oerszebra.parser.Gameparser;
 
+import static de.earthlingz.oerszebra.GameSettingsConstants.FUNCTION_HUMAN_VS_HUMAN;
+import static de.earthlingz.oerszebra.GameSettingsConstants.FUNCTION_ZEBRA_BLACK;
+import static de.earthlingz.oerszebra.GameSettingsConstants.FUNCTION_ZEBRA_VS_ZEBRA;
+import static de.earthlingz.oerszebra.GameSettingsConstants.FUNCTION_ZEBRA_WHITE;
+import static de.earthlingz.oerszebra.GlobalSettingsLoader.DEFAULT_SETTING_SENDMAIL;
+import static de.earthlingz.oerszebra.GlobalSettingsLoader.SETTINGS_KEY_FUNCTION;
+import static de.earthlingz.oerszebra.GlobalSettingsLoader.SETTINGS_KEY_SENDMAIL;
+import static de.earthlingz.oerszebra.GlobalSettingsLoader.SHARED_PREFS_NAME;
+
 //import android.util.Log;
 
-public class DroidZebra extends FragmentActivity implements GameController, SharedPreferences.OnSharedPreferenceChangeListener
-{
-	public static final String SHARED_PREFS_NAME="droidzebrasettings";
-
-	public static final String DEFAULT_SETTING_STRENGTH = "8|16|0";
-	public static final boolean DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES  = false;
-	public static final String DEFAULT_SETTING_FORCE_OPENING = "None";
-	public static final boolean DEFAULT_SETTING_HUMAN_OPENINGS = false;
-	public static final boolean DEFAULT_SETTING_PRACTICE_MODE = true;
-	public static final boolean DEFAULT_SETTING_USE_BOOK = true;
-	public static final boolean DEFAULT_SETTING_DISPLAY_PV = true;
-	public static final boolean DEFAULT_SETTING_DISPLAY_MOVES = true;
-	public static final boolean DEFAULT_SETTING_DISPLAY_LAST_MOVE = true;
-	public static final String DEFAULT_SETTING_SENDMAIL = "";
-	public static final boolean DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS = false;
-	public static final String
-	SETTINGS_KEY_FUNCTION = "settings_engine_function",
-	SETTINGS_KEY_STRENGTH = "settings_engine_strength",
-	SETTINGS_KEY_AUTO_MAKE_FORCED_MOVES = "settings_engine_auto_make_moves",
-	SETTINGS_KEY_RANDOMNESS = "settings_engine_randomness",
-	SETTINGS_KEY_FORCE_OPENING = "settings_engine_force_opening",
-	SETTINGS_KEY_HUMAN_OPENINGS = "settings_engine_human_openings",
-	SETTINGS_KEY_PRACTICE_MODE = "settings_engine_practice_mode",
-	SETTINGS_KEY_USE_BOOK = "settings_engine_use_book",
-	SETTINGS_KEY_DISPLAY_PV = "settings_ui_display_pv",
-	SETTINGS_KEY_DISPLAY_MOVES = "settings_ui_display_moves",
-	SETTINGS_KEY_DISPLAY_LAST_MOVE = "settings_ui_display_last_move",
-	SETTINGS_KEY_SENDMAIL = "settings_sendmail",
-			SETTINGS_KEY_DISPLAY_ENABLE_ANIMATIONS = "settings_ui_display_enable_animations";
-	private static final int
-			FUNCTION_HUMAN_VS_HUMAN = 0,
-			FUNCTION_ZEBRA_WHITE = 1,
-			FUNCTION_ZEBRA_BLACK = 2,
-			FUNCTION_ZEBRA_VS_ZEBRA = 3;
-	public static final int DEFAULT_SETTING_FUNCTION = FUNCTION_HUMAN_VS_HUMAN;
-	private static final int
-			RANDOMNESS_NONE = 0,
-			RANDOMNESS_SMALL = 1,
-			RANDOMNESS_MEDIUM = 2,
-			RANDOMNESS_LARGE = 3,
-			RANDOMNESS_HUGE = 4;
-	public static final int DEFAULT_SETTING_RANDOMNESS = RANDOMNESS_LARGE;
-
-
-
-    public int mSettingFunction = DEFAULT_SETTING_FUNCTION;
-	public boolean mSettingAutoMakeForcedMoves = DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES;
-	public int mSettingZebraRandomness = DEFAULT_SETTING_RANDOMNESS;
-	public String mSettingZebraForceOpening = DEFAULT_SETTING_FORCE_OPENING;
-	public boolean mSettingZebraHumanOpenings = DEFAULT_SETTING_HUMAN_OPENINGS;
-	public boolean mSettingZebraPracticeMode = DEFAULT_SETTING_PRACTICE_MODE;
-	public boolean mSettingZebraUseBook = DEFAULT_SETTING_USE_BOOK;
-	public boolean mSettingDisplayPV = DEFAULT_SETTING_DISPLAY_PV;
-	public boolean mSettingDisplayMoves = DEFAULT_SETTING_DISPLAY_MOVES;
-	public boolean mSettingDisplayLastMove = DEFAULT_SETTING_DISPLAY_LAST_MOVE;
-	public boolean mSettingDisplayEnableAnimations = DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS;
-	public int mSettingAnimationDelay = 1000;
-
+public class DroidZebra extends FragmentActivity implements GameController, SettingsProvider.OnChangeListener {
 	private ClipboardManager clipboard;
 	private ZebraEngine mZebraThread;
 
@@ -132,11 +84,10 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 
 	private BoardState state = ZebraServices.getBoardState();
 
-	private int mSettingZebraDepth = 1;
-	private int mSettingZebraDepthExact = 1;
-	private int mSettingZebraDepthWLD = 1;
 	private Gameparser parser;
     private WeakReference<AlertDialog> alert = null;
+
+    public SettingsProvider settingsProvider;
 
 	public DroidZebra() {
 		super();
@@ -196,7 +147,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	}
 
 	public boolean evalsDisplayEnabled() {
-		return mSettingZebraPracticeMode || mHintIsUp;
+		return  settingsProvider.isSettingPracticeMode() || mHintIsUp;
 	}
 
 	public void newGame() {
@@ -295,7 +246,6 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-
 		initBoard();
 
 		clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
@@ -306,9 +256,8 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
         mZebraThread = new ZebraEngine(new AndroidContext(this));
         mZebraThread.setHandler(new DroidZebraHandler(state, this, mZebraThread));
 
-		// preferences
-		SharedPreferences mSettings = getSharedPreferences(SHARED_PREFS_NAME, 0);
-		mSettings.registerOnSharedPreferenceChangeListener(this);
+        this.settingsProvider = new GlobalSettingsLoader(this);
+        this.settingsProvider.setOnChangeListener(this);
 
         Intent intent = getIntent();
         String action = intent.getAction();
@@ -351,135 +300,55 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	}
 
 	private void loadSettings() {
-		int settingsFunction, settingZebraDepth, settingZebraDepthExact, settingZebraDepthWLD;
-		int settingRandomness;
-		boolean settingAutoMakeForcedMoves;
-		String settingZebraForceOpening;
-		boolean settingZebraHumanOpenings;
-		boolean settingZebraPracticeMode;
-		boolean settingZebraUseBook;
-
-		SharedPreferences settings = getSharedPreferences(SHARED_PREFS_NAME, 0);
-
-        settingsFunction = Integer.parseInt(settings.getString(SETTINGS_KEY_FUNCTION, String.format(Locale.getDefault(), "%d", DEFAULT_SETTING_FUNCTION)));
-		String[] strength = settings.getString(SETTINGS_KEY_STRENGTH, DEFAULT_SETTING_STRENGTH).split("\\|");
-		// Log.d("DroidZebra", String.format("settings %s:%s|%s|%s", SETTINGS_KEY_STRENGTH, strength[0], strength[1], strength[2]));
-
-		settingZebraDepth = Integer.parseInt(strength[0]);
-		settingZebraDepthExact = Integer.parseInt(strength[1]);
-		settingZebraDepthWLD = Integer.parseInt(strength[2]);
-		//Log.d( "DroidZebra",
-		//		String.format("Function: %d; depth: %d; exact: %d; wld %d",
-		//				mSettingFunction, mSettingZebraDepth, mSettingZebraDepthExact, mSettingZebraDepthWLD)
-		//);
-
-		settingAutoMakeForcedMoves = settings.getBoolean(SETTINGS_KEY_AUTO_MAKE_FORCED_MOVES, DEFAULT_SETTING_AUTO_MAKE_FORCED_MOVES);
-		settingRandomness = Integer.parseInt(settings.getString(SETTINGS_KEY_RANDOMNESS, String.format("%d", DEFAULT_SETTING_RANDOMNESS)));
-		settingZebraForceOpening = settings.getString(SETTINGS_KEY_FORCE_OPENING, DEFAULT_SETTING_FORCE_OPENING);
-		settingZebraHumanOpenings = settings.getBoolean(SETTINGS_KEY_HUMAN_OPENINGS, DEFAULT_SETTING_HUMAN_OPENINGS);
-		settingZebraPracticeMode = settings.getBoolean(SETTINGS_KEY_PRACTICE_MODE, DEFAULT_SETTING_PRACTICE_MODE);
-		settingZebraUseBook = settings.getBoolean(SETTINGS_KEY_USE_BOOK, DEFAULT_SETTING_USE_BOOK);
-
-
-		boolean bZebraSettingChanged = (
-				mSettingFunction != settingsFunction
-			|| mSettingZebraDepth != settingZebraDepth
-			|| mSettingZebraDepthExact != settingZebraDepthExact
-			|| mSettingZebraDepthWLD != settingZebraDepthWLD
-			|| mSettingAutoMakeForcedMoves != settingAutoMakeForcedMoves
-			|| mSettingZebraRandomness != settingRandomness
-			|| !mSettingZebraForceOpening.equals(settingZebraForceOpening)
-			|| mSettingZebraHumanOpenings != settingZebraHumanOpenings
-			|| mSettingZebraPracticeMode != settingZebraPracticeMode
-			|| mSettingZebraUseBook != settingZebraUseBook
-			);
-
-		mSettingFunction = settingsFunction;
-		mSettingZebraDepth = settingZebraDepth;
-		mSettingZebraDepthExact = settingZebraDepthExact;
-		mSettingZebraDepthWLD = settingZebraDepthWLD;
-		mSettingAutoMakeForcedMoves = settingAutoMakeForcedMoves;
-		mSettingZebraRandomness = settingRandomness;
-		mSettingZebraForceOpening = settingZebraForceOpening;
-		mSettingZebraHumanOpenings = settingZebraHumanOpenings;
-		mSettingZebraPracticeMode = settingZebraPracticeMode;
-		mSettingZebraUseBook = settingZebraUseBook;
-
+        if (mZebraThread == null) return;
 		try {
-			mZebraThread.setAutoMakeMoves(mSettingAutoMakeForcedMoves);
-			mZebraThread.setForcedOpening(mSettingZebraForceOpening);
-			mZebraThread.setHumanOpenings(mSettingZebraHumanOpenings);
-			mZebraThread.setPracticeMode(mSettingZebraPracticeMode);
-			mZebraThread.setUseBook(mSettingZebraUseBook);
+			mZebraThread.setAutoMakeMoves (settingsProvider.isSettingAutoMakeForcedMoves());
+			mZebraThread.setForcedOpening (settingsProvider.getSettingForceOpening());
+			mZebraThread.setHumanOpenings (settingsProvider.isSettingHumanOpenings());
+			mZebraThread.setPracticeMode (settingsProvider.isSettingPracticeMode());
+			mZebraThread.setUseBook (settingsProvider.isSettingUseBook());
 
-			switch( mSettingFunction ) {
-			case FUNCTION_HUMAN_VS_HUMAN:
-				mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
-				mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
-				break;
-			case FUNCTION_ZEBRA_BLACK:
-				mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, mSettingZebraDepth, mSettingZebraDepthExact, mSettingZebraDepthWLD, ZebraEngine.INFINIT_TIME, 0));
-				mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
-				break;
-			case FUNCTION_ZEBRA_VS_ZEBRA:
-				mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, mSettingZebraDepth, mSettingZebraDepthExact, mSettingZebraDepthWLD, ZebraEngine.INFINIT_TIME, 0));
-				mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, mSettingZebraDepth, mSettingZebraDepthExact, mSettingZebraDepthWLD, ZebraEngine.INFINIT_TIME, 0));
-				break;
-			case FUNCTION_ZEBRA_WHITE:
-			default:
-				mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
-				mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, mSettingZebraDepth, mSettingZebraDepthExact, mSettingZebraDepthWLD, ZebraEngine.INFINIT_TIME, 0));
-				break;
+			switch(settingsProvider.getSettingFunction()) {
+				case FUNCTION_HUMAN_VS_HUMAN:
+					mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
+					mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
+					break;
+				case FUNCTION_ZEBRA_BLACK:
+					mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, settingsProvider.getSettingZebraDepth(), settingsProvider.getSettingZebraDepthExact(), settingsProvider.getSettingZebraDepthWLD(), ZebraEngine.INFINIT_TIME, 0));
+					mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
+					break;
+				case FUNCTION_ZEBRA_VS_ZEBRA:
+					mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, settingsProvider.getSettingZebraDepth(), settingsProvider.getSettingZebraDepthExact(), settingsProvider.getSettingZebraDepthWLD(), ZebraEngine.INFINIT_TIME, 0));
+					mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, settingsProvider.getSettingZebraDepth(), settingsProvider.getSettingZebraDepthExact(), settingsProvider.getSettingZebraDepthWLD(), ZebraEngine.INFINIT_TIME, 0));
+					break;
+				case FUNCTION_ZEBRA_WHITE:
+				default:
+					mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
+					mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, settingsProvider.getSettingZebraDepth(), settingsProvider.getSettingZebraDepthExact(), settingsProvider.getSettingZebraDepthWLD(), ZebraEngine.INFINIT_TIME, 0));
+					break;
 			}
-			mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_ZEBRA, mSettingZebraDepth + 1, mSettingZebraDepthExact + 1, mSettingZebraDepthWLD + 1, ZebraEngine.INFINIT_TIME, 0));
+			mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_ZEBRA,  settingsProvider.getSettingZebraDepth() + 1,  settingsProvider.getSettingZebraDepthExact() + 1,  settingsProvider.getSettingZebraDepthWLD() + 1, ZebraEngine.INFINIT_TIME, 0));
 
-			switch(mSettingZebraRandomness) {
-			case RANDOMNESS_SMALL:
-                mZebraThread.setSlack(1);
-                mZebraThread.setPerturbation(1);
-				break;
-			case RANDOMNESS_MEDIUM:
-                mZebraThread.setSlack(4);
-                mZebraThread.setPerturbation(2);
-				break;
-			case RANDOMNESS_LARGE:
-                mZebraThread.setSlack(6);
-                mZebraThread.setPerturbation(6);
-				break;
-			case RANDOMNESS_HUGE:
-                mZebraThread.setSlack(10);
-                mZebraThread.setPerturbation(16);
-				break;
-			case RANDOMNESS_NONE:
-			default:
-                mZebraThread.setSlack(0);
-                mZebraThread.setPerturbation(0);
-				break;
-			}
+			mZebraThread.setSlack(settingsProvider.getSettingSlack());
+			mZebraThread.setPerturbation(settingsProvider.getSettingPerturbation());
 		} catch (EngineError e) {
-            showAlertDialog(e.getError());
+			showAlertDialog(e.getError());
 		}
 
 		mStatusView.setTextForID(
 				StatusView.ID_SCORE_SKILL,
-				String.format(getString(R.string.display_depth), mSettingZebraDepth, mSettingZebraDepthExact, mSettingZebraDepthWLD)
+				String.format(getString(R.string.display_depth), settingsProvider.getSettingZebraDepth(), settingsProvider.getSettingZebraDepthExact(), settingsProvider.getSettingZebraDepthWLD())
 		);
 
-		mSettingDisplayPV = settings.getBoolean(SETTINGS_KEY_DISPLAY_PV, DEFAULT_SETTING_DISPLAY_PV);
-		if(!mSettingDisplayPV ) {
+
+		if( !settingsProvider.isSettingDisplayPv()) {
 			mStatusView.setTextForID(StatusView.ID_STATUS_PV, "");
 			mStatusView.setTextForID(StatusView.ID_STATUS_EVAL, "");
 		}
 
-		mSettingDisplayMoves = settings.getBoolean(SETTINGS_KEY_DISPLAY_MOVES, DEFAULT_SETTING_DISPLAY_MOVES);
-		mSettingDisplayLastMove = settings.getBoolean(SETTINGS_KEY_DISPLAY_LAST_MOVE, DEFAULT_SETTING_DISPLAY_LAST_MOVE);
+		mZebraThread.setMoveDelay (settingsProvider.isSettingDisplayEnableAnimations() ?  settingsProvider.getSettingAnimationDelay() + 1000 : 0);
+		mZebraThread.sendSettingsChanged();
 
-		mSettingDisplayEnableAnimations = settings.getBoolean(SETTINGS_KEY_DISPLAY_ENABLE_ANIMATIONS, DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS);
-		mZebraThread.setMoveDelay(mSettingDisplayEnableAnimations? mSettingAnimationDelay + 1000 : 0);
-
-		if( bZebraSettingChanged ) {
-			mZebraThread.sendSettingsChanged();
-		}
 	}
 
 	private void sendMail(){
@@ -507,18 +376,18 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 		intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.app_name));
 
 		//get BlackPlayer and WhitePlayer
-		switch( mSettingFunction ) {
+		switch(settingsProvider.getSettingFunction()) {
 			case FUNCTION_HUMAN_VS_HUMAN:
 				sbBlackPlayer.append("Player");
 				sbWhitePlayer.append("Player");
 				break;
 			case FUNCTION_ZEBRA_BLACK:
 				sbBlackPlayer.append("DroidZebra-");
-				sbBlackPlayer.append(mSettingZebraDepth);
+				sbBlackPlayer.append (settingsProvider.getSettingZebraDepth());
 				sbBlackPlayer.append("/");
-				sbBlackPlayer.append(mSettingZebraDepthExact);
+				sbBlackPlayer.append (settingsProvider.getSettingZebraDepthExact());
 				sbBlackPlayer.append("/");
-				sbBlackPlayer.append(mSettingZebraDepthWLD );
+				sbBlackPlayer.append (settingsProvider.getSettingZebraDepthWLD());
 
 				sbWhitePlayer.append("Player");
 				break;
@@ -526,26 +395,26 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 				sbBlackPlayer.append("Player");
 
 				sbWhitePlayer.append("DroidZebra-");
-				sbWhitePlayer.append(mSettingZebraDepth);
+				sbWhitePlayer.append (settingsProvider.getSettingZebraDepth());
 				sbWhitePlayer.append("/");
-				sbWhitePlayer.append(mSettingZebraDepthExact);
+				sbWhitePlayer.append (settingsProvider.getSettingZebraDepthExact());
 				sbWhitePlayer.append("/");
-				sbWhitePlayer.append(mSettingZebraDepthWLD );
+				sbWhitePlayer.append (settingsProvider.getSettingZebraDepthWLD());
 				break;
 			case FUNCTION_ZEBRA_VS_ZEBRA:
 				sbBlackPlayer.append("DroidZebra-");
-				sbBlackPlayer.append(mSettingZebraDepth);
+				sbBlackPlayer.append (settingsProvider.getSettingZebraDepth());
 				sbBlackPlayer.append("/");
-				sbBlackPlayer.append(mSettingZebraDepthExact);
+				sbBlackPlayer.append (settingsProvider.getSettingZebraDepthExact());
 				sbBlackPlayer.append("/");
-				sbBlackPlayer.append(mSettingZebraDepthWLD );
+				sbBlackPlayer.append (settingsProvider.getSettingZebraDepthWLD());
 
 				sbWhitePlayer.append("DroidZebra-");
-				sbWhitePlayer.append(mSettingZebraDepth);
+				sbWhitePlayer.append (settingsProvider.getSettingZebraDepth());
 				sbWhitePlayer.append("/");
-				sbWhitePlayer.append(mSettingZebraDepthExact);
+				sbWhitePlayer.append (settingsProvider.getSettingZebraDepthExact());
 				sbWhitePlayer.append("/");
-				sbWhitePlayer.append(mSettingZebraDepthWLD );
+				sbWhitePlayer.append (settingsProvider.getSettingZebraDepthWLD());
 			default:
 		}
 		StringBuilder sb = new StringBuilder();
@@ -591,9 +460,9 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	private void switchSides() {
 		int newFunction = -1;
 
-		if( mSettingFunction == FUNCTION_ZEBRA_WHITE )
+		if(  settingsProvider.getSettingFunction() == FUNCTION_ZEBRA_WHITE )
 			newFunction = FUNCTION_ZEBRA_BLACK;
-		else if( mSettingFunction == FUNCTION_ZEBRA_BLACK )
+		else if(  settingsProvider.getSettingFunction() == FUNCTION_ZEBRA_BLACK )
 			newFunction = FUNCTION_ZEBRA_WHITE;
 
 		if(newFunction>0) {
@@ -611,7 +480,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 	}
 
 	private void showHint() {
-		if( !mSettingZebraPracticeMode ) {
+		if(  !settingsProvider.isSettingPracticeMode()) {
 			mHintIsUp = true;
 			mZebraThread.setPracticeMode(true);
 			mZebraThread.sendSettingsChanged();
@@ -648,7 +517,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 
     @Override
     public boolean getSettingDisplayPV() {
-        return mSettingDisplayPV;
+        return settingsProvider.isSettingDisplayPv();
     }
 
     public void showGameOverDialog() {
@@ -702,13 +571,8 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 
     @Override
     public boolean isPraticeMode() {
-        return mSettingZebraPracticeMode;
+        return settingsProvider.isSettingPracticeMode();
     }
-
-    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-		if (mZebraThread != null)
-			loadSettings();
-	}
 
     public void showAlertDialog(String msg) {
         DroidZebra.this.newGame();
@@ -771,6 +635,11 @@ public class DroidZebra extends FragmentActivity implements GameController, Shar
 
 	public BoardState getState() {
 		return state;
+	}
+
+	@Override
+	public void onChange() {
+	    loadSettings();
 	}
 
 
