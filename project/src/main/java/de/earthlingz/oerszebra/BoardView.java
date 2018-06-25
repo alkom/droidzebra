@@ -262,6 +262,14 @@ public class BoardView extends View {
 		if (getDroidZebra() == null)
 			return;
 
+        // draw next move marker
+        if (getDroidZebra().settingsProvider.isSettingDisplayLastMove() && getDroidZebra().getState().getNextMove() != null) {
+            Move nextMove = getDroidZebra().getState().getNextMove();
+            RectF cellRT = getCellRect(nextMove.getX(), nextMove.getY());
+            mPaint.setColor(Color.RED);
+            canvas.drawCircle(cellRT.left + mSizeCell / 2, cellRT.bottom - mSizeCell / 2, mSizeCell / 3, mPaint);
+        }
+
 		// draw moves
 		float oval_x, oval_y;
 		float circle_r = mSizeCell / 2 - lineWidth * 2;
@@ -336,8 +344,8 @@ public class BoardView extends View {
 		}
 
 		// draw last move marker
-		if (getDroidZebra().settingsProvider.isSettingDisplayLastMove() && getDroidZebra().getState().getmLastMove() != null) {
-			Move lm = getDroidZebra().getState().getmLastMove();
+        if (getDroidZebra().settingsProvider.isSettingDisplayLastMove() && getDroidZebra().getState().getLastMove() != null) {
+            Move lm = getDroidZebra().getState().getLastMove();
 			RectF cellRT = getCellRect(lm.getX(), lm.getY());
 			mPaint.setColor(Color.BLUE);
 			canvas.drawCircle(cellRT.left + mSizeCell / 10, cellRT.bottom - mSizeCell / 10, mSizeCell / 10, mPaint);
