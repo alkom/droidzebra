@@ -265,9 +265,11 @@ public class BoardView extends View {
         // draw next move marker
         if (getDroidZebra().settingsProvider.isSettingDisplayLastMove() && getDroidZebra().getState().getNextMove() != null) {
             Move nextMove = getDroidZebra().getState().getNextMove();
+            mMoveSelection = nextMove;
             RectF cellRT = getCellRect(nextMove.getX(), nextMove.getY());
-            mPaint.setColor(Color.RED);
-            canvas.drawCircle(cellRT.left + mSizeCell / 2, cellRT.bottom - mSizeCell / 2, mSizeCell / 3, mPaint);
+            mPaint.setColor(mColorSelectionValid);
+
+            canvas.drawRect(cellRT, mPaint);
         }
 
 		// draw moves
@@ -429,6 +431,7 @@ public class BoardView extends View {
 
     @Override
 	public boolean onTouchEvent(MotionEvent event) {
+
 		int action = event.getAction();
 		int bx = (int) Math.floor((event.getX() - mBoardRect.left) / mSizeCell);
 		int by = (int) Math.floor((event.getY() - mBoardRect.top) / mSizeCell);
@@ -488,6 +491,10 @@ public class BoardView extends View {
 	private void updateSelection(int bX, int bY, boolean bMakeMove, boolean bShowSelection) {
 		boolean bInvalidate = false;
 
+        if (mMoveSelection == null) {
+            mMoveSelection = new Move(bX, bY);
+        }
+
 		if (bX < 0 || bX >= BoardState.boardSize)
 			bX = mMoveSelection.getX();
 
@@ -538,6 +545,7 @@ public class BoardView extends View {
     }
 
 	public void onBoardStateChanged() {
+        mMoveSelection = null;
 		if (getDroidZebra().settingsProvider.isSettingDisplayEnableAnimations()) {
 			if (mIsAnimationRunning.get())
 				mAnimationTimer.cancel();
