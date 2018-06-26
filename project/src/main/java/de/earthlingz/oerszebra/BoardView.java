@@ -139,11 +139,13 @@ public class BoardView extends View {
 		mAnimationTimer = new CountDownTimer(getAnimationDuration(), getAnimationDuration() / 10) {
 
 			public void onTick(long millisUntilFinished) {
+                Log.v("Timer", "tick");
 				mAnimationProgress = 1.0 - (double) millisUntilFinished / getAnimationDuration();
 				invalidate();
 			}
 
 			public void onFinish() {
+                Log.v("Timer", "finish");
 				mIsAnimationRunning.set(false);
 				invalidate();
 			}
@@ -178,6 +180,7 @@ public class BoardView extends View {
 
 	@Override
 	protected void onDraw(Canvas canvas) {
+        Log.v("BoardView", "onDraw");
 
 		// draw borders
 		mPaint.setShader(mShaderV);
@@ -284,6 +287,8 @@ public class BoardView extends View {
 		if (mDroidZebra == null)
 			return;
 
+        Log.v("BoardView", "onDraw mDroidZebra");
+
         // draw next move marker
 		if (shouldDisplayLastMove() && mDroidZebra.getState().getNextMove() != null) {
 			Move nextMove = mDroidZebra.getState().getNextMove();
@@ -374,6 +379,8 @@ public class BoardView extends View {
 			mPaint.setColor(Color.BLUE);
 			canvas.drawCircle(cellRT.left + mSizeCell / 10, cellRT.bottom - mSizeCell / 10, mSizeCell / 10, mPaint);
 		}
+
+        Log.v("BoardView", "onDraw END");
 	}
 
 	private boolean shouldDisplayEvals() {
@@ -467,6 +474,7 @@ public class BoardView extends View {
     @Override
 	public boolean onTouchEvent(MotionEvent event) {
 
+
 		int action = event.getAction();
 		int bx = (int) Math.floor((event.getX() - mBoardRect.left) / mSizeCell);
 		int by = (int) Math.floor((event.getY() - mBoardRect.top) / mSizeCell);
@@ -479,6 +487,7 @@ public class BoardView extends View {
 			case MotionEvent.ACTION_UP:
                 //super.performClick(); makes the gui slow. Why?
 				mShowSelectionHelpers = false;
+                Log.v("BoardView", "touch");
 				updateSelection(bx, by, true, true);
 				break;
 		}
@@ -490,7 +499,7 @@ public class BoardView extends View {
 		float tx = event.getX();
 		float ty = event.getY();
 
-		// Log.d("BoardView", String.format("trackball event: %d %f %f", event.getAction(), tx, ty));
+        // Log.v("BoardView", String.format("trackball event: %d %f %f", event.getAction(), tx, ty));
 
 		switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN: {
@@ -550,7 +559,7 @@ public class BoardView extends View {
 		if (bMakeMove) {
 			bInvalidate = true;
 			mShowSelectionHelpers = false;
-
+            Log.v("BoardView", "is valid?");
 			if (mDroidZebra.getState().isValidMove(mMoveSelection)) {
                 cancelAnimation();
 				// if zebra is still thinking - no move is possible yet - throw a busy dialog
@@ -558,7 +567,9 @@ public class BoardView extends View {
 					mDroidZebra.showBusyDialog();
 				} else {
 					try {
+                        Log.v("BoardView", "make move start");
 						mDroidZebra.makeMove(mMoveSelection);
+                        Log.v("BoardView", "make move end");
 					} catch (InvalidMove e) {
 						Log.e("BoardView", e.getMessage(), e);
 					}
@@ -580,6 +591,7 @@ public class BoardView extends View {
     }
 
 	public void onBoardStateChanged() {
+        Log.v("BoardView", "Board changed");
         mMoveSelection = null;
 		if (shouldDisplayAnimations()) {
 			if (mIsAnimationRunning.get())

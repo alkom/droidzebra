@@ -117,7 +117,7 @@ public class DroidZebraHandler implements ZebraEngineMessageHander, GameMessageR
         CandidateMove[] currentMoves = state.getMoves();
         CandidateMove[] candidateMoves = board.getCandidateMoves();
 
-        doValidate = Arrays.deepEquals(currentMoves, candidateMoves);
+        doValidate = !Arrays.deepEquals(currentMoves, candidateMoves);
 
         state.setMoves(candidateMoves);
         for (CandidateMove eval : candidateMoves) {
@@ -137,8 +137,10 @@ public class DroidZebraHandler implements ZebraEngineMessageHander, GameMessageR
         }
 
         if (boardChanged) {
+            Log.v("Handler", "BoardChanged");
             controller.getBoardView().onBoardStateChanged();
         } else if (doValidate) {
+            Log.v("Handler", "invalidate");
             controller.getBoardView().invalidate();
         }
     }
