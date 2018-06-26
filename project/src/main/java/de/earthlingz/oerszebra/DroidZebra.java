@@ -48,7 +48,7 @@ import static de.earthlingz.oerszebra.GlobalSettingsLoader.*;
 
 //import android.util.Log;
 
-public class DroidZebra extends FragmentActivity implements GameController, SettingsProvider.OnChangeListener {
+public class DroidZebra extends FragmentActivity implements GameController, OnChangeListener, BoardView.OnMakeMoveListener {
     private ClipboardManager clipboard;
     private ZebraEngine mZebraThread;
 
@@ -74,15 +74,15 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
     }
 
 
-    public boolean isThinking() {
+    private boolean isThinking() {
         return mZebraThread.isThinking();
     }
 
-    public boolean isHumanToMove() {
+    private boolean isHumanToMove() {
         return mZebraThread.isHumanToMove();
     }
 
-    public void makeMove(Move mMoveSelection) throws InvalidMove {
+    private void makeMove(Move mMoveSelection) throws InvalidMove {
         mZebraThread.makeMove(mMoveSelection);
     }
 
@@ -100,7 +100,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
     }
 
     public FieldState[][] getBoard() {
-        return state.getBoard();
+        return getState().getBoard();
     }
 
 
@@ -109,17 +109,17 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
     }
 
     public void initBoard() {
-        state.reset();
+        getState().reset();
         if (mStatusView != null)
             mStatusView.clear();
     }
 
     public CandidateMove[] getCandidateMoves() {
-        return state.getMoves();
+        return getState().getMoves();
     }
 
     public void setCandidateMoves(CandidateMove[] cmoves) {
-        state.setMoves(cmoves);
+        getState().setMoves(cmoves);
         runOnUiThread(() -> mBoardView.invalidate());
     }
 
@@ -237,7 +237,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
         new ActionBarHelper(this).hide();
 
         mZebraThread = new ZebraEngine(new AndroidContext(this));
-        mZebraThread.setHandler(new DroidZebraHandler(state, this, mZebraThread));
+        mZebraThread.setHandler(new DroidZebraHandler(getState(), this, mZebraThread));
 
         this.settingsProvider = new GlobalSettingsLoader(this);
         this.settingsProvider.setOnChangeListener(this);
@@ -271,7 +271,8 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
                     new ActionBarHelper(DroidZebra.this).show();
                     DroidZebra.this.mBoardView = (BoardView) DroidZebra.this.findViewById(R.id.board);
                     DroidZebra.this.mStatusView = (StatusView) DroidZebra.this.findViewById(R.id.status_panel);
-                    DroidZebra.this.mBoardView.setDroidZebra(DroidZebra.this);
+                    DroidZebra.this.mBoardView.setBoardState(getState());
+                    DroidZebra.this.mBoardView.setOnMakeMoveListener(DroidZebra.this);
                     DroidZebra.this.mBoardView.requestFocus();
                     DroidZebra.this.initBoard();
                     DroidZebra.this.loadSettings();
@@ -423,7 +424,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
                 if (move1 != 0x00) {
                     Move move = new Move(move1);
                     sbMoves.append(move.getText());
-                    if (Objects.equal(state.getLastMove(), move)) {
+                    if (Objects.equal(getState().getLastMove(), move)) {
                         break;
                     }
                 }
@@ -433,9 +434,9 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
         sb.append("\r\n\r\n");
         sb.append(sbBlackPlayer.toString());
         sb.append("  (B)  ");
-        sb.append(state.getBlackScore());
+        sb.append(getState().getBlackScore());
         sb.append(":");
-        sb.append(state.getWhiteScore());
+        sb.append(getState().getWhiteScore());
         sb.append("  (W)  ");
         sb.append(sbWhitePlayer.toString());
 
@@ -530,7 +531,7 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
         mZebraThread.sendReplayMoves(moves);
     }
 
-    public void showBusyDialog() {
+    private void showBusyDialog() {
         if (!mBusyDialogUp && mZebraThread.isThinking()) {
             DialogFragment newFragment = DialogBusy.newInstance();
             mBusyDialogUp = true;
@@ -633,6 +634,22 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
         loadSettings();
     }
 
+    @Override
+    public void onMakeMove(Move move) {
+        if (getState().isValidMove(move)) {
+            // if zebra is still thinking - no move is possible yet - throw a busy dialog
+            if (isThinking() && !isHumanToMove()) {
+                showBusyDialog();
+            } else {
+                try {
+                    makeMove(move);
+                } catch (InvalidMove e) {
+                    Log.e("Invalid Move", e.getMessage(), e);
+                }
+            }
+        }
+    }
+
 
     //-------------------------------------------------------------------------
     // Pass Dialog
@@ -672,8 +689,8 @@ public class DroidZebra extends FragmentActivity implements GameController, Sett
 
         public void refreshContent(View dialog) {
             int winner;
-            int blackScore = getDroidZebra().state.getBlackScore();
-            int whiteScore = getDroidZebra().state.getWhiteScore();
+            int blackScore = getDroidZebra().getState().getBlackScore();
+            int whiteScore = getDroidZebra().getState().getWhiteScore();
             if (whiteScore > blackScore)
                 winner = R.string.gameover_text_white_wins;
             else if (whiteScore < blackScore)
