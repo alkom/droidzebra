@@ -33,5 +33,5 @@ public interface GameController {
 
     void setHintUp(boolean value);
 
-    boolean isPraticeMode();
+    boolean isPracticeMode();
 }

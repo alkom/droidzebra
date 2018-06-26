@@ -26,7 +26,7 @@ interface SettingsProvider {
 
     boolean isSettingDisplayEnableAnimations();
 
-    int getSettingAnimationDelay();
+    int getSettingAnimationDuration();
 
     int getSettingZebraDepth();
 

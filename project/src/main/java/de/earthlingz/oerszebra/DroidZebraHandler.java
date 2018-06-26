@@ -178,7 +178,7 @@ public class DroidZebraHandler implements ZebraEngineMessageHander, GameMessageR
         controller.dismissBusyDialog();
         if (controller.isHintUp()) {
             controller.setHintUp(false);
-            mZebraThread.setPracticeMode(controller.isPraticeMode());
+            mZebraThread.setPracticeMode(controller.isPracticeMode());
             mZebraThread.sendSettingsChanged();
         }
 

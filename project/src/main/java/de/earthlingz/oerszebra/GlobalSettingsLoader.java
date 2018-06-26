@@ -65,7 +65,7 @@ public class GlobalSettingsLoader implements SharedPreferences.OnSharedPreferenc
     private int settingPerturbation;
 
 
-    private int settingAnimationDelay = 1000;
+    private int settingAnimationDuration = 1000;
 
 
     private int settingZebraDepth = 1;
@@ -121,6 +121,11 @@ public class GlobalSettingsLoader implements SharedPreferences.OnSharedPreferenc
         settingZebraPracticeMode = settings.getBoolean(SETTINGS_KEY_PRACTICE_MODE, DEFAULT_SETTING_PRACTICE_MODE);
         settingZebraUseBook = settings.getBoolean(SETTINGS_KEY_USE_BOOK, DEFAULT_SETTING_USE_BOOK);
 
+        boolean settingDisplayPv = settings.getBoolean(SETTINGS_KEY_DISPLAY_PV, DEFAULT_SETTING_DISPLAY_PV);
+        boolean settingDisplayMoves = settings.getBoolean(SETTINGS_KEY_DISPLAY_MOVES, DEFAULT_SETTING_DISPLAY_MOVES);
+        boolean settingDisplayLastMove = settings.getBoolean(SETTINGS_KEY_DISPLAY_LAST_MOVE, DEFAULT_SETTING_DISPLAY_LAST_MOVE);
+        boolean settingDisplayEnableAnimations = settings.getBoolean(SETTINGS_KEY_DISPLAY_ENABLE_ANIMATIONS, DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS);
+
 
         boolean bZebraSettingChanged = (
                 getSettingFunction() != settingsFunction
@@ -133,6 +138,10 @@ public class GlobalSettingsLoader implements SharedPreferences.OnSharedPreferenc
                         || isSettingHumanOpenings() != settingZebraHumanOpenings
                         || isSettingPracticeMode() != settingZebraPracticeMode
                         || isSettingUseBook() != settingZebraUseBook
+                        || this.settingDisplayPv != settingDisplayPv
+                        || this.settingDisplayMoves != settingDisplayMoves
+                        || this.settingDisplayLastMove != settingDisplayLastMove
+                        || this.settingDisplayEnableAnimations != settingDisplayEnableAnimations
         );
 
         settingFunction = settingsFunction;
@@ -146,12 +155,10 @@ public class GlobalSettingsLoader implements SharedPreferences.OnSharedPreferenc
         settingPracticeMode = settingZebraPracticeMode;
         settingUseBook = settingZebraUseBook;
 
-        settingDisplayPv = settings.getBoolean(SETTINGS_KEY_DISPLAY_PV, DEFAULT_SETTING_DISPLAY_PV);
-
-        settingDisplayMoves = settings.getBoolean(SETTINGS_KEY_DISPLAY_MOVES, DEFAULT_SETTING_DISPLAY_MOVES);
-        settingDisplayLastMove = settings.getBoolean(SETTINGS_KEY_DISPLAY_LAST_MOVE, DEFAULT_SETTING_DISPLAY_LAST_MOVE);
-
-        settingDisplayEnableAnimations = settings.getBoolean(SETTINGS_KEY_DISPLAY_ENABLE_ANIMATIONS, DEFAULT_SETTING_DISPLAY_ENABLE_ANIMATIONS);
+        this.settingDisplayPv = settingDisplayPv;
+        this.settingDisplayMoves = settingDisplayMoves;
+        this.settingDisplayLastMove = settingDisplayLastMove;
+        this.settingDisplayEnableAnimations = settingDisplayEnableAnimations;
 
 
         switch (settingRandomness) {
@@ -250,8 +257,8 @@ public class GlobalSettingsLoader implements SharedPreferences.OnSharedPreferenc
     }
 
     @Override
-    public int getSettingAnimationDelay() {
-        return settingAnimationDelay;
+    public int getSettingAnimationDuration() {
+        return settingAnimationDuration;
     }
 
     @Override

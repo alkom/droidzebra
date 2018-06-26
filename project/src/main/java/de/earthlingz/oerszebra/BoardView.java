@@ -71,6 +71,26 @@ public class BoardView extends View {
 	private CountDownTimer mAnimationTimer = null;
 	private AtomicBoolean mIsAnimationRunning = new AtomicBoolean(false);
 	private double mAnimationProgress = 0;
+	private boolean displayAnimations = false;
+	private int animationDuration = 1000;
+
+	public void setDisplayEvals(boolean displayEvals) {
+		this.displayEvals = displayEvals;
+	}
+
+	private boolean displayEvals = false;
+
+	public void setDisplayLastMove(boolean displayLastMove) {
+		this.displayLastMove = displayLastMove;
+	}
+
+	public void setDisplayMoves(boolean displayMoves) {
+		this.displayMoves = displayMoves;
+	}
+
+	private boolean displayLastMove = false;
+	private boolean displayMoves = false;
+
 	public BoardView(Context context) {
 		super(context);
 		initBoardView();
@@ -110,14 +130,16 @@ public class BoardView extends View {
 		mBoardRect = new RectF();
 		mTempRect = new RectF();
 
-		int animationDelay = 100;
-		if (!isInEditMode())
-			animationDelay = getDroidZebra().settingsProvider.getSettingAnimationDelay();
+
+		initCountDowntimer();
+	}
+
+	private void initCountDowntimer() {
 		mAnimationProgress = 0;
-		mAnimationTimer = new CountDownTimer(animationDelay, animationDelay / 10) {
+		mAnimationTimer = new CountDownTimer(getAnimationDuration(), getAnimationDuration() / 10) {
 
 			public void onTick(long millisUntilFinished) {
-				mAnimationProgress = 1.0 - (double) millisUntilFinished / getDroidZebra().settingsProvider.getSettingAnimationDelay();
+				mAnimationProgress = 1.0 - (double) millisUntilFinished / getAnimationDuration();
 				invalidate();
 			}
 
@@ -128,12 +150,12 @@ public class BoardView extends View {
 		};
 	}
 
-	public void setDroidZebra(DroidZebra activity) {
-		mDroidZebra = activity;
+	private int getAnimationDuration() {
+		return animationDuration;
 	}
 
-	public DroidZebra getDroidZebra() {
-		return mDroidZebra;
+	public void setDroidZebra(DroidZebra activity) {
+		mDroidZebra = activity;
 	}
 
 	public RectF getCellRect(int bx, int by) {
@@ -259,12 +281,12 @@ public class BoardView extends View {
 		}
 
 		// if we are not playing we are done (designer only)
-		if (getDroidZebra() == null)
+		if (mDroidZebra == null)
 			return;
 
         // draw next move marker
-        if (getDroidZebra().settingsProvider.isSettingDisplayLastMove() && getDroidZebra().getState().getNextMove() != null) {
-            Move nextMove = getDroidZebra().getState().getNextMove();
+		if (shouldDisplayLastMove() && mDroidZebra.getState().getNextMove() != null) {
+			Move nextMove = mDroidZebra.getState().getNextMove();
             mMoveSelection = nextMove;
             RectF cellRT = getCellRect(nextMove.getX(), nextMove.getY());
             mPaint.setColor(mColorSelectionValid);
@@ -279,13 +301,13 @@ public class BoardView extends View {
 		float oval_adjustment = (float) Math.abs(circle_r * Math.cos(Math.PI * mAnimationProgress));
 		for (int i = 0; i < boardSize; i++) {
 			for (int j = 0; j < boardSize; j++) {
-				if (getDroidZebra().getBoard()[i][j].getState() == ZebraEngine.PLAYER_EMPTY)
+				if (mDroidZebra.getBoard()[i][j].getState() == ZebraEngine.PLAYER_EMPTY)
 					continue;
-				if (getDroidZebra().getBoard()[i][j].getState() == ZebraEngine.PLAYER_BLACK)
+				if (mDroidZebra.getBoard()[i][j].getState() == ZebraEngine.PLAYER_BLACK)
 					circle_color = Color.BLACK;
 				else
 					circle_color = Color.WHITE;
-				if (mIsAnimationRunning.get() && getDroidZebra().getBoard()[i][j].isFlipped()) {
+				if (mIsAnimationRunning.get() && mDroidZebra.getBoard()[i][j].isFlipped()) {
 					oval_x = mBoardRect.left + i * mSizeCell + mSizeCell / 2;
 					oval_y = mBoardRect.top + j * mSizeCell + mSizeCell / 2;
 					mTempRect.set(
@@ -315,13 +337,13 @@ public class BoardView extends View {
 		}
 
 		// draw evals if in practive mode
-		if ((getDroidZebra().settingsProvider.isSettingDisplayMoves() || getDroidZebra().evalsDisplayEnabled())
-				&& getDroidZebra().getCandidateMoves() != null) {
+		if ((shouldDisplayMoves() || shouldDisplayEvals())
+				&& mDroidZebra.getCandidateMoves() != null) {
 			mPaint.setStrokeWidth(lineWidth * 2);
 			float lineLength = mSizeCell / 4;
-			for (CandidateMove m : getDroidZebra().getCandidateMoves()) {
+			for (CandidateMove m : mDroidZebra.getCandidateMoves()) {
 				RectF cr = getCellRect(m.mMove.getX(), m.mMove.getY());
-				if (m.mHasEval && getDroidZebra().evalsDisplayEnabled()) {
+				if (m.mHasEval && shouldDisplayEvals()) {
 					if (m.mBest)
 						mPaintEvalText.setColor(mColorEvalsBest);
 					else
@@ -346,15 +368,28 @@ public class BoardView extends View {
 		}
 
 		// draw last move marker
-        if (getDroidZebra().settingsProvider.isSettingDisplayLastMove() && getDroidZebra().getState().getLastMove() != null) {
-            Move lm = getDroidZebra().getState().getLastMove();
+		if (shouldDisplayLastMove() && mDroidZebra.getState().getLastMove() != null) {
+			Move lm = mDroidZebra.getState().getLastMove();
 			RectF cellRT = getCellRect(lm.getX(), lm.getY());
 			mPaint.setColor(Color.BLUE);
 			canvas.drawCircle(cellRT.left + mSizeCell / 10, cellRT.bottom - mSizeCell / 10, mSizeCell / 10, mPaint);
 		}
 	}
 
-	@Override
+	private boolean shouldDisplayEvals() {
+//		return mDroidZebra.evalsDisplayEnabled();
+		return displayEvals;
+	}
+
+	private boolean shouldDisplayLastMove() {
+        return displayLastMove;
+    }
+
+    private boolean shouldDisplayMoves() {
+        return displayMoves;
+    }
+
+    @Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
@@ -516,14 +551,14 @@ public class BoardView extends View {
 			bInvalidate = true;
 			mShowSelectionHelpers = false;
 
-			if (getDroidZebra().getState().isValidMove(mMoveSelection)) {
+			if (mDroidZebra.getState().isValidMove(mMoveSelection)) {
                 cancelAnimation();
 				// if zebra is still thinking - no move is possible yet - throw a busy dialog
 				if (mDroidZebra.isThinking() && !mDroidZebra.isHumanToMove()) {
 					mDroidZebra.showBusyDialog();
 				} else {
 					try {
-						getDroidZebra().makeMove(mMoveSelection);
+						mDroidZebra.makeMove(mMoveSelection);
 					} catch (InvalidMove e) {
 						Log.e("BoardView", e.getMessage(), e);
 					}
@@ -546,7 +581,7 @@ public class BoardView extends View {
 
 	public void onBoardStateChanged() {
         mMoveSelection = null;
-		if (getDroidZebra().settingsProvider.isSettingDisplayEnableAnimations()) {
+		if (shouldDisplayAnimations()) {
 			if (mIsAnimationRunning.get())
 				mAnimationTimer.cancel();
 			mIsAnimationRunning.set(true);
@@ -556,5 +591,19 @@ public class BoardView extends View {
 		} else {
 			invalidate();
 		}
+	}
+
+    private boolean shouldDisplayAnimations() {
+        return this.displayAnimations;
+    }
+
+	public void setDisplayAnimations(boolean displayAnimations) {
+		this.displayAnimations = displayAnimations;
+	}
+
+	public void setAnimationDuration(int animationDuration) {
+		this.animationDuration = animationDuration;
+		cancelAnimation();
+		initCountDowntimer();
 	}
 }
