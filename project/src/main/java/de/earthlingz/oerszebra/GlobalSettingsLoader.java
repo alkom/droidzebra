@@ -65,7 +65,7 @@ public class GlobalSettingsLoader implements SharedPreferences.OnSharedPreferenc
     private int settingPerturbation;
 
 
-    private int settingAnimationDuration = 1000;
+    private int settingAnimationDuration = 500;
 
 
     private int settingZebraDepth = 1;
@@ -74,6 +74,7 @@ public class GlobalSettingsLoader implements SharedPreferences.OnSharedPreferenc
 
     private Context context;
     private OnChangeListener onChangeListener;
+    private int computerMoveDelay = 1000;
 
     public GlobalSettingsLoader(Context context) {
 
@@ -285,5 +286,11 @@ public class GlobalSettingsLoader implements SharedPreferences.OnSharedPreferenc
     public int getSettingPerturbation() {
         return settingPerturbation;
     }
+
+    @Override
+    public int getComputerMoveDelay() {
+        return computerMoveDelay;
+    }
+
 
 }

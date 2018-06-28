@@ -68,7 +68,7 @@ public class BoardView extends View {
     private AtomicBoolean mIsAnimationRunning = new AtomicBoolean(false);
     private double mAnimationProgress = 0;
     private boolean displayAnimations = false;
-    private int animationDuration = 1000;
+    private int animationDuration = 500;
     private OnMakeMoveListener onMakeMoveListener = null;
 
     public void setBoardState(BoardState boardState) {

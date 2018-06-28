@@ -91,4 +91,15 @@ public class ZebraBoard {
     public int getNextMove() {
         return nextMove;
     }
+
+    public void addCandidateMoveEvals(CandidateMove[] cmoves) {
+        for (CandidateMove candidateMoveWithEval : cmoves) {
+            for (int i = 0, candidateMovesLength = candidateMoves.length; i < candidateMovesLength; i++) {
+                CandidateMove candidateMove = candidateMoves[i];
+                if (candidateMove.mMove.mMove == candidateMoveWithEval.mMove.mMove) {
+                    candidateMoves[i] = candidateMoveWithEval;
+                }
+            }
+        }
+    }
 }

@@ -47,11 +47,8 @@ public class ZebraEngine extends Thread {
 
     // default parameters
     static public final int INFINIT_TIME = 10000000;
-
-    static private int SELFPLAY_MOVE_DELAY = 500; // ms
-    private int mMoveDelay = 0;
+    private int computerMoveDelay = 0;
     private long mMoveStartTime = 0; //ms
-    private int mMovesWithoutInput = 0;
 
     // messages
     private static final int
@@ -396,8 +393,8 @@ public class ZebraEngine extends Thread {
         mPlayerInfoChanged = true;
     }
 
-    public void setMoveDelay(int delay) {
-        mMoveDelay = delay;
+    public void setComputerMoveDelay(int delay) {
+        computerMoveDelay = delay;
     }
 
     public void setInitialGameState(LinkedList<Move> moves) {
@@ -626,7 +623,6 @@ public class ZebraEngine extends Thread {
                 break;
 
                 case MSG_GET_USER_INPUT: {
-                    mMovesWithoutInput = 0;
 
                     setEngineState(ES_USER_INPUT_WAIT);
 
@@ -728,17 +724,12 @@ public class ZebraEngine extends Thread {
                 case MSG_MOVE_END: {
                     // introduce delay between moves made by the computer without user input
                     // so we can actually to see that the game is being played :)
-                    if (mMoveDelay > 0 || (mMovesWithoutInput > 1 && mPlayerInfo[mSideToMove].skill > 0)) {
+                    if (computerMoveDelay > 0 && (mPlayerInfo[mSideToMove].skill > 0)) {
                         long moveEnd = android.os.SystemClock.uptimeMillis();
-                        int delay = mMoveDelay > 0 ? mMoveDelay : SELFPLAY_MOVE_DELAY;
-                        if ((moveEnd - mMoveStartTime) < delay) {
-                            android.os.SystemClock.sleep(delay - (moveEnd - mMoveStartTime));
+                        if ((moveEnd - mMoveStartTime) < computerMoveDelay) {
+                            android.os.SystemClock.sleep(computerMoveDelay - (moveEnd - mMoveStartTime));
                         }
                     }
-
-                    // this counter is reset by user input
-                    mMovesWithoutInput += 1;
-
                     mHandler.sendMoveEnd();
                 }
                 break;
@@ -771,7 +762,7 @@ public class ZebraEngine extends Thread {
                                 (jsceval.getInt("best") != 0)
                         );
                     }
-                    getGameState().setCandidateMoves(cmoves);
+                    getGameState().addCandidateMoveEvals(cmoves);
                     mHandler.sendBoard(getGameState());
                 }
                 break;

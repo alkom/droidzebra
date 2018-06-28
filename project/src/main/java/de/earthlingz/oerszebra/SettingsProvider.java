@@ -38,6 +38,8 @@ interface SettingsProvider {
 
     int getSettingPerturbation();
 
+    int getComputerMoveDelay();
+
     interface OnChangeListener {
         void onChange();
     }
