@@ -1,5 +1,7 @@
 package com.shurik.droidzebra;
 
+import com.google.common.base.Objects;
+
 /**
  * Created by stefan on 18.03.2018.
  */ // Zebra move representation
@@ -45,5 +47,18 @@ public class Move {
         return "Move{" +
                 "mMove=" + mMove +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Move move = (Move) o;
+        return mMove == move.mMove;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(mMove);
     }
 }

@@ -2,10 +2,9 @@ language: android
 jdk: oraclejdk8
 before_install:
 - export ANDROID_NDK_HOME=./android-ndk-r17b
-
-- 'if [[ ! -d $ANDROID_NDK_HOME ]] ;
+- 'if [[ ! -d "$ANDROID_NDK_HOME" ]] ;
    then
-    rm -fr $HOME/android-ndk-r17b;
+    rm -fr $ANDROID_NDK_HOME;
     curl -L https://dl.google.com/android/repository/android-ndk-r17b-linux-x86_64.zip -O;
     unzip -oq android-ndk-r17b-linux-x86_64.zip;
     ls -ltr $ANDROID_NDK_HOME;
@@ -21,7 +20,7 @@ cache:
   - $HOME/.gradle/native
   - $HOME/.gradle/wrapper
   - $HOME/.gradle/caches/
-  - $HOME/android-ndk-r17b
+  - $ANDROID_NDK_HOME
   - $HOME/.m2
 android:
   components:
@@ -30,7 +29,6 @@ android:
   - tools
   - build-tools-27.0.3
   - android-21
-  - android-25
   - extra
   - ndk-bundle
   - sys-img-armeabi-v7a-android-21
@@ -42,26 +40,23 @@ before_script:
 - emulator -avd test -no-skin -no-audio -no-window &
 
 script:
-- echo  pr $TRAVIS_PULL_REQUEST
-- 'if [ "$TRAVIS_PULL_REQUEST" == "false" ] ;
-   then
-     echo building signed release;
-     openssl aes-256-cbc -K $encrypted_03208d80b1d9_key -iv $encrypted_03208d80b1d9_iv -in keystore/zebra.jks.enc -out keystore/zebra.jks -d;
-     ./gradlew build assembleRelease -Preversatile_key_alias=${reversatile_key_alias} -Preversatile_key_password=${reversatile_key_password} -Preversatile_keystore_password=${reversatile_keystore_password};
-  fi'
-- 'if [ "$TRAVIS_PULL_REQUEST" == "true" ] ;
-   then
-     echo building unsigned debug;
-     ./gradlew build assembleDebug;
-  fi'
+
+- ./gradlew build assembleDebug
 - android-wait-for-emulator
 - adb shell input keyevent 82 &
-- adb logcat *:W | tee logcat.log > /dev/null 2>&1 &
+- adb logcat *:W | $ANDROID_NDK_HOME/ndk-stack -sym project/build/intermediates/ndkBuild/debug/obj/local | tee logcat.log > /dev/null 2>&1 &
 - ./gradlew connectedCheck
 
-after_script:
+after_failure:
+- cat logcat.log
+
+before_deploy:
+- echo building signed release
+- openssl aes-256-cbc -K $encrypted_03208d80b1d9_key -iv $encrypted_03208d80b1d9_iv -in keystore/zebra.jks.enc -out keystore/zebra.jks -d
+- ./gradlew build assembleRelease -Preversatile_key_alias=${reversatile_key_alias} -Preversatile_key_password=${reversatile_key_password} -Preversatile_keystore_password=${reversatile_keystore_password}
 - git status
 - find . -name *.apk
+
 deploy:
   provider: releases
   api_key:

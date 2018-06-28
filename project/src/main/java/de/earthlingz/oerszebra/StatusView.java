@@ -18,12 +18,8 @@
 package de.earthlingz.oerszebra;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
+import android.graphics.*;
 import android.graphics.Paint.FontMetrics;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
@@ -276,7 +272,7 @@ public class StatusView extends View {
             new DrawText(ID_STATUS_PV, 0.40f, STATUS_POS_Y+0.04f, 0.80f, 1.0f-0.04f, "a1 b1 -- c2", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
 		new DrawText(ID_STATUS_EVAL, 0.80f, STATUS_POS_Y+0.04f, 1.0f, 1.0f-0.04f, "+5.4", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_TRUNCATE),
 	};
-	private TreeMap<Integer, DrawElement> mDrawTextIDMap = new TreeMap<Integer, DrawElement>();
+	private TreeMap<Integer, DrawElement> mDrawTextIDMap = new TreeMap<>();
 	
 	private Paint mPaint;
 	
@@ -302,13 +298,13 @@ public class StatusView extends View {
 			de.setText(text);
 			if( getWidth()>0 && getHeight()>0 ) {
 				de.prepareDraw(getWidth()-1, getHeight()-1, mPaint);
-				de.invalidate();
+				post(this::invalidate);
 			}
 		}
 	}
 
 	public void clear() {
-		String blank = new String();
+		String blank = "";
 		setTextForID(ID_SCORE_BLACK, blank);
 		setTextForID(ID_SCORE_WHITE,  blank);
 		setTextForID(ID_SCORELINE_NUM_1, "1");

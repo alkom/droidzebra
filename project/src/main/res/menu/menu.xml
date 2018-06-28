@@ -1,9 +1,5 @@
 <menu xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android">
-        <item android:id="@+id/menu_new_game" 
-            android:icon="@drawable/ic_menu_play" 
-            android:title="@string/menu_item_new_game">
-        </item>
         <item android:id="@+id/menu_hint" 
             android:icon="@android:drawable/ic_menu_compass" 
             android:title="@string/menu_item_hint">
@@ -11,14 +7,20 @@
         <item android:id="@+id/menu_take_back" 
             android:icon="@drawable/ic_menu_undo" 
             android:title="@string/menu_item_undo"
-            android:showAsAction="ifRoom|withText"
+            android:showAsAction="always|withText"
             tools:ignore="AppCompatResource">
         </item>
         <item android:id="@+id/menu_take_redo" 
             android:icon="@drawable/ic_menu_redo" 
             android:title="@string/menu_item_redo"
-            android:showAsAction="ifRoom|withText"
+            android:showAsAction="always|withText"
             tools:ignore="AppCompatResource">
+        </item>
+        <item android:id="@+id/menu_new_game"
+              android:icon="@drawable/ic_menu_play"
+              android:showAsAction="always|withText"
+              android:title="@string/menu_item_new_game"
+              tools:ignore="AppCompatResource">
         </item>
         <item android:id="@+id/menu_settings" 
             android:icon="@android:drawable/ic_menu_preferences" 

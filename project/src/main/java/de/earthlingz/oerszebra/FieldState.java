@@ -6,11 +6,11 @@ import com.shurik.droidzebra.ZebraEngine;
  * Created by stefan on 17.03.2018.
  */
 public class FieldState {
-    public final static byte ST_FLIPPED = 0x01;
+    private final static byte ST_FLIPPED = 0x01;
     public byte mState;
-    public byte mFlags;
+    private byte mFlags;
 
-    public FieldState(byte state) {
+    FieldState(byte state) {
         mState = state;
         mFlags = 0;
     }

@@ -21,14 +21,16 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
+import static de.earthlingz.oerszebra.GlobalSettingsLoader.SHARED_PREFS_NAME;
 
-public class SettingsPreferences extends PreferenceActivity 
+
+public class SettingsPreferences extends PreferenceActivity
 	implements SharedPreferences.OnSharedPreferenceChangeListener {
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
-        getPreferenceManager().setSharedPreferencesName(DroidZebra.SHARED_PREFS_NAME);
+        getPreferenceManager().setSharedPreferencesName(SHARED_PREFS_NAME);
 	    addPreferencesFromResource(R.xml.settings);
         getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
@@ -37,7 +39,7 @@ public class SettingsPreferences extends PreferenceActivity
     protected void onResume() {
         super.onResume();
     }
-    
+
     @Override
     protected void onDestroy() {
         getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);

@@ -34,6 +34,8 @@
 #define MSG_EVAL_TEXT 11
 #define MSG_PV 12
 #define MSG_CANDIDATE_EVALS 13
+#define MSG_ANALYZE_GAME 14
+#define MSG_NEXT_MOVE 15
 #define MSG_DEBUG 65535
 
 #define UI_EVENT_EXIT  0
@@ -77,6 +79,9 @@ void
 droidzebra_msg_last_move(int move);
 
 void
+droidzebra_msg_next_move(int move);
+
+void
 droidzebra_msg_game_start(void);
 
 void
@@ -96,6 +101,9 @@ droidzebra_msg_pv(void);
 
 void
 droidzebra_msg_candidate_evals(void);
+
+void
+droidzebra_msg_analyze(char *game);
 
 
 #endif

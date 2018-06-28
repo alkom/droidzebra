@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -61,18 +60,8 @@ public class EnterMovesDialog extends DialogFragment {
 
 
         // Set up the buttons
-        builder.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                getController().setUpBoard(input.getText().toString());
-            }
-        });
-        builder.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+        builder.setPositiveButton(R.string.dialog_ok, (dialog, which) -> getController().setUpBoard(input.getText().toString()));
+        builder.setNegativeButton(R.string.dialog_cancel, (dialog, which) -> dialog.cancel());
 
         return builder.create();
     }
