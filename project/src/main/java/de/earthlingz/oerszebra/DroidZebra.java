@@ -293,6 +293,9 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
 
         if (mZebraThread == null) return;
         int settingFunction = settingsProvider.getSettingFunction();
+        int depth = settingsProvider.getSettingZebraDepth();
+        int depthExact = settingsProvider.getSettingZebraDepthExact();
+        int depthWLD = settingsProvider.getSettingZebraDepthWLD();
         try {
             mZebraThread.setAutoMakeMoves(settingsProvider.isSettingAutoMakeForcedMoves());
             mZebraThread.setForcedOpening(settingsProvider.getSettingForceOpening());
@@ -300,26 +303,7 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
             mZebraThread.setPracticeMode(settingsProvider.isSettingPracticeMode());
             mZebraThread.setUseBook(settingsProvider.isSettingUseBook());
 
-            switch (settingFunction) {
-                case FUNCTION_HUMAN_VS_HUMAN:
-                    mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
-                    mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
-                    break;
-                case FUNCTION_ZEBRA_BLACK:
-                    mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, settingsProvider.getSettingZebraDepth(), settingsProvider.getSettingZebraDepthExact(), settingsProvider.getSettingZebraDepthWLD(), ZebraEngine.INFINIT_TIME, 0));
-                    mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
-                    break;
-                case FUNCTION_ZEBRA_VS_ZEBRA:
-                    mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, settingsProvider.getSettingZebraDepth(), settingsProvider.getSettingZebraDepthExact(), settingsProvider.getSettingZebraDepthWLD(), ZebraEngine.INFINIT_TIME, 0));
-                    mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, settingsProvider.getSettingZebraDepth(), settingsProvider.getSettingZebraDepthExact(), settingsProvider.getSettingZebraDepthWLD(), ZebraEngine.INFINIT_TIME, 0));
-                    break;
-                case FUNCTION_ZEBRA_WHITE:
-                default:
-                    mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
-                    mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, settingsProvider.getSettingZebraDepth(), settingsProvider.getSettingZebraDepthExact(), settingsProvider.getSettingZebraDepthWLD(), ZebraEngine.INFINIT_TIME, 0));
-                    break;
-            }
-            mZebraThread.setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_ZEBRA, settingsProvider.getSettingZebraDepth() + 1, settingsProvider.getSettingZebraDepthExact() + 1, settingsProvider.getSettingZebraDepthWLD() + 1, ZebraEngine.INFINIT_TIME, 0));
+            mZebraThread.setSettingFunction(settingFunction, depth, depthExact, depthWLD);
 
             mZebraThread.setSlack(settingsProvider.getSettingSlack());
             mZebraThread.setPerturbation(settingsProvider.getSettingPerturbation());
@@ -329,7 +313,7 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
 
         mStatusView.setTextForID(
                 StatusView.ID_SCORE_SKILL,
-                String.format(getString(R.string.display_depth), settingsProvider.getSettingZebraDepth(), settingsProvider.getSettingZebraDepthExact(), settingsProvider.getSettingZebraDepthWLD())
+                String.format(getString(R.string.display_depth), depth, depthExact, depthWLD)
         );
 
 
@@ -342,6 +326,7 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
         mZebraThread.sendSettingsChanged();
 
     }
+
 
     private void sendMail() {
         //GetNowTime
@@ -368,7 +353,7 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
         intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.app_name));
 
         //get BlackPlayer and WhitePlayer
-        switch (settingsProvider.getSettingFunction()) {
+        switch (settingsProvider.getSettingFunction()) { //TODO this might cause a problem, because settings provider is not a source of truth here. It should be taken from ZebraEngine
             case FUNCTION_HUMAN_VS_HUMAN:
                 sbBlackPlayer.append("Player");
                 sbWhitePlayer.append("Player");
