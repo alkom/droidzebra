@@ -17,13 +17,13 @@
 
 package de.earthlingz.oerszebra;
 
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -33,9 +33,10 @@ import android.util.Log;
 import android.view.*;
 import android.widget.Button;
 import android.widget.TextView;
-import com.google.common.base.Objects;
 import com.shurik.droidzebra.*;
-import de.earthlingz.oerszebra.parser.Gameparser;
+import de.earthlingz.oerszebra.BoardView.BoardView;
+import de.earthlingz.oerszebra.BoardView.BoardViewModel;
+import de.earthlingz.oerszebra.parser.GameParser;
 
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
@@ -46,99 +47,58 @@ import java.util.Locale;
 import static de.earthlingz.oerszebra.GameSettingsConstants.*;
 import static de.earthlingz.oerszebra.GlobalSettingsLoader.*;
 
-//import android.util.Log;
 
-public class DroidZebra extends FragmentActivity implements GameController, OnChangeListener, BoardView.OnMakeMoveListener {
+public class DroidZebra extends FragmentActivity implements MoveStringConsumer,
+        OnSettingsChangedListener, BoardView.OnMakeMoveListener, GameStateListener, ZebraEngine.OnEngineErrorListener {
     private ClipboardManager clipboard;
-    private ZebraEngine mZebraThread;
+    private ZebraEngine engine;
 
 
     private boolean mBusyDialogUp = false;
-    private boolean mHintIsUp = false;
+    private boolean isHintUp = false;
     private boolean mIsInitCompleted = false;
     private boolean mActivityActive = false;
 
     private BoardView mBoardView;
     private StatusView mStatusView;
 
-    private BoardState state = ZebraServices.getBoardState();
+    private BoardViewModel state = ZebraServices.getBoardState();
 
-    private Gameparser parser;
+    private GameParser parser = ZebraServices.getGameParser();
     private WeakReference<AlertDialog> alert = null;
 
     public SettingsProvider settingsProvider;
-
-    public DroidZebra() {
-        super();
-        this.setGameParser(ZebraServices.getGameParser());
-    }
+    private GameStateListener handler = new GameStateHandlerProxy(this);
+    private GameState gameState;
+    private EngineConfig engineConfig;
 
 
-    private boolean isThinking() {
-        return mZebraThread.isThinking();
-    }
-
-    private boolean isHumanToMove() {
-        return mZebraThread.isHumanToMove();
-    }
-
-    private void makeMove(Move mMoveSelection) throws InvalidMove {
-        mZebraThread.makeMove(mMoveSelection);
-    }
-
-    void setBoardState(@NonNull BoardState state) {
-        this.state = state;
-    }
-
-    void setGameParser(Gameparser parser) {
-        this.parser = parser;
-    }
-
-    private void newCompletionPort(final int zebraEngineStatus, final Runnable completion) {
-        new CompletionAsyncTask(zebraEngineStatus, completion, getEngine())
-                .execute();
-    }
-
-    public FieldState[][] getBoard() {
-        return getState().getBoard();
-    }
-
-
-    public ZebraEngine getEngine() {
-        return mZebraThread;
-    }
-
-    public void initBoard() {
+    public void resetStateAndStatusView() {
         getState().reset();
         if (mStatusView != null)
             mStatusView.clear();
     }
 
-    public CandidateMove[] getCandidateMoves() {
-        return getState().getMoves();
-    }
-
-    public void setCandidateMoves(CandidateMove[] cmoves) {
-        getState().setMoves(cmoves);
-        runOnUiThread(() -> mBoardView.invalidate());
-    }
-
     public boolean evalsDisplayEnabled() {
-        return settingsProvider.isSettingPracticeMode() || mHintIsUp;
+        return settingsProvider.isSettingPracticeMode() || isHintUp;
     }
 
-    public void newGame() {
-        if (mZebraThread.getEngineState() != ZebraEngine.ES_READY2PLAY) {
-            mZebraThread.stopGame();
-        }
-        newCompletionPort(
-                ZebraEngine.ES_READY2PLAY,
-                () -> {
-                    DroidZebra.this.initBoard();
-                    DroidZebra.this.loadSettings();
-                    DroidZebra.this.mZebraThread.setEngineState(ZebraEngine.ES_PLAY);
-                }
-        );
+    public void startNewGameAndResetUI() {
+        startNewGame();
+
+        resetStateAndStatusView();
+        loadUISettings();
+
+    }
+
+    private void startNewGame() {
+        engine.newGame(engineConfig, new ZebraEngine.OnGameStateReadyListener() {
+            @Override
+            public void onGameStateReady(GameState gameState) {
+                DroidZebra.this.gameState = gameState;
+                gameState.setHandler(handler);
+            }
+        });
     }
 
     /* Creates the menu items */
@@ -158,16 +118,16 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
         if (!mIsInitCompleted) return false;
         switch (item.getItemId()) {
             case R.id.menu_new_game:
-                newGame();
+                startNewGameAndResetUI();
                 return true;
             case R.id.menu_quit:
                 showQuitDialog();
                 return true;
             case R.id.menu_take_back:
-                mZebraThread.undoMove();
+                engine.undoMove(gameState);
                 return true;
             case R.id.menu_take_redo:
-                mZebraThread.redoMove();
+                engine.redoMove(gameState);
                 return true;
             case R.id.menu_settings: {
                 // Launch Preference activity
@@ -206,12 +166,12 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             switch (type) {
                 case "text/plain":
-                    setUpBoard(intent.getDataString()); // Handle text being sent
+                    consumeMovesString(intent.getDataString()); // Handle text being sent
 
                     break;
                 case "message/rfc822":
                     Log.i("Intent", intent.getStringExtra(Intent.EXTRA_TEXT));
-                    setUpBoard(intent.getStringExtra(Intent.EXTRA_TEXT)); // Handle text being sent
+                    consumeMovesString(intent.getStringExtra(Intent.EXTRA_TEXT)); // Handle text being sent
 
                     break;
                 default:
@@ -229,60 +189,103 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initBoard();
+        resetStateAndStatusView();
 
         clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 
         setContentView(R.layout.spash_layout);
-        new ActionBarHelper(this).hide();
+        hideActionBar();
 
-        mZebraThread = new ZebraEngine(new AndroidContext(this));
-        mZebraThread.setHandler(new DroidZebraHandler(getState(), this, mZebraThread));
-
+        engine = ZebraEngine.get(new AndroidContext(getApplicationContext()));
         this.settingsProvider = new GlobalSettingsLoader(this);
-        this.settingsProvider.setOnChangeListener(this);
+        this.settingsProvider.setOnSettingsChangedListener(this);
+        this.engineConfig = settingsProvider.createEngineConfig();
 
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
 
         Log.i("Intent", type + " " + action);
+        engine.setOnErrorListener(this); //TODO don't forget to remove later to avoid memory leak
 
-        if (Intent.ACTION_SEND.equals(action) && type != null) {
-            if ("text/plain".equals(type) || "message/rfc822".equals(type)) {
-                mZebraThread.setInitialGameState(parser.makeMoveList(intent.getStringExtra(Intent.EXTRA_TEXT)));
-            } else {
-                Log.e("intent", "unknown intent");
-            }
-        } else if (savedInstanceState != null
-                && savedInstanceState.containsKey("moves_played_count")
-                && savedInstanceState.getInt("moves_played_count") > 0) {
-            Log.i("moves_play_count", String.valueOf(savedInstanceState.getInt("moves_played_count")));
-            Log.i("moves_played", String.valueOf(savedInstanceState.getInt("moves_played")));
-            mZebraThread.setInitialGameState(savedInstanceState.getInt("moves_played_count"), savedInstanceState.getByteArray("moves_played"));
-        }
+        engine.onReady(() -> {
+            setContentView(R.layout.board_layout);
+            showActionBar();
+            mBoardView = (BoardView) findViewById(R.id.board);
+            mStatusView = (StatusView) findViewById(R.id.status_panel);
+            mBoardView.setBoardViewModel(getState());
+            mBoardView.setOnMakeMoveListener(this);
+            mBoardView.requestFocus();
 
-        mZebraThread.start();
 
-        newCompletionPort(
-                ZebraEngine.ES_READY2PLAY,
-                () -> {
-                    DroidZebra.this.setContentView(R.layout.board_layout);
-                    new ActionBarHelper(DroidZebra.this).show();
-                    DroidZebra.this.mBoardView = (BoardView) DroidZebra.this.findViewById(R.id.board);
-                    DroidZebra.this.mStatusView = (StatusView) DroidZebra.this.findViewById(R.id.status_panel);
-                    DroidZebra.this.mBoardView.setBoardState(getState());
-                    DroidZebra.this.mBoardView.setOnMakeMoveListener(DroidZebra.this);
-                    DroidZebra.this.mBoardView.requestFocus();
-                    DroidZebra.this.initBoard();
-                    DroidZebra.this.loadSettings();
-                    DroidZebra.this.mZebraThread.setEngineState(ZebraEngine.ES_PLAY);
-                    DroidZebra.this.mIsInitCompleted = true;
+            if (Intent.ACTION_SEND.equals(action) && type != null) {
+                if ("text/plain".equals(type) || "message/rfc822".equals(type)) {
+                    startNewGameAndResetUI(parser.makeMoveList(intent.getStringExtra(Intent.EXTRA_TEXT)));
                 }
-        );
+            } else if (savedInstanceState != null
+                    && savedInstanceState.containsKey("moves_played_count")
+                    && savedInstanceState.getInt("moves_played_count") > 0) {
+                startNewGameAndResetUI(savedInstanceState.getInt("moves_played_count"), savedInstanceState.getByteArray("moves_played"));
+            } else {
+                startNewGameAndResetUI();
+            }
+
+
+            mIsInitCompleted = true;
+        });
     }
 
-    private void loadSettings() {
+
+    private void startNewGameAndResetUI(LinkedList<Move> moves) {
+        engine.newGame(moves, engineConfig, new ZebraEngine.OnGameStateReadyListener() {
+            @Override
+            public void onGameStateReady(GameState gameState1) {
+                DroidZebra.this.gameState = gameState1;
+                gameState1.setHandler(handler);
+            }
+        });
+
+        resetStateAndStatusView();
+        loadUISettings();
+
+    }
+
+    private void startNewGameAndResetUI(int moves_played_count, byte[] moves_played) {
+        engine.newGame(moves_played, moves_played_count, engineConfig, new ZebraEngine.OnGameStateReadyListener() {
+            @Override
+            public void onGameStateReady(GameState gameState1) {
+                DroidZebra.this.gameState = gameState1;
+                gameState1.setHandler(handler);
+            }
+        });
+
+        resetStateAndStatusView();
+        loadUISettings();
+
+    }
+
+    private void showActionBar() {
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.show();
+        }
+    }
+
+    private void hideActionBar() {
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
+        }
+    }
+
+    private void loadEngineSettings() {
+        this.engineConfig = settingsProvider.createEngineConfig();
+        if (engine != null) {
+            engine.updateConfig(gameState, engineConfig);
+        }
+    }
+
+    private void loadUISettings() {
         if (mBoardView != null) {
             mBoardView.setDisplayAnimations(settingsProvider.isSettingDisplayEnableAnimations());
             mBoardView.setAnimationDuration(settingsProvider.getSettingAnimationDuration());
@@ -291,25 +294,10 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
             mBoardView.setDisplayEvals(evalsDisplayEnabled());
         }
 
-        if (mZebraThread == null) return;
-        int settingFunction = settingsProvider.getSettingFunction();
+
         int depth = settingsProvider.getSettingZebraDepth();
         int depthExact = settingsProvider.getSettingZebraDepthExact();
         int depthWLD = settingsProvider.getSettingZebraDepthWLD();
-        try {
-            mZebraThread.setAutoMakeMoves(settingsProvider.isSettingAutoMakeForcedMoves());
-            mZebraThread.setForcedOpening(settingsProvider.getSettingForceOpening());
-            mZebraThread.setHumanOpenings(settingsProvider.isSettingHumanOpenings());
-            mZebraThread.setPracticeMode(settingsProvider.isSettingPracticeMode());
-            mZebraThread.setUseBook(settingsProvider.isSettingUseBook());
-
-            mZebraThread.setSettingFunction(settingFunction, depth, depthExact, depthWLD);
-
-            mZebraThread.setSlack(settingsProvider.getSettingSlack());
-            mZebraThread.setPerturbation(settingsProvider.getSettingPerturbation());
-        } catch (EngineError e) {
-            showAlertDialog(e.getError());
-        }
 
         mStatusView.setTextForID(
                 StatusView.ID_SCORE_SKILL,
@@ -321,10 +309,6 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
             mStatusView.setTextForID(StatusView.ID_STATUS_PV, "");
             mStatusView.setTextForID(StatusView.ID_STATUS_EVAL, "");
         }
-
-        mZebraThread.setComputerMoveDelay((settingFunction != FUNCTION_HUMAN_VS_HUMAN) ? settingsProvider.getComputerMoveDelay() : 0);
-        mZebraThread.sendSettingsChanged();
-
     }
 
 
@@ -334,12 +318,9 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
         Date nowTime = calendar.getTime();
         StringBuilder sbBlackPlayer = new StringBuilder();
         StringBuilder sbWhitePlayer = new StringBuilder();
-        ZebraBoard gs = mZebraThread.getGameState();
+        GameState gs = gameState;
         SharedPreferences settings = getSharedPreferences(SHARED_PREFS_NAME, 0);
-        byte[] moves = null;
-        if (gs != null) {
-            moves = gs.getMoveSequence();
-        }
+
 
         Intent intent = new Intent();
         Intent chooser = Intent.createChooser(intent, "");
@@ -403,20 +384,8 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
         sb.append("\r\n\r\n");
         sb.append(getResources().getString(R.string.mail_move));
         sb.append(" ");
-        StringBuilder sbMoves = new StringBuilder();
-        if (moves != null) {
-
-            for (byte move1 : moves) {
-                if (move1 != 0x00) {
-                    Move move = new Move(move1);
-                    sbMoves.append(move.getText());
-                    if (Objects.equal(getState().getLastMove(), move)) {
-                        break;
-                    }
-                }
-            }
-        }
-        sb.append(sbMoves);
+        String sbMovesString = gs.getMoveSequenceAsString();
+        sb.append(sbMovesString);
         sb.append("\r\n\r\n");
         sb.append(sbBlackPlayer.toString());
         sb.append("  (B)  ");
@@ -449,35 +418,23 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
             editor.apply();
         }
 
-        loadSettings();
+        loadUISettings();
+        loadEngineSettings();
 
-        // start a new game if not playing
-        if (!mZebraThread.gameInProgress())
-            newGame();
     }
 
     private void showHint() {
         if (!settingsProvider.isSettingPracticeMode()) {
             setHintUp(true);
-            mZebraThread.setPracticeMode(true);
-            mZebraThread.sendSettingsChanged();
+            engine.loadEvals(gameState, engineConfig);
         }
     }
 
     @Override
     protected void onDestroy() {
-        boolean retry = true;
-        mZebraThread.setRunning(false);
-        mZebraThread.interrupt(); // if waiting
-        while (retry) {
-            try {
-                mZebraThread.join();
-                retry = false;
-            } catch (InterruptedException e) {
-                Log.wtf("wtf", e);
-            }
-        }
-        mZebraThread.clean();
+        engine.disconnect(gameState);
+        gameState.removeHandler();
+
         super.onDestroy();
     }
 
@@ -490,11 +447,6 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
     public void showPassDialog() {
         DialogFragment newFragment = DialogPass.newInstance();
         showDialog(newFragment, "dialog_pass");
-    }
-
-    @Override
-    public boolean getSettingDisplayPV() {
-        return settingsProvider.isSettingDisplayPv();
     }
 
     public void showGameOverDialog() {
@@ -512,13 +464,13 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
         showDialog(newFragment, "dialog_moves");
     }
 
-    public void setUpBoard(String s) {
+    public void consumeMovesString(String s) {
         final LinkedList<Move> moves = parser.makeMoveList(s);
-        mZebraThread.sendReplayMoves(moves);
+        startNewGameAndResetUI(moves);
     }
 
     private void showBusyDialog() {
-        if (!mBusyDialogUp && mZebraThread.isThinking()) {
+        if (!mBusyDialogUp && engine.isThinking(gameState)) {
             DialogFragment newFragment = DialogBusy.newInstance();
             mBusyDialogUp = true;
             showDialog(newFragment, "dialog_busy");
@@ -536,39 +488,18 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
         }
     }
 
-    @Override
-    public boolean isHintUp() {
-        return mHintIsUp;
-    }
-
-    @Override
     public void setHintUp(boolean value) {
-        mHintIsUp = value;
+        isHintUp = value;
         this.mBoardView.setDisplayEvals(evalsDisplayEnabled());
     }
 
-    @Override
-    public boolean isPracticeMode() {
-        return settingsProvider.isSettingPracticeMode();
-    }
-
     public void showAlertDialog(String msg) {
-        DroidZebra.this.newGame();
+        DroidZebra.this.startNewGameAndResetUI();
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle("Zebra Error");
         alertDialog.setMessage(msg);
         alertDialog.setPositiveButton("OK", (dialog, id) -> alert = null);
         runOnUiThread(() -> alert = new WeakReference<>(alertDialog.show()));
-    }
-
-    @Override
-    public StatusView getStatusView() {
-        return mStatusView;
-    }
-
-    @Override
-    public BoardView getBoardView() {
-        return mBoardView;
     }
 
     public WeakReference<AlertDialog> getAlert() {
@@ -590,50 +521,186 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            mZebraThread.undoMove();
+            engine.undoMove(gameState);
             return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-    }
-
-    @Override
     protected void onSaveInstanceState(Bundle outState) {
-        ZebraBoard gs = mZebraThread.getGameState();
+        GameState gs = gameState;
         if (gs != null) {
-            outState.putByteArray("moves_played", gs.getMoveSequence());
+            outState.putByteArray("moves_played", gs.exportMoveSequence());
             outState.putInt("moves_played_count", gs.getDisksPlayed());
             outState.putInt("version", 1);
         }
     }
 
-    public BoardState getState() {
+    public BoardViewModel getState() {
         return state;
     }
 
     @Override
-    public void onChange() {
-        loadSettings();
+    public void onSettingsChanged() {
+        loadUISettings();
+        loadEngineSettings();
     }
 
     @Override
     public void onMakeMove(Move move) {
         if (getState().isValidMove(move)) {
             // if zebra is still thinking - no move is possible yet - throw a busy dialog
-            if (isThinking() && !isHumanToMove()) {
+            if (engine.isThinking(gameState) && !engine.isHumanToMove(gameState, engineConfig)) {
                 showBusyDialog();
             } else {
                 try {
-                    makeMove(move);
+                    engine.makeMove(gameState, move);
                 } catch (InvalidMove e) {
                     Log.e("Invalid Move", e.getMessage(), e);
                 }
             }
         }
+    }
+
+    @Override
+    public void onError(String error) {
+        this.showAlertDialog(error);
+    }
+
+    @Override
+    public void onBoard(GameState gameState) {
+        int sideToMove = gameState.getSideToMove();
+
+        //triggers animations
+        boolean boardChanged = state.update(gameState);
+
+        setStatusViewScores(sideToMove);
+
+        int iStart, iEnd;
+        MoveList black_moves = gameState.getBlackPlayer().getMoveList();
+        MoveList white_moves = gameState.getWhitePlayer().getMoveList();
+
+        iEnd = black_moves.length();
+        iStart = Math.max(0, iEnd - 4);
+        for (int i = 0; i < 4; i++) {
+            mStatusView.setTextForID(
+                    StatusView.ID_SCORELINE_NUM_1 + i,
+                    String.format(Locale.getDefault(), "%d", i + iStart + 1)
+            );
+        }
+
+        for (int i = 0; i < 4; i++) {
+            String move_text;
+            if (i + iStart < iEnd) {
+                move_text = black_moves.getMoveText(i + iStart);
+            } else {
+                move_text = "";
+            }
+
+            mStatusView.setTextForID(
+                    StatusView.ID_SCORELINE_BLACK_1 + i,
+                    move_text
+            );
+        }
+
+        iEnd = white_moves.length();
+        iStart = Math.max(0, iEnd - 4);
+        for (int i = 0; i < 4; i++) {
+            String move_text;
+            if (i + iStart < iEnd) {
+                move_text = white_moves.getMoveText(i + iStart);
+            } else {
+                move_text = "";
+            }
+            mStatusView.setTextForID(
+                    StatusView.ID_SCORELINE_WHITE_1 + i,
+                    move_text
+            );
+        }
+
+
+        if (mStatusView != null && gameState.getOpening() != null) {
+            mStatusView.setTextForID(
+                    StatusView.ID_STATUS_OPENING,
+                    gameState.getOpening()
+            );
+        }
+        if (!boardChanged) {
+            Log.v("Handler", "invalidate");
+            mBoardView.invalidate();
+        }
+    }
+
+    private void setStatusViewScores(int sideToMove) {
+        String scoreText;
+        if (sideToMove == ZebraEngine.PLAYER_BLACK) {
+            scoreText = String.format(Locale.getDefault(), "•%d", state.getBlackScore());
+        } else {
+            scoreText = String.format(Locale.getDefault(), "%d", state.getBlackScore());
+        }
+        mStatusView.setTextForID(
+                StatusView.ID_SCORE_BLACK,
+                scoreText
+        );
+
+        if (sideToMove == ZebraEngine.PLAYER_WHITE) {
+            scoreText = String.format(Locale.getDefault(), "%d•", state.getWhiteScore());
+        } else {
+            scoreText = String.format(Locale.getDefault(), "%d", state.getWhiteScore());
+        }
+        mStatusView.setTextForID(
+                StatusView.ID_SCORE_WHITE,
+                scoreText
+        );
+    }
+
+    @Override
+    public void onPass() {
+        this.showPassDialog();
+    }
+
+    @Override
+    public void onGameOver() {
+        state.processGameOver();
+        runOnUiThread(() -> mBoardView.invalidate());//TODO Id doubt runOnUIThread is necessary here
+        this.showGameOverDialog();
+    }
+
+    @Override
+    public void onMoveEnd() {
+        this.dismissBusyDialog();
+        if (isHintUp) {
+            this.setHintUp(false);
+            engine.updateConfig(gameState, engineConfig);
+        }
+
+    }
+
+    @Override
+    public void onEval(String eval) {
+        if (settingsProvider.isSettingDisplayPv()) {
+            mStatusView.setTextForID(
+                    StatusView.ID_STATUS_EVAL,
+                    eval
+            );
+        }
+    }
+
+    @Override
+    public void onPv(byte[] pv) {
+        if (settingsProvider.isSettingDisplayPv() && pv != null) {
+            StringBuilder pvText = new StringBuilder();
+            for (byte move : pv) {
+                pvText.append(new Move(move).getText());
+                pvText.append(" ");
+            }
+            mStatusView.setTextForID(
+                    StatusView.ID_STATUS_PV,
+                    pvText.toString()
+            );
+        }
+
     }
 
 
@@ -655,8 +722,7 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
             return new AlertDialog.Builder(getActivity())
                     .setTitle(R.string.app_name)
                     .setMessage(R.string.dialog_pass_text)
-                    .setPositiveButton(R.string.dialog_ok, (dialog, id) -> getDroidZebra().mZebraThread.setEngineState(ZebraEngine.ES_PLAY)
-                    )
+                    .setPositiveButton(R.string.dialog_ok, (dialog, id) -> getDroidZebra().engine.pass(getDroidZebra().gameState, getDroidZebra().engineConfig))
                     .create();
         }
     }
@@ -702,7 +768,7 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
             button.setOnClickListener(
                     v15 -> {
                         dismiss();
-                        getDroidZebra().newGame();
+                        getDroidZebra().startNewGameAndResetUI();
                     });
 
             button = (Button) v.findViewById(R.id.gameover_choice_switch);
@@ -769,10 +835,6 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
         }
     }
 
-    public Gameparser getParser() {
-        return parser;
-    }
-
     //-------------------------------------------------------------------------
     // Pass Dialog
     public static class DialogBusy extends DialogFragment {
@@ -791,25 +853,25 @@ public class DroidZebra extends FragmentActivity implements GameController, OnCh
             ProgressDialog pd = new ProgressDialog(getActivity()) {
                 @Override
                 public boolean onKeyDown(int keyCode, KeyEvent event) {
-                    if (getDroidZebra().mZebraThread.isThinking()) {
-                        getDroidZebra().mZebraThread.stopMove();
-                    }
-                    getDroidZebra().mBusyDialogUp = false;
-                    cancel();
+                    stopZebra();
                     return super.onKeyDown(keyCode, event);
                 }
 
                 @Override
                 public boolean onTouchEvent(MotionEvent event) {
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        if (getDroidZebra().mZebraThread.isThinking()) {
-                            getDroidZebra().mZebraThread.stopMove();
-                        }
-                        getDroidZebra().mBusyDialogUp = false;
-                        cancel();
+                        stopZebra();
                         return true;
                     }
                     return super.onTouchEvent(event);
+                }
+
+                private void stopZebra() {
+                    ZebraEngine engine = getDroidZebra().engine;
+                    engine.stopIfThinking(getDroidZebra().gameState);
+
+                    getDroidZebra().mBusyDialogUp = false;
+                    cancel();
                 }
             };
             pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);

@@ -18,7 +18,6 @@
 package com.shurik.droidzebra;
 
 import android.util.Log;
-import de.earthlingz.oerszebra.BuildConfig;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,26 +28,27 @@ import java.util.List;
 import java.util.Locale;
 
 import static de.earthlingz.oerszebra.GameSettingsConstants.*;
-//import android.util.Log;
 
-// DroidZebra -> ZebraEngine:public -async-> ZebraEngine thread(jni) -> Callback() -async-> DroidZebra:Handler 
-public class ZebraEngine extends Thread {
+// DroidZebra -> ZebraEngine:public -async-> ZebraEngine thread(jni) -> Callback() -async-> DroidZebra:Handler
+public class ZebraEngine {
 
-    static public final int BOARD_SIZE = 8;
+    private static final int BOARD_SIZE = 8;
 
-    static public String PATTERNS_FILE = "coeffs2.bin";
-    static public String BOOK_FILE = "book.bin";
-    static public String BOOK_FILE_COMPRESSED = "book.cmp.z";
+    private static String PATTERNS_FILE = "coeffs2.bin";
+    private static String BOOK_FILE = "book.bin";
+    private static String BOOK_FILE_COMPRESSED = "book.cmp.z";
 
     // board colors
     static public final byte PLAYER_BLACK = 0;
     static public final byte PLAYER_EMPTY = 1; // for board color
     static public final byte PLAYER_WHITE = 2;
 
-    static public final int PLAYER_ZEBRA = 1; // for zebra skill in PlayerInfo
+    private static final int PLAYER_ZEBRA = 1; // for zebra skill in PlayerInfo
 
     // default parameters
-    static public final int INFINIT_TIME = 10000000;
+    private static final int INFINITE_TIME = 10000000;
+    private static ZebraEngine engine;
+    private final EngineThread engineThread = new EngineThread();
     private int computerMoveDelay = 0;
     private long mMoveStartTime = 0; //ms
 
@@ -73,46 +73,40 @@ public class ZebraEngine extends Thread {
             MSG_DEBUG = 65535;
 
     // engine state
-    static public final int
+    private static final int
             ES_INITIAL = 0,
             ES_READY2PLAY = 1,
             ES_PLAY = 2,
-            ES_PLAYINPROGRESS = 3,
+            ES_PLAY_IN_PROGRESS = 3,
             ES_USER_INPUT_WAIT = 4;
 
-    static public final int
+    private static final int
             UI_EVENT_EXIT = 0,
             UI_EVENT_MOVE = 1,
             UI_EVENT_UNDO = 2,
             UI_EVENT_SETTINGS_CHANGE = 3,
             UI_EVENT_REDO = 4;
+    private PlayerInfo blackPlayerInfo = new PlayerInfo(0, 0, 0);
+    private PlayerInfo zebraPlayerInfo = new PlayerInfo(4, 12, 12);
+    private PlayerInfo whitePlayerInfo = new PlayerInfo(0, 0, 0);
 
-    public void clean() {
-        mHandler = null;
-    }
 
-
-    private transient ZebraBoard mInitialGameState;
-    private transient ZebraBoard mCurrentGameState;
+    private transient GameState initialGameState;
+    private transient GameState currentGameState;
 
     // current move
     private JSONObject mPendingEvent = null;
     private int mValidMoves[] = null;
 
-    // player info
-    private PlayerInfo[] mPlayerInfo = {
-            new PlayerInfo(PLAYER_BLACK, 0, 0, 0, INFINIT_TIME, 0),
-            new PlayerInfo(PLAYER_ZEBRA, 4, 12, 12, INFINIT_TIME, 0),
-            new PlayerInfo(PLAYER_WHITE, 0, 0, 0, INFINIT_TIME, 0)
-    };
+    // mPlayerInfoChanged must be always inside synchronized block with playerInfoLock
+    // :/ we must change how this work in the future (or we could make whole class synchronized? is it slow?)
     private boolean mPlayerInfoChanged = false;
+    private final Object playerInfoLock = new Object();
+
     private int mSideToMove = PLAYER_ZEBRA;
 
     // context
     private GameContext mContext;
-
-    // message sink
-    private ZebraEngineMessageHander mHandler;
 
     // files folder
     private File mFilesDir;
@@ -120,23 +114,27 @@ public class ZebraEngine extends Thread {
     // synchronization
     static private final Object mJNILock = new Object();
 
-    private final transient Object mEngineStateEvent = new Object();
+    private final transient Object engineStateEventLock = new Object();
 
     private int mEngineState = ES_INITIAL;
 
-    private boolean mRun = false;
+    private boolean isRunning = false;
 
     private boolean bInCallback = false;
+    private OnEngineErrorListener onErrorListener = new OnEngineErrorListener() {
+    };
+    private OnEngineDebugListener onDebugListener = new OnEngineDebugListener() {
+    };
+    private OnGameStateReadyListener onGameStateReadyListener = new OnGameStateReadyListener() {
+    };
 
-    public ZebraEngine(GameContext context) {
+    private ZebraEngine(GameContext context) {
         mContext = context;
+        engineThread.start();
     }
 
-    public void setHandler(ZebraEngineMessageHander mHandler) {
-        this.mHandler = mHandler;
-    }
 
-    public boolean initFiles() {
+    private boolean initFiles() {
         mFilesDir = null;
 
         // first check if files exist on internal device
@@ -182,11 +180,11 @@ public class ZebraEngine extends Thread {
         }
     }
 
-    public void waitForEngineState(int state, int milliseconds) {
-        synchronized (mEngineStateEvent) {
+    private void waitForEngineState(int state, int milliseconds) {
+        synchronized (engineStateEventLock) {
             if (mEngineState != state)
                 try {
-                    mEngineStateEvent.wait(milliseconds);
+                    engineStateEventLock.wait(milliseconds);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -194,49 +192,45 @@ public class ZebraEngine extends Thread {
         }
     }
 
-    public void waitForEngineState(int state) {
-        synchronized (mEngineStateEvent) {
-            while (mEngineState != state && mRun)
+    private void waitForEngineState(int state) {
+        synchronized (engineStateEventLock) {
+            while (mEngineState != state && isRunning)
                 try {
-                    mEngineStateEvent.wait();
+                    engineStateEventLock.wait();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
         }
     }
 
-    public void setEngineState(int state) {
-        synchronized (mEngineStateEvent) {
+    private void setEngineStatePlay() {
+        setEngineState(ZebraEngine.ES_PLAY);
+    }
+
+    private void setEngineState(int state) {
+        synchronized (engineStateEventLock) {
             mEngineState = state;
-            mEngineStateEvent.notifyAll();
+            engineStateEventLock.notifyAll();
         }
     }
 
-    public int getEngineState() {
-        return mEngineState;
-    }
-
-    public boolean gameInProgress() {
-        return zeGameInProgress();
-    }
-
-    public void setRunning(boolean b) {
-        boolean oldRun = mRun;
-        mRun = b;
-        if (oldRun && !mRun) stopGame();
+    private void setRunning(boolean b) {
+        boolean wasRunning = isRunning;
+        isRunning = b;
+        if (wasRunning && !isRunning) stopGame();
     }
 
     // tell zebra to stop thinking
-    public void stopMove() {
+    private void stopMove() {
         zeForceReturn();
     }
 
     // tell zebra to end current game
-    public void stopGame() {
+    private void stopGame() {
         zeForceExit();
         // if waiting for move - get back into the engine
         // every other state should work itself out
-        if (getEngineState() == ES_USER_INPUT_WAIT) {
+        if (mEngineState == ES_USER_INPUT_WAIT) {
             mPendingEvent = new JSONObject();
             try {
                 mPendingEvent.put("type", UI_EVENT_EXIT);
@@ -247,18 +241,18 @@ public class ZebraEngine extends Thread {
         }
     }
 
-    public void makeMove(Move move) throws InvalidMove {
+    public void makeMove(GameState gameState, Move move) throws InvalidMove {
+        if (gameState != currentGameState) {
+            //TODO switch context and play
+            return;
+        }
         if (!isValidMove(move))
             throw new InvalidMove();
 
         // if thinking on human time - stop
-        if (isHumanToMove()
-                && getEngineState() == ZebraEngine.ES_PLAYINPROGRESS) {
-            stopMove();
-            waitForEngineState(ES_USER_INPUT_WAIT, 1000);
-        }
+        stopIfThinkingOnHumanTime();
 
-        if (getEngineState() != ES_USER_INPUT_WAIT) {
+        if (mEngineState != ES_USER_INPUT_WAIT) {
             // Log.d("ZebraEngine", "Invalid Engine State");
             return;
         }
@@ -267,22 +261,33 @@ public class ZebraEngine extends Thread {
         mPendingEvent = new JSONObject();
         try {
             mPendingEvent.put("type", UI_EVENT_MOVE);
-            mPendingEvent.put("move", move.mMove);
+            mPendingEvent.put("move", move.getMoveInt());
         } catch (JSONException e) {
             // Log.getStackTraceString(e);
         }
         setEngineState(ES_PLAY);
     }
 
-    public void undoMove() {
-        // if thinking on human time - stop
-        if (isHumanToMove()
-                && getEngineState() == ZebraEngine.ES_PLAYINPROGRESS) {
+    /**
+     * This is needed when zebra is thinking on practice mode but user wants to play - as I found out, maybe it is needed for something else too
+     */
+    private void stopIfThinkingOnHumanTime() {
+        if (isThinkingOnHumanTime()) {
             stopMove();
             waitForEngineState(ES_USER_INPUT_WAIT, 1000);
         }
+    }
 
-        if (getEngineState() != ES_USER_INPUT_WAIT) {
+    public void undoMove(GameState gameState) {
+        if (currentGameState != gameState) {
+            //TODO switch context and undo on that board - later we might do it completely without engine -
+            // TODO why would you need it here right?
+            return;
+        }
+        // if thinking on human time - stop
+        stopIfThinkingOnHumanTime();
+
+        if (mEngineState != ES_USER_INPUT_WAIT) {
             // Log.d("ZebraEngine", "Invalid Engine State");
             return;
         }
@@ -297,15 +302,16 @@ public class ZebraEngine extends Thread {
         setEngineState(ES_PLAY);
     }
 
-    public void redoMove() {
-        // if thinking on human time - stop
-        if (isHumanToMove()
-                && getEngineState() == ZebraEngine.ES_PLAYINPROGRESS) {
-            stopMove();
-            waitForEngineState(ES_USER_INPUT_WAIT, 1000);
+    public void redoMove(GameState gameState) {
+        if (currentGameState != gameState) {
+            //TODO switch context
+            return;
         }
 
-        if (getEngineState() != ES_USER_INPUT_WAIT) {
+        // if thinking on human time - stop
+        stopIfThinkingOnHumanTime();
+
+        if (mEngineState != ES_USER_INPUT_WAIT) {
             // Log.d("ZebraEngine", "Invalid Engine State");
             return;
         }
@@ -320,10 +326,15 @@ public class ZebraEngine extends Thread {
         setEngineState(ES_PLAY);
     }
 
+    private boolean isThinkingOnHumanTime() {
+        return isHumanToMove(currentGameState)
+                && isThinking();
+    }
+
     // notifications that some settings have changes - see if we care
-    public void sendSettingsChanged() {
+    private void sendSettingsChanged() {
         // if we are waiting for input - restart the move (e.g. if sides switched)
-        if (getEngineState() == ES_USER_INPUT_WAIT) {
+        if (mEngineState == ES_USER_INPUT_WAIT) {
             mPendingEvent = new JSONObject();
             try {
                 mPendingEvent.put("type", UI_EVENT_SETTINGS_CHANGE);
@@ -334,201 +345,148 @@ public class ZebraEngine extends Thread {
         }
     }
 
-    public void sendReplayMoves(List<Move> moves) {
-        if (getEngineState() != ZebraEngine.ES_READY2PLAY) {
+    private void sendReplayMoves(List<Move> moves) {
+        if (mEngineState != ZebraEngine.ES_READY2PLAY) {
             stopGame();
             waitForEngineState(ZebraEngine.ES_READY2PLAY);
         }
-        mInitialGameState = new ZebraBoard();
-        mInitialGameState.setDisksPlayed(moves.size());
-        mInitialGameState.setMoveSequence(toByte(moves));
+        initialGameState = new GameState(BOARD_SIZE, moves);
+
         setEngineState(ES_PLAY);
     }
 
     // settings helpers
 
 
-    public void setSettingFunction(int settingFunction, int depth, int depthExact, int depthWLD) throws EngineError {
+    private void setEngineFunction(int settingFunction, int depth, int depthExact, int depthWLD) {
         switch (settingFunction) {
             case FUNCTION_HUMAN_VS_HUMAN:
-                setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
-                setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
+                setBlackPlayerInfo(new PlayerInfo(0, 0, 0));
+                setWhitePlayerInfo(new PlayerInfo(0, 0, 0));
                 break;
             case FUNCTION_ZEBRA_BLACK:
-                setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, depth, depthExact, depthWLD, ZebraEngine.INFINIT_TIME, 0));
-                setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
+                setBlackPlayerInfo(new PlayerInfo(depth, depthExact, depthWLD));
+                setWhitePlayerInfo(new PlayerInfo(0, 0, 0));
                 break;
             case FUNCTION_ZEBRA_VS_ZEBRA:
-                setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, depth, depthExact, depthWLD, ZebraEngine.INFINIT_TIME, 0));
-                setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, depth, depthExact, depthWLD, ZebraEngine.INFINIT_TIME, 0));
+                setBlackPlayerInfo(new PlayerInfo(depth, depthExact, depthWLD));
+                setWhitePlayerInfo(new PlayerInfo(depth, depthExact, depthWLD));
                 break;
             case FUNCTION_ZEBRA_WHITE:
             default:
-                setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_BLACK, 0, 0, 0, ZebraEngine.INFINIT_TIME, 0));
-                setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_WHITE, depth, depthExact, depthWLD, ZebraEngine.INFINIT_TIME, 0));
+                setBlackPlayerInfo(new PlayerInfo(0, 0, 0));
+                setWhitePlayerInfo(new PlayerInfo(depth, depthExact, depthWLD));
                 break;
         }
-        setPlayerInfo(new PlayerInfo(ZebraEngine.PLAYER_ZEBRA, depth + 1, depthExact + 1, depthWLD + 1, ZebraEngine.INFINIT_TIME, 0));
+        setZebraPlayerInfo(new PlayerInfo(depth + 1, depthExact + 1, depthWLD + 1));
     }
 
-    public void setAutoMakeMoves(boolean _settingAutoMakeForcedMoves) {
+    private void setAutoMakeMoves(boolean _settingAutoMakeForcedMoves) {
         if (_settingAutoMakeForcedMoves)
             zeSetAutoMakeMoves(1);
         else
             zeSetAutoMakeMoves(0);
     }
 
-    public void setSlack(int _slack) {
+    private void setSlack(int _slack) {
         zeSetSlack(_slack);
     }
 
-    public void setPerturbation(int _perturbation) {
+    private void setPerturbation(int _perturbation) {
         zeSetPerturbation(_perturbation);
     }
 
-    public void setForcedOpening(String _openingName) {
+    private void setForcedOpening(String _openingName) {
         zeSetForcedOpening(_openingName);
     }
 
-    public void setHumanOpenings(boolean _enable) {
+    private void setHumanOpenings(boolean _enable) {
         if (_enable)
             zeSetHumanOpenings(1);
         else
             zeSetHumanOpenings(0);
     }
 
-    public void setPracticeMode(boolean _enable) {
+    private void setPracticeMode(boolean _enable) {
         if (_enable)
             zeSetPracticeMode(1);
         else
             zeSetPracticeMode(0);
     }
 
-    public void setUseBook(boolean _enable) {
+    private void setUseBook(boolean _enable) {
         if (_enable)
             zeSetUseBook(1);
         else
             zeSetUseBook(0);
     }
 
-    private void setPlayerInfo(PlayerInfo playerInfo) throws EngineError {
-        if (playerInfo.playerColor != PLAYER_BLACK && playerInfo.playerColor != PLAYER_WHITE && playerInfo.playerColor != PLAYER_ZEBRA)
-            throw new EngineError(String.format("Invalid player type %d", playerInfo.playerColor));
-
-        mPlayerInfo[playerInfo.playerColor] = playerInfo;
-
-        mPlayerInfoChanged = true;
+    private void setZebraPlayerInfo(PlayerInfo playerInfo) {
+        synchronized (playerInfoLock) {
+            zebraPlayerInfo = playerInfo;
+            mPlayerInfoChanged = true;
+        }
     }
 
-    public void setComputerMoveDelay(int delay) {
+    private void setWhitePlayerInfo(PlayerInfo playerInfo) {
+        synchronized (playerInfoLock) {
+            whitePlayerInfo = playerInfo;
+            mPlayerInfoChanged = true;
+        }
+    }
+
+    private void setBlackPlayerInfo(PlayerInfo playerInfo) {
+        synchronized (playerInfoLock) {
+            blackPlayerInfo = playerInfo;
+            mPlayerInfoChanged = true;
+        }
+    }
+
+    private void setComputerMoveDelay(int delay) {
         computerMoveDelay = delay;
     }
 
-    public void setInitialGameState(LinkedList<Move> moves) {
-        byte[] bytes = toByte(moves);
-        setInitialGameState(moves.size(), bytes);
+    private void setInitialGameState(LinkedList<Move> moves) {
+        ZebraEngine.this.initialGameState = new GameState(BOARD_SIZE, moves);
     }
 
     // gamestate manipulators
-    public void setInitialGameState(int moveCount, byte[] moves) {
-        mInitialGameState = new ZebraBoard();
-        mInitialGameState.setDisksPlayed(moveCount);
-        mInitialGameState.setMoveSequence(new byte[moveCount]);
-        for (int i = 0; i < moveCount; i++) {
-            mInitialGameState.getMoveSequence()[i] = moves[i];
-        }
+    private void setInitialGameState(int moveCount, byte[] moves) {
+        initialGameState = new GameState(BOARD_SIZE, moves, moveCount);
     }
 
-    public ZebraBoard getGameState() {
-        return mCurrentGameState;
+    private void setPlayerInfos() {
+        zeSetPlayerInfo(
+                PLAYER_BLACK,
+                blackPlayerInfo.skill,
+                blackPlayerInfo.exactSolvingSkill,
+                blackPlayerInfo.wldSolvingSkill,
+                INFINITE_TIME,
+                0
+        );
+        zeSetPlayerInfo(
+                PLAYER_WHITE,
+                whitePlayerInfo.skill,
+                whitePlayerInfo.exactSolvingSkill,
+                whitePlayerInfo.wldSolvingSkill,
+                INFINITE_TIME,
+                0
+        );
+        zeSetPlayerInfo(
+                PLAYER_ZEBRA,
+                zebraPlayerInfo.skill,
+                zebraPlayerInfo.exactSolvingSkill,
+                zebraPlayerInfo.wldSolvingSkill,
+                INFINITE_TIME,
+                0
+        );
     }
 
-    // zebra thread
-    @Override
-    public void run() {
-        setRunning(true);
-
-        setEngineState(ES_INITIAL);
-
-        // init data files
-        if (!initFiles()) return;
-
-        synchronized (mJNILock) {
-            zeGlobalInit(mFilesDir.getAbsolutePath());
-            zeSetPlayerInfo(PLAYER_BLACK, 0, 0, 0, INFINIT_TIME, 0);
-            zeSetPlayerInfo(PLAYER_WHITE, 0, 0, 0, INFINIT_TIME, 0);
-        }
-
-        setEngineState(ES_READY2PLAY);
-
-        while (mRun) {
-            waitForEngineState(ES_PLAY);
-
-            if (!mRun) break; // something may have happened while we were waiting
-
-            setEngineState(ES_PLAYINPROGRESS);
-
-            synchronized (mJNILock) {
-                zeSetPlayerInfo(
-                        PLAYER_BLACK,
-                        mPlayerInfo[PLAYER_BLACK].skill,
-                        mPlayerInfo[PLAYER_BLACK].exactSolvingSkill,
-                        mPlayerInfo[PLAYER_BLACK].wldSolvingSkill,
-                        mPlayerInfo[PLAYER_BLACK].playerTime,
-                        mPlayerInfo[PLAYER_BLACK].playerTimeIncrement
-                );
-                zeSetPlayerInfo(
-                        PLAYER_WHITE,
-                        mPlayerInfo[PLAYER_WHITE].skill,
-                        mPlayerInfo[PLAYER_WHITE].exactSolvingSkill,
-                        mPlayerInfo[PLAYER_WHITE].wldSolvingSkill,
-                        mPlayerInfo[PLAYER_WHITE].playerTime,
-                        mPlayerInfo[PLAYER_WHITE].playerTimeIncrement
-                );
-                zeSetPlayerInfo(
-                        PLAYER_ZEBRA,
-                        mPlayerInfo[PLAYER_ZEBRA].skill,
-                        mPlayerInfo[PLAYER_ZEBRA].exactSolvingSkill,
-                        mPlayerInfo[PLAYER_ZEBRA].wldSolvingSkill,
-                        mPlayerInfo[PLAYER_ZEBRA].playerTime,
-                        mPlayerInfo[PLAYER_ZEBRA].playerTimeIncrement
-                );
-
-                mCurrentGameState = new ZebraBoard();
-                mCurrentGameState.setDisksPlayed(0);
-                mCurrentGameState.setMoveSequence(new byte[2 * BOARD_SIZE * BOARD_SIZE]);
-
-                if (mInitialGameState != null)
-                    zePlay(mInitialGameState.getDisksPlayed(), mInitialGameState.getMoveSequence());
-                else
-                    zePlay(0, null);
-
-                mInitialGameState = null;
-            }
-
-            setEngineState(ES_READY2PLAY);
-            //setEngineState(ES_PLAY);  // test
-        }
-
-        synchronized (mJNILock) {
-            zeGlobalTerminate();
-        }
-    }
-
-    public void analyzeGame(List<Move> moves) {
-        byte[] bytes = toByte(moves);
-        zeAnalyzeGame(moves.size(), bytes);
-    }
-
-
-    private byte[] toByte(List<Move> moves) {
-        byte[] moveBytes = new byte[moves.size()];
-        for (int i = 0; i < moves.size(); i++) {
-            moveBytes[i] = (byte) moves.get(i).mMove;
-        }
-        return moveBytes;
-    }
-
+    // TODO when we want it, then we do it ;), for now it's not clear how it should work so I commented it out
+//    public void analyzeGame(List<Move> moves) {
+//        byte[] bytes = toByte(moves);
+//        zeAnalyzeGame(moves.size(), bytes);
+//    }
 
     // called by native code
     //public void Error(String msg) throws EngineError
@@ -550,7 +508,7 @@ public class ZebraEngine extends Thread {
             bInCallback = true;
             switch (msgcode) {
                 case MSG_ERROR: {
-                    if (getEngineState() == ES_INITIAL) {
+                    if (mEngineState == ES_INITIAL) {
                         // delete .bin files if initialization failed
                         // will be recreated from resources
                         new File(mFilesDir, PATTERNS_FILE).delete();
@@ -558,81 +516,39 @@ public class ZebraEngine extends Thread {
                         new File(mFilesDir, BOOK_FILE_COMPRESSED).delete();
                     }
                     String error = data.getString("error");
-                    mHandler.sendError(error);
+                    ZebraEngine.this.onErrorListener.onError(error);
                 }
                 break;
 
                 case MSG_DEBUG: {
-                    String debug = data.getString("message");
-                    mHandler.sendDebug(debug);
+                    String message = data.getString("message");
+                    ZebraEngine.this.onDebugListener.onDebug(message);
                 }
                 break;
 
                 case MSG_BOARD: {
-                    int len;
-                    JSONObject info;
-                    JSONArray zeArray;
-                    byte[] moves;
 
-                    JSONArray zeboard = data.getJSONArray("board");
-                    byte newBoard[] = new byte[BOARD_SIZE * BOARD_SIZE];
-                    for (int i = 0; i < zeboard.length(); i++) {
-                        JSONArray row = zeboard.getJSONArray(i);
-                        for (int j = 0; j < row.length(); j++) {
-                            newBoard[i * BOARD_SIZE + j] = (byte) row.getInt(j);
-                        }
-                    }
+                    JSONArray boardJSON = data.getJSONArray("board");
+                    JSONObject whiteInfoJSON = data.getJSONObject("white");
+                    JSONObject blackInfoJSON = data.getJSONObject("black");
+                    JSONArray blackMovesJSON = blackInfoJSON.getJSONArray("moves");
+                    JSONArray whiteMovesJSON = whiteInfoJSON.getJSONArray("moves");
+                    int sideToMove = data.getInt("side_to_move");
+                    int disksPlayed = data.getInt("disks_played");
+                    String blackTime = blackInfoJSON.getString("time");
+                    float blackEval = (float) blackInfoJSON.getDouble("eval");
+                    int blackDiscCount = blackInfoJSON.getInt("disc_count");
+                    String whiteTime = whiteInfoJSON.getString("time");
+                    float whiteEval = (float) whiteInfoJSON.getDouble("eval");
+                    int whiteDiscCOunt = whiteInfoJSON.getInt("disc_count");
 
-                    //update the current game state
-                    ZebraBoard board = getGameState();
-                    board.setBoard(newBoard);
-                    board.setSideToMove(data.getInt("side_to_move"));
-                    board.setDisksPlayed(data.getInt("disks_played"));
+                    MoveList blackMoveList = new MoveList(blackMovesJSON);
+                    MoveList whiteMoveList = new MoveList(whiteMovesJSON);
 
-                    // black info
-                    {
-                        ZebraPlayerStatus black = new ZebraPlayerStatus();
-                        info = data.getJSONObject("black");
-                        black.setTime(info.getString("time"));
-                        black.setEval((float) info.getDouble("eval"));
-                        black.setDiscCount(info.getInt("disc_count"));
+                    ByteBoard byteBoard = new ByteBoard(boardJSON, BOARD_SIZE);
 
-                        zeArray = info.getJSONArray("moves");
-                        len = zeArray.length();
-                        moves = new byte[len];
-                        if (BuildConfig.DEBUG && !(2 * len <= mCurrentGameState.getMoveSequence().length)) {
-                            throw new AssertionError();
-                        }
-                        for (int i = 0; i < len; i++) {
-                            moves[i] = (byte) zeArray.getInt(i);
-                            mCurrentGameState.getMoveSequence()[2 * i] = moves[i];
-                        }
-                        black.setMoves(moves);
-                        board.setBlackPlayer(black);
-                    }
+                    currentGameState.updateGameState(sideToMove, disksPlayed, blackTime, blackEval, blackDiscCount, whiteTime, whiteEval, whiteDiscCOunt, blackMoveList, whiteMoveList, byteBoard);
 
-                    // white info
-                    {
-                        ZebraPlayerStatus white = new ZebraPlayerStatus();
-                        info = data.getJSONObject("white");
-                        white.setTime(info.getString("time"));
-                        white.setEval((float) info.getDouble("eval"));
-                        white.setDiscCount(info.getInt("disc_count"));
-
-                        zeArray = info.getJSONArray("moves");
-                        len = zeArray.length();
-                        moves = new byte[len];
-                        if (BuildConfig.DEBUG && !(2 * len <= mCurrentGameState.getMoveSequence().length)) {
-                            throw new AssertionError();
-                        }
-                        for (int i = 0; i < len; i++) {
-                            moves[i] = (byte) zeArray.getInt(i);
-                            mCurrentGameState.getMoveSequence()[2 * i + 1] = moves[i];
-                        }
-                        white.setMoves(moves);
-                        board.setWhitePlayer(white);
-                    }
-                    mHandler.sendBoard(board);
                 }
                 break;
 
@@ -641,11 +557,11 @@ public class ZebraEngine extends Thread {
                     CandidateMove cmoves[] = new CandidateMove[jscmoves.length()];
                     mValidMoves = new int[jscmoves.length()];
                     for (int i = 0; i < jscmoves.length(); i++) {
-                        JSONObject jscmove = jscmoves.getJSONObject(i);
-                        mValidMoves[i] = jscmoves.getJSONObject(i).getInt("move");
-                        cmoves[i] = new CandidateMove(new Move(jscmove.getInt("move")));
+                        int move = jscmoves.getJSONObject(i).getInt("move");
+                        mValidMoves[i] = move;
+                        cmoves[i] = new CandidateMove(move);
                     }
-                    getGameState().setCandidateMoves(cmoves);
+                    currentGameState.setCandidateMoves(cmoves);
                 }
                 break;
 
@@ -662,7 +578,7 @@ public class ZebraEngine extends Thread {
 
                     retval = mPendingEvent;
 
-                    setEngineState(ES_PLAYINPROGRESS);
+                    setEngineState(ES_PLAY_IN_PROGRESS);
 
                     mValidMoves = null;
                     mPendingEvent = null;
@@ -671,100 +587,82 @@ public class ZebraEngine extends Thread {
 
                 case MSG_PASS: {
                     setEngineState(ES_USER_INPUT_WAIT);
-                    mHandler.sendPass();
+                    currentGameState.sendPass();
                     waitForEngineState(ES_PLAY);
-                    setEngineState(ES_PLAYINPROGRESS);
+                    setEngineState(ES_PLAY_IN_PROGRESS);
                 }
                 break;
                 case MSG_ANALYZE_GAME: {
                     setEngineState(ES_USER_INPUT_WAIT);
-                    //mHandler.sendMessage(msg);
+                    //currentGameState.sendMessage(msg);
                     waitForEngineState(ES_PLAY);
-                    setEngineState(ES_PLAYINPROGRESS);
+                    setEngineState(ES_PLAY_IN_PROGRESS);
                 }
                 break;
 
                 case MSG_OPENING_NAME: {
-                    getGameState().setOpening(data.getString("opening"));
-                    mHandler.sendBoard(getGameState());
+                    currentGameState.setOpening(data.getString("opening"));
+
                 }
                 break;
 
                 case MSG_LAST_MOVE: {
-                    getGameState().setLastMove(data.getInt("move"));
-                    mHandler.sendBoard(getGameState());
+                    currentGameState.setLastMove(data.getInt("move"));
                 }
                 break;
 
                 case MSG_NEXT_MOVE: {
-                    getGameState().setNextMove(data.getInt("move"));
-                    mHandler.sendBoard(getGameState());
+                    currentGameState.setNextMove(data.getInt("move"));
+
                 }
                 break;
 
                 case MSG_GAME_START: {
-                    mHandler.sendGameStart();
+                    currentGameState.sendGameStart();
                 }
                 break;
 
                 case MSG_GAME_OVER: {
-                    mHandler.sendGameOver();
+                    currentGameState.sendGameOver();
                 }
                 break;
 
                 case MSG_MOVE_START: {
                     mMoveStartTime = android.os.SystemClock.uptimeMillis();
 
-                    mSideToMove = data.getInt("side_to_move");
+                    mSideToMove = data.getInt("side_to_move");//TODO shouldn't this be set on GameState now?
 
                     // can change player info here
-                    if (mPlayerInfoChanged) {
-                        zeSetPlayerInfo(
-                                PLAYER_BLACK,
-                                mPlayerInfo[PLAYER_BLACK].skill,
-                                mPlayerInfo[PLAYER_BLACK].exactSolvingSkill,
-                                mPlayerInfo[PLAYER_BLACK].wldSolvingSkill,
-                                mPlayerInfo[PLAYER_BLACK].playerTime,
-                                mPlayerInfo[PLAYER_BLACK].playerTimeIncrement
-                        );
-                        zeSetPlayerInfo(
-                                PLAYER_WHITE,
-                                mPlayerInfo[PLAYER_WHITE].skill,
-                                mPlayerInfo[PLAYER_WHITE].exactSolvingSkill,
-                                mPlayerInfo[PLAYER_WHITE].wldSolvingSkill,
-                                mPlayerInfo[PLAYER_WHITE].playerTime,
-                                mPlayerInfo[PLAYER_WHITE].playerTimeIncrement
-                        );
-                        zeSetPlayerInfo(
-                                PLAYER_ZEBRA,
-                                mPlayerInfo[PLAYER_ZEBRA].skill,
-                                mPlayerInfo[PLAYER_ZEBRA].exactSolvingSkill,
-                                mPlayerInfo[PLAYER_ZEBRA].wldSolvingSkill,
-                                mPlayerInfo[PLAYER_ZEBRA].playerTime,
-                                mPlayerInfo[PLAYER_ZEBRA].playerTimeIncrement
-                        );
-                        mPlayerInfoChanged = false;
+                    synchronized (playerInfoLock) {
+                        if (mPlayerInfoChanged) {
+                            setPlayerInfos();
+                            mPlayerInfoChanged = false;
+                        }
                     }
-                    mHandler.sendMoveStart();
+
+                    currentGameState.sendMoveStart();
                 }
                 break;
 
                 case MSG_MOVE_END: {
                     // introduce delay between moves made by the computer without user input
                     // so we can actually to see that the game is being played :)
-                    if (computerMoveDelay > 0 && (mPlayerInfo[mSideToMove].skill > 0)) {
+                    // TODO thanks a lot :D, now it will be way more problematic to handle shared use of the engine
+                    // TODO this should be handled entirely by UI. Stopping time-critical engine thread for the sake of UI is just ridiculous
+
+                    if (computerMoveDelay > 0 && !isHumanToMove(currentGameState)) {
                         long moveEnd = android.os.SystemClock.uptimeMillis();
                         if ((moveEnd - mMoveStartTime) < computerMoveDelay) {
                             android.os.SystemClock.sleep(computerMoveDelay - (moveEnd - mMoveStartTime));
                         }
                     }
-                    mHandler.sendMoveEnd();
+                    currentGameState.sendMoveEnd();
                 }
                 break;
 
                 case MSG_EVAL_TEXT: {
                     String eval = data.getString("eval");
-                    mHandler.sendEval(eval);
+                    currentGameState.sendEval(eval);
                 }
                 break;
 
@@ -774,7 +672,7 @@ public class ZebraEngine extends Thread {
                     byte[] moves = new byte[len];
                     for (int i = 0; i < len; i++)
                         moves[i] = (byte) zeArray.getInt(i);
-                    mHandler.sendPv(moves);
+                    currentGameState.sendPv(moves);
                 }
                 break;
 
@@ -784,49 +682,66 @@ public class ZebraEngine extends Thread {
                     for (int i = 0; i < jscevals.length(); i++) {
                         JSONObject jsceval = jscevals.getJSONObject(i);
                         cmoves[i] = new CandidateMove(
-                                new Move(jsceval.getInt("move")),
+                                (jsceval.getInt("move")),
                                 jsceval.getString("eval_s"),
                                 jsceval.getString("eval_l"),
                                 (jsceval.getInt("best") != 0)
                         );
                     }
-                    getGameState().addCandidateMoveEvals(cmoves);
-                    mHandler.sendBoard(getGameState());
+                    currentGameState.addCandidateMoveEvals(cmoves);
+
                 }
                 break;
 
                 default: {
-                    mHandler.sendError(String.format(Locale.getDefault(), "Unkown message ID %d", msgcode));
+                    onErrorListener.onError(String.format(Locale.getDefault(), "Unknown message ID %d", msgcode));
                 }
                 break;
             }
         } catch (JSONException e) {
-            mHandler.sendError("JSONException:" + e.getMessage());
+            onErrorListener.onError("JSONException:" + e.getMessage());
         } finally {
             bInCallback = false;
         }
         return retval;
     }
 
-    public boolean isThinking() {
-        return getEngineState() == ZebraEngine.ES_PLAYINPROGRESS;
+    private boolean isThinking() {
+        return mEngineState == ZebraEngine.ES_PLAY_IN_PROGRESS;
     }
 
-    public boolean isValidMove(Move move) {
+    private boolean isValidMove(Move move) {
         if (mValidMoves == null)
             return false;
 
         boolean valid = false;
         for (int m : mValidMoves)
-            if (m == move.mMove) {
+            if (m == move.getMoveInt()) {
                 valid = true;
                 break;
             }
         return valid;
     }
 
-    public boolean isHumanToMove() {
-        return mPlayerInfo[mSideToMove].skill == 0;
+    public boolean isHumanToMove(GameState gameState, EngineConfig config) {
+        if (gameState != currentGameState) {
+            return false; //TODO switch context
+        }
+        return isHumanToMove(gameState);
+    }
+
+    private boolean isHumanToMove(GameState gameState) {
+        return getSideToMovePlayerInfo().skill == 0;
+    }
+
+    private PlayerInfo getSideToMovePlayerInfo() {
+        if (mSideToMove == PLAYER_BLACK) {
+            return blackPlayerInfo;
+        }
+        if (mSideToMove == PLAYER_WHITE) {
+            return whitePlayerInfo;
+        }
+        return zebraPlayerInfo;
     }
 
     private void fatalError(String message) {
@@ -878,10 +793,224 @@ public class ZebraEngine extends Thread {
 
     private native void zeAnalyzeGame(int providedMoveCount, byte[] providedMoves);
 
-    public native void zeJsonTest(JSONObject json);
+    private native void zeJsonTest(JSONObject json);
 
     static {
         System.loadLibrary("droidzebra");
     }
 
+    void waitForReadyToPlay() {
+        waitForEngineState(ZebraEngine.ES_READY2PLAY);
+    }
+
+    private boolean isReadyToPlay() {
+        return mEngineState == ZebraEngine.ES_READY2PLAY;
+    }
+
+    private void kill() { //TODO remove this, no one should be able to kill the engine
+        boolean retry = true;
+        setRunning(false);
+        engineThread.interrupt(); // if waiting
+        while (retry) {
+            try {
+                engineThread.join();
+                retry = false;
+            } catch (InterruptedException e) {
+                Log.wtf("wtf", e);
+            }
+        }
+    }
+
+    public static synchronized ZebraEngine get(GameContext ctx) { //TODO this is still kinda risky..
+        if (engine == null ) {
+            engine = new ZebraEngine(ctx);
+        }
+        return engine;
+
+    }
+
+    public void setOnErrorListener(OnEngineErrorListener onErrorListener) {
+        if (onErrorListener == null) {
+            ZebraEngine.this.onErrorListener = new OnEngineErrorListener() {
+            };
+        } else {
+            ZebraEngine.this.onErrorListener = onErrorListener;
+        }
+    }
+
+    public void setOnDebugListener(OnEngineDebugListener listener) {
+        if (listener == null)
+            ZebraEngine.this.onDebugListener = new OnEngineDebugListener() {
+            };
+        else
+            ZebraEngine.this.onDebugListener = listener;
+    }
+
+    private void loadConfig(EngineConfig cfg) {
+        setEngineFunction(cfg.engineFunction, cfg.depth, cfg.depthExact, cfg.depthWLD);
+
+        setAutoMakeMoves(cfg.autoForcedMoves);
+        setForcedOpening(cfg.forcedOpening);
+        setHumanOpenings(cfg.humanOpenings);
+        setPracticeMode(cfg.practiceMode);
+        setUseBook(cfg.useBook);
+
+        setSlack(cfg.slack);
+        setPerturbation(cfg.perturbation);
+
+        setComputerMoveDelay((cfg.engineFunction != FUNCTION_HUMAN_VS_HUMAN) ? cfg.computerMoveDelay : 0);
+        sendSettingsChanged();
+    }
+
+    private void waitForReadyToPlay(final Runnable completion) {
+        new CompletionAsyncTask(completion, this)
+                .execute();
+    }
+
+    public void newGame(EngineConfig engineConfig, OnGameStateReadyListener onGameStateReadyListener) {
+        this.onGameStateReadyListener = onGameStateReadyListener;
+        if (!isReadyToPlay()) {
+            stopGame();
+        }
+        waitForReadyToPlay(
+                () -> {
+                    loadConfig(engineConfig);
+                    setEngineStatePlay();
+                }
+        );
+    }
+
+    public void newGame(LinkedList<Move> fromMoves, EngineConfig engineConfig, OnGameStateReadyListener onGameStateReadyListener) {
+        engine.setInitialGameState(fromMoves);
+        newGame(engineConfig, onGameStateReadyListener);
+    }
+
+    public void newGame(byte[] fromMoves, int movesCount, EngineConfig engineConfig, OnGameStateReadyListener onGameStateReadyListener) {
+        engine.setInitialGameState(movesCount, fromMoves);
+        newGame(engineConfig, onGameStateReadyListener);
+    }
+
+    public void onReady(Runnable onEngineReady) {
+        new CompletionAsyncTask(onEngineReady, this)
+                .execute();
+    }
+
+    public void stopIfThinking(GameState gameState) {
+        if (gameState != currentGameState) {
+            return; //TODO switch context
+        }
+        if (engine.isThinking()) {
+            engine.stopMove();
+        }
+    }
+
+    public void loadEvals(GameState gameState, EngineConfig engineConfig) {
+        if (currentGameState != gameState) {
+            return; //TODO switch context
+        }
+        loadConfig(engineConfig.practiceMode ? engineConfig : engineConfig.alterPracticeMode(true));
+    }
+
+    public void updateConfig(GameState gameState, EngineConfig engineConfig) {
+        if (currentGameState != gameState) {
+            return; //TODO switch context
+        }
+        loadConfig(engineConfig);
+    }
+
+    public void pass(GameState gameState, EngineConfig config) {
+        if (currentGameState != gameState) {
+            return; //TODO switch context
+        }
+        setEngineStatePlay();
+    }
+
+    public boolean isThinking(GameState gameState) {
+        if (currentGameState != gameState) {
+            return false; //TODO switch context
+        }
+        return isThinking();
+    }
+
+    public void disconnect(GameState gameState) {
+        if (gameState != currentGameState) {
+            //already disconnected
+            return;
+        }
+        currentGameState = new GameState(BOARD_SIZE);
+        stopGame();
+    }
+
+    public interface OnEngineErrorListener {
+        default void onError(String error) {
+            Log.v("OersZebra", error);
+        }
+    }
+
+    public interface OnEngineDebugListener {
+        default void onDebug(String message) {
+            Log.v("OersZebra", message);
+        }
+    }
+
+    public interface OnGameStateReadyListener {
+        default void onGameStateReady(GameState gameState) {
+        }
+    }
+
+
+    private class EngineThread extends Thread {
+        // zebra thread
+        @Override
+        public void run() {
+            setRunning(true);
+
+            setEngineState(ES_INITIAL);
+
+            // init data files
+            if (!initFiles()) return;
+
+            synchronized (mJNILock) {
+                zeGlobalInit(mFilesDir.getAbsolutePath());
+                zeSetPlayerInfo(PLAYER_BLACK, 0, 0, 0, INFINITE_TIME, 0);
+                zeSetPlayerInfo(PLAYER_WHITE, 0, 0, 0, INFINITE_TIME, 0);
+            }
+
+            setEngineState(ES_READY2PLAY);
+
+            while (isRunning) {
+                waitForEngineState(ES_PLAY);
+
+                if (!isRunning) break; // something may have happened while we were waiting
+
+                setEngineState(ES_PLAY_IN_PROGRESS);
+
+                synchronized (mJNILock) {
+                    setPlayerInfos();
+
+                    currentGameState = new GameState(BOARD_SIZE);
+                    OnGameStateReadyListener listener = onGameStateReadyListener;
+                    onGameStateReadyListener = new OnGameStateReadyListener() {
+                    };
+                    listener.onGameStateReady(currentGameState);
+
+
+                    if (initialGameState != null) {
+                        GameState initialGameState = ZebraEngine.this.initialGameState;
+                        ZebraEngine.this.initialGameState = null;
+                        zePlay(initialGameState.getDisksPlayed(), initialGameState.exportMoveSequence());
+                    } else
+                        zePlay(0, null);
+
+                }
+
+                setEngineState(ES_READY2PLAY);
+                //setEngineState(ES_PLAY);  // test
+            }
+
+            synchronized (mJNILock) {
+                zeGlobalTerminate();
+            }
+        }
+    }
 }

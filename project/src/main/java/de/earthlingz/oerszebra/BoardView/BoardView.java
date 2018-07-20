@@ -14,7 +14,7 @@
 	You should have received a copy of the GNU General Public License
 	along with DroidZebra.  If not, see <http://www.gnu.org/licenses/>
 */
-package de.earthlingz.oerszebra;
+package de.earthlingz.oerszebra.BoardView;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -28,11 +28,11 @@ import android.view.View;
 import com.shurik.droidzebra.CandidateMove;
 import com.shurik.droidzebra.InvalidMove;
 import com.shurik.droidzebra.Move;
-import com.shurik.droidzebra.ZebraEngine;
+import de.earthlingz.oerszebra.R;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class BoardView extends View {
+public class BoardView extends View implements OnBoardStateChangedListener {
 
     private float lineWidth = 1;
     private float gridCirclesRadius = 3;
@@ -71,11 +71,15 @@ public class BoardView extends View {
     private int animationDuration = 500;
     private OnMakeMoveListener onMakeMoveListener = null;
 
-    public void setBoardState(BoardState boardState) {
-        this.boardState = boardState;
+    public void setBoardViewModel(BoardViewModel boardViewModel) {
+        if (this.boardViewModel != null) {
+            this.boardViewModel.removeOnBoardStateChangedListener();
+        }
+        this.boardViewModel = boardViewModel;
+        boardViewModel.setOnBoardStateChangedListener(this);
     }
 
-    private BoardState boardState;
+    private BoardViewModel boardViewModel;
 
     public void setDisplayEvals(boolean displayEvals) {
         this.displayEvals = displayEvals;
@@ -166,7 +170,7 @@ public class BoardView extends View {
     public Move getMoveFromCoord(float x, float y) throws InvalidMove {
         int bx = (int) Math.floor((x - mBoardRect.left) / mSizeCell);
         int by = (int) Math.floor((y - mBoardRect.top) / mSizeCell);
-        if (bx < 0 || bx >= BoardState.boardSize || by < 0 || by >= BoardState.boardSize) {
+        if (bx < 0 || bx >= BoardViewModel.boardSize || by < 0 || by >= BoardViewModel.boardSize) {
             throw new InvalidMove();
         }
         return new Move(bx, by);
@@ -216,7 +220,7 @@ public class BoardView extends View {
 
         // draw the board
         mPaint.setStrokeWidth(lineWidth);
-        int boardSize = BoardState.boardSize;
+        int boardSize = BoardViewModel.boardSize;
         for (int i = 0; i <= boardSize; i++) {
             mPaint.setColor(mColorLine);
             canvas.drawLine(mBoardRect.left + i * mSizeCell, mBoardRect.top, mBoardRect.left + i * mSizeCell, mBoardRect.top + mSizeCell * boardSize, mPaint);
@@ -293,13 +297,13 @@ public class BoardView extends View {
         float oval_adjustment = (float) Math.abs(circle_r * Math.cos(Math.PI * mAnimationProgress));
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                if (getGameState().getBoard()[i][j].getState() == ZebraEngine.PLAYER_EMPTY)
+                if (getGameState().getFieldState(i, j).isEmpty())
                     continue;
-                if (getGameState().getBoard()[i][j].getState() == ZebraEngine.PLAYER_BLACK)
+                if (getGameState().getFieldState(i, j).isBlack())
                     circle_color = Color.BLACK;
                 else
                     circle_color = Color.WHITE;
-                if (mIsAnimationRunning.get() && getGameState().getBoard()[i][j].isFlipped()) {
+                if (mIsAnimationRunning.get() && getGameState().getFieldState(i, j).isFlipped()) {
                     oval_x = mBoardRect.left + i * mSizeCell + mSizeCell / 2;
                     oval_y = mBoardRect.top + j * mSizeCell + mSizeCell / 2;
                     mTempRect.set(
@@ -333,14 +337,14 @@ public class BoardView extends View {
                 && getGameState().getMoves() != null) {
             mPaint.setStrokeWidth(lineWidth * 2);
             float lineLength = mSizeCell / 4;
-            for (CandidateMove m : getGameState().getMoves()) {
-                RectF cr = getCellRect(m.mMove.getX(), m.mMove.getY());
-                if (m.mHasEval && shouldDisplayEvals()) {
-                    if (m.mBest)
+            for (CandidateMove move : getGameState().getMoves()) {
+                RectF cr = getCellRect(move.getX(), move.getY());
+                if (move.hasEval && shouldDisplayEvals()) {
+                    if (move.isBest)
                         mPaintEvalText.setColor(mColorEvalsBest);
                     else
                         mPaintEvalText.setColor(mColorEvals);
-                    canvas.drawText(m.mEvalShort, cr.centerX(), cr.centerY() - (mEvalFontMetrics.ascent + mEvalFontMetrics.descent) / 2, mPaintEvalText);
+                    canvas.drawText(move.evalShort, cr.centerX(), cr.centerY() - (mEvalFontMetrics.ascent + mEvalFontMetrics.descent) / 2, mPaintEvalText);
                 } else {
                     float pts[] =
                             {
@@ -368,8 +372,8 @@ public class BoardView extends View {
         }
     }
 
-    private BoardState getGameState() {
-        return this.boardState;
+    private BoardViewModel getGameState() {
+        return this.boardViewModel;
     }
 
 
@@ -390,12 +394,12 @@ public class BoardView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         mSizeX = mSizeY = Math.min(getMeasuredWidth(), getMeasuredHeight());
-        mSizeCell = Math.min(mSizeX / (BoardState.boardSize + 1), mSizeY / (BoardState.boardSize + 1));
+        mSizeCell = Math.min(mSizeX / (BoardViewModel.boardSize + 1), mSizeY / (BoardViewModel.boardSize + 1));
         lineWidth = Math.max(1f, mSizeCell / 40f);
         gridCirclesRadius = Math.max(3f, mSizeCell / 13f);
         mBoardRect.set(
-                mSizeX - mSizeCell / 2 - mSizeCell * BoardState.boardSize,
-                mSizeY - mSizeCell / 2 - mSizeCell * BoardState.boardSize,
+                mSizeX - mSizeCell / 2 - mSizeCell * BoardViewModel.boardSize,
+                mSizeY - mSizeCell / 2 - mSizeCell * BoardViewModel.boardSize,
                 mSizeX - mSizeCell / 2,
                 mSizeY - mSizeCell / 2
         );
@@ -526,10 +530,10 @@ public class BoardView extends View {
             mMoveSelection = new Move(bX, bY);
         }
 
-        if (bX < 0 || bX >= BoardState.boardSize)
+        if (bX < 0 || bX >= BoardViewModel.boardSize)
             bX = mMoveSelection.getX();
 
-        if (bY < 0 || bY >= BoardState.boardSize)
+        if (bY < 0 || bY >= BoardViewModel.boardSize)
             bY = mMoveSelection.getY();
 
         if (mShowSelection != bShowSelection) {
@@ -547,7 +551,7 @@ public class BoardView extends View {
             bInvalidate = true;
             mShowSelectionHelpers = false;
             cancelAnimation();
-            if(this.onMakeMoveListener != null){
+            if (this.onMakeMoveListener != null) {
                 this.onMakeMoveListener.onMakeMove(mMoveSelection);
             }
 
@@ -566,6 +570,7 @@ public class BoardView extends View {
         }
     }
 
+    @Override
     public void onBoardStateChanged() {
         mMoveSelection = null;
         if (shouldDisplayAnimations()) {

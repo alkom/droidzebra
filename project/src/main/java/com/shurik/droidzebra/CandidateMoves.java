@@ -10,7 +10,7 @@ import java.util.Observable;
 
 public class CandidateMoves extends Observable {
 
-    CandidateMove[] moves = new CandidateMove[]{};
+    private CandidateMove[] moves = new CandidateMove[]{};
 
     public CandidateMoves() {
     }

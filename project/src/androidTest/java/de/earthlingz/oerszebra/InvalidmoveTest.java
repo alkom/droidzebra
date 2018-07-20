@@ -4,9 +4,10 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.test.ActivityInstrumentationTestCase2;
-import android.util.Log;
 
 import com.shurik.droidzebra.ZebraEngine;
+import de.earthlingz.oerszebra.BoardView.BoardViewModel;
+import de.earthlingz.oerszebra.BoardView.FieldState;
 
 import java.lang.ref.WeakReference;
 
@@ -50,7 +51,6 @@ public class InvalidmoveTest extends ActivityInstrumentationTestCase2<DroidZebra
         this.getActivity().onNewIntent(intent);
         Thread.sleep(1000);
         //this.getActivity().getEngine().waitForEngineState(ZebraEngine.ES_USER_INPUT_WAIT);
-        Log.i("Board: ", asString(this.getActivity().getBoard()));
 
         int countWait = 0;
         while (getActivity().getAlert() == null && countWait < 100) {
@@ -63,43 +63,24 @@ public class InvalidmoveTest extends ActivityInstrumentationTestCase2<DroidZebra
         getActivity().runOnUiThread(() -> diag.getButton(DialogInterface.BUTTON_POSITIVE).performClick());
 
         Thread.sleep(1000);
-        assertSame(60, countSquares(this.getActivity().getBoard(), ZebraEngine.PLAYER_EMPTY));
-        assertSame(2, countSquares(this.getActivity().getBoard(), ZebraEngine.PLAYER_WHITE));
-        assertSame(2, countSquares(this.getActivity().getBoard(), ZebraEngine.PLAYER_BLACK));
+        assertSame(60, countSquares(ZebraEngine.PLAYER_EMPTY));
+        assertSame(2, countSquares(ZebraEngine.PLAYER_WHITE));
+        assertSame(2, countSquares(ZebraEngine.PLAYER_BLACK));
 
     }
 
-    private int countSquares(FieldState[][] board, byte playerEmpty) {
+    private int countSquares(byte color) {
+        BoardViewModel state = this.getActivity().getState();
         int result = 0;
-        for (FieldState[] row : board) {
-            for (FieldState column : row) {
-                if (playerEmpty == column.getState()) {
+        for (int y = 0, boardLength = state.getBoardHeight(); y < boardLength; y++) {
+            for (int x = 0, rowLength = state.getBoardRowWidth(y); x < rowLength; x++) {
+                FieldState fieldState = state.getFieldState(x,y);
+                if (color == fieldState.getState()) {
                     result++;
                 }
             }
         }
         return result;
-    }
-
-    private String asString(FieldState[][] board) {
-        StringBuilder builder = new StringBuilder();
-        for (FieldState[] row : board) {
-            for (FieldState column : row) {
-                switch (column.getState()) {
-                    case ZebraEngine.PLAYER_WHITE:
-                        builder.append("o");
-                        break;
-                    case ZebraEngine.PLAYER_BLACK:
-                        builder.append("x");
-                        break;
-                    default:
-                        builder.append("-");
-                        break;
-                }
-            }
-            builder.append("\n");
-        }
-        return builder.toString();
     }
 
 

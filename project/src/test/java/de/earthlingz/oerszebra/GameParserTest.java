@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.util.LinkedList;
 import java.util.stream.Collectors;
 
-import de.earthlingz.oerszebra.parser.Gameparser;
+import de.earthlingz.oerszebra.parser.GameParser;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -17,7 +17,7 @@ import static org.junit.Assert.assertThat;
  */
 public class GameParserTest {
 
-    private Gameparser pareser = ZebraServices.getGameParser();
+    private GameParser parser = ZebraServices.getGameParser();
 
     @Test
     public void oerszebra() {
@@ -29,9 +29,9 @@ public class GameParserTest {
                 "Player  (B)  19:45  (W)  Player";
 
 
-        assertThat(pareser.canParse(game), is(true));
+        assertThat(parser.canParse(game), is(true));
 
-        LinkedList<Move> moves = pareser.makeMoveList(game);
+        LinkedList<Move> moves = parser.makeMoveList(game);
         assertThat(moves.size(), is(59));
     }
 
@@ -40,9 +40,9 @@ public class GameParserTest {
         String game = "F5D6C4D3C3F4F3E3E6C5F6G5H4E7C6F7G8F2G1E2F8H6F1D1D2D8D7C8C7B8G4C1C2H3G6H5G3H2G2B5A5H1B6H7B7A8A7A6G7E8H8A4B4E1B3A3B1";
 
 
-        assertThat(pareser.canParse(game), is(true));
+        assertThat(parser.canParse(game), is(true));
 
-        LinkedList<Move> moves = pareser.makeMoveList(game);
+        LinkedList<Move> moves = parser.makeMoveList(game);
         assertThat(moves.size(), is(57));
     }
 
@@ -51,9 +51,9 @@ public class GameParserTest {
         String game = "D3C5F6F5F4C3C4D2E2B4D1F3B5E3F2F1A4D6E6E7F7B6E8C6B3A5D7A3E1A6G1A2C2C7B8D8C8G8G6H6G5H5G4H4H3G7H8F8H7A8A7B7A1B2G3G2H2H1C1B1";
 
 
-        assertThat(pareser.canParse(game), is(true));
+        assertThat(parser.canParse(game), is(true));
 
-        LinkedList<Move> moves = pareser.makeMoveList(game);
+        LinkedList<Move> moves = parser.makeMoveList(game);
         assertThat(moves.size(), is(60));
         String collect = moves.stream().map(Move::getText).map(String::toUpperCase).collect(Collectors.joining());
         assertThat(collect, is(game));

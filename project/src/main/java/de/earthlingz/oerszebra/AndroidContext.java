@@ -9,20 +9,20 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class AndroidContext implements GameContext {
-    private Context droidZebra;
+    private Context context;
 
-    public AndroidContext(Context droidZebra) {
-        this.droidZebra = droidZebra;
+    public AndroidContext(Context context) {
+        this.context = context;
     }
 
 
     @Override
     public InputStream open(String fromAssetPath) throws IOException {
-        return droidZebra.getAssets().open(fromAssetPath);
+        return context.getAssets().open(fromAssetPath);
     }
 
     @Override
     public File getFilesDir() {
-        return droidZebra.getFilesDir();
+        return context.getFilesDir();
     }
 }

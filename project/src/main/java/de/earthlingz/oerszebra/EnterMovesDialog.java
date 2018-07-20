@@ -24,8 +24,8 @@ public class EnterMovesDialog extends DialogFragment {
         return moves;
     }
 
-    public GameController getController() {
-        return (GameController) getActivity();
+    public MoveStringConsumer getController() {
+        return (MoveStringConsumer) getActivity();
     }
 
     @NonNull
@@ -53,14 +53,14 @@ public class EnterMovesDialog extends DialogFragment {
                 }
             }
 
-            if (possibleMatch != null && getController().getParser().canParse(possibleMatch)) {
+            if (possibleMatch != null && ZebraServices.getGameParser().canParse(possibleMatch)) {
                 input.setText(possibleMatch);
             }
         }
 
 
         // Set up the buttons
-        builder.setPositiveButton(R.string.dialog_ok, (dialog, which) -> getController().setUpBoard(input.getText().toString()));
+        builder.setPositiveButton(R.string.dialog_ok, (dialog, which) -> getController().consumeMovesString(input.getText().toString()));
         builder.setNegativeButton(R.string.dialog_cancel, (dialog, which) -> dialog.cancel());
 
         return builder.create();

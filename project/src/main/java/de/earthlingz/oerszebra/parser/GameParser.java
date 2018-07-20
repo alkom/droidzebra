@@ -8,11 +8,11 @@ import java.util.LinkedList;
  * Created by stefan on 18.03.2018.
  */
 
-public class Gameparser {
+public class GameParser {
 
     private final Parser[] parser;
 
-    public Gameparser(Parser... parser) {
+    public GameParser(Parser... parser) {
         this.parser = parser;
     }
 
