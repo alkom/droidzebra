@@ -48,6 +48,8 @@ script:
 - ./gradlew connectedCheck
 
 after_failure:
+- ls -ltr
+- find . -name logcat.log
 - cat logcat.log
 
 before_deploy:
