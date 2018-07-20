@@ -44,7 +44,7 @@ script:
 - ./gradlew build assembleDebug
 - android-wait-for-emulator
 - adb shell input keyevent 82 &
-- adb logcat ActivityManager:I de.earthlingz.oerszebra:D *:S | tee logcat.log > /dev/null 2>&1 &
+- adb logcat ActivityManager:I Reversatile:D *:S | tee logcat.log > /dev/null 2>&1 &
 - cat logcat.log | $ANDROID_NDK_HOME/ndk-stack -sym project/build/intermediates/ndkBuild/debug/obj/local > ndk-error.log
 - ./gradlew connectedCheck
 
