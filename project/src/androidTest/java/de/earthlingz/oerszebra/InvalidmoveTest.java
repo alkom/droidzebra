@@ -7,7 +7,6 @@ import android.test.ActivityInstrumentationTestCase2;
 
 import com.shurik.droidzebra.ZebraEngine;
 import de.earthlingz.oerszebra.BoardView.BoardViewModel;
-import de.earthlingz.oerszebra.BoardView.FieldState;
 
 import java.lang.ref.WeakReference;
 
@@ -73,9 +72,8 @@ public class InvalidmoveTest extends ActivityInstrumentationTestCase2<DroidZebra
         BoardViewModel state = this.getActivity().getState();
         int result = 0;
         for (int y = 0, boardLength = state.getBoardHeight(); y < boardLength; y++) {
-            for (int x = 0, rowLength = state.getBoardRowWidth(y); x < rowLength; x++) {
-                FieldState fieldState = state.getFieldState(x,y);
-                if (color == fieldState.getState()) {
+            for (int x = 0, rowLength = state.getBoardRowWidth(); x < rowLength; x++) {
+                if (color == state.getStateByte(x,y)) {
                     result++;
                 }
             }

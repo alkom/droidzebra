@@ -297,13 +297,13 @@ public class BoardView extends View implements OnBoardStateChangedListener {
         float oval_adjustment = (float) Math.abs(circle_r * Math.cos(Math.PI * mAnimationProgress));
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                if (getGameState().getFieldState(i, j).isEmpty())
+                if (getGameState().isFieldEmpty(i,j))
                     continue;
-                if (getGameState().getFieldState(i, j).isBlack())
+                if (getGameState().isFieldBlack(i,j))
                     circle_color = Color.BLACK;
                 else
                     circle_color = Color.WHITE;
-                if (mIsAnimationRunning.get() && getGameState().getFieldState(i, j).isFlipped()) {
+                if (mIsAnimationRunning.get() && getGameState().isFieldFlipped(i,j)) {
                     oval_x = mBoardRect.left + i * mSizeCell + mSizeCell / 2;
                     oval_y = mBoardRect.top + j * mSizeCell + mSizeCell / 2;
                     mTempRect.set(

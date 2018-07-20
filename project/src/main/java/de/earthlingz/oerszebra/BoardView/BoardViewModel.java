@@ -3,6 +3,8 @@ package de.earthlingz.oerszebra.BoardView;
 import android.support.annotation.Nullable;
 import com.shurik.droidzebra.*;
 
+import static com.shurik.droidzebra.ZebraEngine.PLAYER_EMPTY;
+
 /**
  * Created by stefan on 17.03.2018.
  */
@@ -10,7 +12,6 @@ import com.shurik.droidzebra.*;
 public class BoardViewModel {
     final public static int boardSize = 8;
 
-    private MutableFieldState board[][] = new MutableFieldState[boardSize][boardSize];
     private Move lastMove = null;
     private int whiteScore = 0;
     private int blackScore = 0;
@@ -18,10 +19,8 @@ public class BoardViewModel {
     private Move nextMove;
     private OnBoardStateChangedListener onBoardStateChangedListener = new OnBoardStateChangedListener() {
     };
-
-    public FieldState getFieldState(int x, int y) {
-        return board[x][y];
-    }
+    private ByteBoard currentBoard = new ByteBoard(8);
+    private ByteBoard previousBoard = currentBoard;
 
     @Nullable
     public Move getLastMove() {
@@ -53,9 +52,7 @@ public class BoardViewModel {
     public void reset() {
         lastMove = null;
         whiteScore = blackScore = 0;
-        for (int i = 0; i < boardSize; i++)
-            for (int j = 0; j < boardSize; j++)
-                board[i][j] = new MutableFieldState(ZebraEngine.PLAYER_EMPTY);
+        previousBoard = currentBoard = new ByteBoard(8);
     }
 
     public Move getNextMove() {
@@ -64,7 +61,7 @@ public class BoardViewModel {
 
     public void processGameOver() {
         possibleMoves.setMoves(new CandidateMove[]{});
-        int max = board.length * board.length;
+        int max = currentBoard.size() * currentBoard.size();
         if (getBlackScore() + getWhiteScore() < max) {
             //adjust result
             if (getBlackScore() > getWhiteScore()) {
@@ -89,43 +86,28 @@ public class BoardViewModel {
 
 
         possibleMoves.setMoves(gameState.getCandidateMoves());
-        this.onBoardStateChangedListener.onBoardStateChanged();
+        if(boardChanged) {
+            this.onBoardStateChangedListener.onBoardStateChanged();
+        }
 
         return boardChanged;
     }
 
     private boolean updateBoard(GameState gameState) {
         ByteBoard board = gameState.getByteBoard();
+        this.previousBoard = currentBoard;
+        this.currentBoard = board;
 
-        boolean changed = false;
-        //only update the board if anything has changed
-        for (int x = 0; !changed && x < boardSize; x++) {
-            for (int y = 0; !changed && y < boardSize; y++) {
-                byte newState = board.get(x, y);
-                if (this.board[x][y].getState() != newState) {
-                    changed = true;
-                }
-            }
-        }
-
-        if (changed) {
-            for (int x = 0; x < boardSize; x++) {
-                for (int y = 0; y < boardSize; y++) {
-                    byte newState = board.get(x, y);
-                    this.board[x][y].set(newState); //this also remembers if a flip has happened
-                }
-            }
-        }
-        return changed;
+        return !previousBoard.isSameAs(currentBoard);
 
     }
 
-    public int getBoardRowWidth(int x) {
-        return board[x].length;
+    public int getBoardRowWidth() {
+        return currentBoard.size();
     }
 
     public int getBoardHeight() {
-        return board.length;
+        return currentBoard.size();
     }
 
     public void setOnBoardStateChangedListener(BoardView onBoardStateChangedListener) {
@@ -135,5 +117,22 @@ public class BoardViewModel {
     public void removeOnBoardStateChangedListener() {
         this.onBoardStateChangedListener = new OnBoardStateChangedListener() {
         };
+    }
+
+    public boolean isFieldFlipped(int x, int y) {
+        byte field = currentBoard.get(x, y);
+        return field != PLAYER_EMPTY && field != previousBoard.get(x, y);
+    }
+
+    public boolean isFieldEmpty(int i, int j) {
+        return currentBoard.isEmpty(i, j);
+    }
+
+    public boolean isFieldBlack(int i, int j) {
+        return currentBoard.isBlack(i, j);
+    }
+
+    public byte getStateByte(int x, int y) {
+        return currentBoard.get(x, y);
     }
 }
