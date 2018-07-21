@@ -494,7 +494,7 @@ public class DroidZebra extends FragmentActivity implements MoveStringConsumer,
     }
 
     public void showAlertDialog(String msg) {
-        DroidZebra.this.startNewGameAndResetUI();
+        runOnUiThread(DroidZebra.this::startNewGameAndResetUI);
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle("Zebra Error");
         alertDialog.setMessage(msg);
