@@ -86,7 +86,7 @@ public class BoardViewModel {
 
 
         possibleMoves.setMoves(gameState.getCandidateMoves());
-        if(boardChanged) {
+        if (boardChanged) {
             this.onBoardStateChangedListener.onBoardStateChanged();
         }
 
@@ -95,10 +95,14 @@ public class BoardViewModel {
 
     private boolean updateBoard(GameState gameState) {
         ByteBoard board = gameState.getByteBoard();
-        this.previousBoard = currentBoard;
-        this.currentBoard = board;
+        boolean changed = !currentBoard.isSameAs(board);
 
-        return !previousBoard.isSameAs(currentBoard);
+
+        if (changed) {
+            this.previousBoard = currentBoard;
+            this.currentBoard = board;
+        }
+        return changed;
 
     }
 
@@ -120,8 +124,9 @@ public class BoardViewModel {
     }
 
     public boolean isFieldFlipped(int x, int y) {
-        byte field = currentBoard.get(x, y);
-        return field != PLAYER_EMPTY && field != previousBoard.get(x, y);
+        byte currentField = currentBoard.get(x, y);
+        byte previousField = previousBoard.get(x, y);
+        return currentField != PLAYER_EMPTY && previousField != PLAYER_EMPTY && currentField != previousField;
     }
 
     public boolean isFieldEmpty(int i, int j) {
