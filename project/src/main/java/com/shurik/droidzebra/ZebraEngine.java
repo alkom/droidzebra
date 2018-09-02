@@ -949,7 +949,6 @@ public class ZebraEngine {
 
     public interface OnEngineDebugListener {
         default void onDebug(String message) {
-            Log.v("OersZebra", message);
         }
     }
 

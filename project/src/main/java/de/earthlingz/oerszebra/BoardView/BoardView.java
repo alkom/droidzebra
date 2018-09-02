@@ -32,7 +32,7 @@ import de.earthlingz.oerszebra.R;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class BoardView extends View implements OnBoardStateChangedListener {
+public class BoardView extends View implements BoardViewModel.BoardViewModelListener {
 
     private float lineWidth = 1;
     private float gridCirclesRadius = 3;
@@ -73,10 +73,10 @@ public class BoardView extends View implements OnBoardStateChangedListener {
 
     public void setBoardViewModel(BoardViewModel boardViewModel) {
         if (this.boardViewModel != null) {
-            this.boardViewModel.removeOnBoardStateChangedListener();
+            this.boardViewModel.removeBoardViewModeListener();
         }
         this.boardViewModel = boardViewModel;
-        boardViewModel.setOnBoardStateChangedListener(this);
+        boardViewModel.setBoardViewModelListener(this);
     }
 
     private BoardViewModel boardViewModel;
@@ -170,7 +170,7 @@ public class BoardView extends View implements OnBoardStateChangedListener {
     public Move getMoveFromCoord(float x, float y) throws InvalidMove {
         int bx = (int) Math.floor((x - mBoardRect.left) / mSizeCell);
         int by = (int) Math.floor((y - mBoardRect.top) / mSizeCell);
-        if (bx < 0 || bx >= BoardViewModel.boardSize || by < 0 || by >= BoardViewModel.boardSize) {
+        if (bx < 0 || bx >= boardViewModel.getBoardSize() || by < 0 || by >= boardViewModel.getBoardSize()) {
             throw new InvalidMove();
         }
         return new Move(bx, by);
@@ -220,7 +220,7 @@ public class BoardView extends View implements OnBoardStateChangedListener {
 
         // draw the board
         mPaint.setStrokeWidth(lineWidth);
-        int boardSize = BoardViewModel.boardSize;
+        int boardSize = boardViewModel.getBoardSize();
         for (int i = 0; i <= boardSize; i++) {
             mPaint.setColor(mColorLine);
             canvas.drawLine(mBoardRect.left + i * mSizeCell, mBoardRect.top, mBoardRect.left + i * mSizeCell, mBoardRect.top + mSizeCell * boardSize, mPaint);
@@ -245,7 +245,7 @@ public class BoardView extends View implements OnBoardStateChangedListener {
         // draw helpers for move selector
         if (mMoveSelection != null) {
             if (mShowSelectionHelpers) {
-                if (getGameState().isValidMove(mMoveSelection))
+                if (this.boardViewModel.isValidMove(mMoveSelection))
                     mPaint.setColor(mColorHelpersValid);
                 else
                     mPaint.setColor(mColorHelpersInvalid);
@@ -265,7 +265,7 @@ public class BoardView extends View implements OnBoardStateChangedListener {
                         mPaint
                 );
             } else if (mShowSelection) {
-                if (getGameState().isValidMove(mMoveSelection))
+                if (this.boardViewModel.isValidMove(mMoveSelection))
                     mPaint.setColor(mColorSelectionValid);
                 else
                     mPaint.setColor(mColorSelectionInvalid);
@@ -281,8 +281,8 @@ public class BoardView extends View implements OnBoardStateChangedListener {
         }
 
         // draw next move marker
-        if (shouldDisplayLastMove() && getGameState().getNextMove() != null) {
-            Move nextMove = getGameState().getNextMove();
+        if (shouldDisplayLastMove() && this.boardViewModel.getNextMove() != null) {
+            Move nextMove = this.boardViewModel.getNextMove();
             mMoveSelection = nextMove;
             RectF cellRT = getCellRect(nextMove.getX(), nextMove.getY());
             mPaint.setColor(mColorSelectionValid);
@@ -297,13 +297,13 @@ public class BoardView extends View implements OnBoardStateChangedListener {
         float oval_adjustment = (float) Math.abs(circle_r * Math.cos(Math.PI * mAnimationProgress));
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                if (getGameState().isFieldEmpty(i,j))
+                if (this.boardViewModel.isFieldEmpty(i, j))
                     continue;
-                if (getGameState().isFieldBlack(i,j))
+                if (this.boardViewModel.isFieldBlack(i, j))
                     circle_color = Color.BLACK;
                 else
                     circle_color = Color.WHITE;
-                if (mIsAnimationRunning.get() && getGameState().isFieldFlipped(i,j)) {
+                if (mIsAnimationRunning.get() && this.boardViewModel.isFieldFlipped(i, j)) {
                     oval_x = mBoardRect.left + i * mSizeCell + mSizeCell / 2;
                     oval_y = mBoardRect.top + j * mSizeCell + mSizeCell / 2;
                     mTempRect.set(
@@ -334,10 +334,10 @@ public class BoardView extends View implements OnBoardStateChangedListener {
 
         // draw evals if in practive mode
         if ((shouldDisplayMoves() || shouldDisplayEvals())
-                && getGameState().getMoves() != null) {
+                && this.boardViewModel.getCandidateMoves() != null) {
             mPaint.setStrokeWidth(lineWidth * 2);
             float lineLength = mSizeCell / 4;
-            for (CandidateMove move : getGameState().getMoves()) {
+            for (CandidateMove move : this.boardViewModel.getCandidateMoves()) {
                 RectF cr = getCellRect(move.getX(), move.getY());
                 if (move.hasEval && shouldDisplayEvals()) {
                     if (move.isBest)
@@ -364,16 +364,12 @@ public class BoardView extends View implements OnBoardStateChangedListener {
         }
 
         // draw last move marker
-        if (shouldDisplayLastMove() && getGameState().getLastMove() != null) {
-            Move lm = getGameState().getLastMove();
+        if (shouldDisplayLastMove() && this.boardViewModel.getLastMove() != null) {
+            Move lm = this.boardViewModel.getLastMove();
             RectF cellRT = getCellRect(lm.getX(), lm.getY());
             mPaint.setColor(Color.BLUE);
             canvas.drawCircle(cellRT.left + mSizeCell / 10, cellRT.bottom - mSizeCell / 10, mSizeCell / 10, mPaint);
         }
-    }
-
-    private BoardViewModel getGameState() {
-        return this.boardViewModel;
     }
 
 
@@ -394,12 +390,12 @@ public class BoardView extends View implements OnBoardStateChangedListener {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         mSizeX = mSizeY = Math.min(getMeasuredWidth(), getMeasuredHeight());
-        mSizeCell = Math.min(mSizeX / (BoardViewModel.boardSize + 1), mSizeY / (BoardViewModel.boardSize + 1));
+        mSizeCell = Math.min(mSizeX / (boardViewModel.getBoardSize() + 1), mSizeY / (boardViewModel.getBoardSize() + 1));
         lineWidth = Math.max(1f, mSizeCell / 40f);
         gridCirclesRadius = Math.max(3f, mSizeCell / 13f);
         mBoardRect.set(
-                mSizeX - mSizeCell / 2 - mSizeCell * BoardViewModel.boardSize,
-                mSizeY - mSizeCell / 2 - mSizeCell * BoardViewModel.boardSize,
+                mSizeX - mSizeCell / 2 - mSizeCell * boardViewModel.getBoardSize(),
+                mSizeY - mSizeCell / 2 - mSizeCell * boardViewModel.getBoardSize(),
                 mSizeX - mSizeCell / 2,
                 mSizeY - mSizeCell / 2
         );
@@ -530,10 +526,10 @@ public class BoardView extends View implements OnBoardStateChangedListener {
             mMoveSelection = new Move(bX, bY);
         }
 
-        if (bX < 0 || bX >= BoardViewModel.boardSize)
+        if (bX < 0 || bX >= boardViewModel.getBoardSize())
             bX = mMoveSelection.getX();
 
-        if (bY < 0 || bY >= BoardViewModel.boardSize)
+        if (bY < 0 || bY >= boardViewModel.getBoardSize())
             bY = mMoveSelection.getY();
 
         if (mShowSelection != bShowSelection) {
@@ -571,6 +567,26 @@ public class BoardView extends View implements OnBoardStateChangedListener {
     }
 
     @Override
+    public void onCandidateMovesChanged() {
+       postInvalidate();
+    }
+
+    @Override
+    public void onBoardSizeChanged() {
+       postInvalidate();
+    }
+
+    @Override
+    public void onNextMoveChanged() {
+       postInvalidate();
+    }
+
+    @Override
+    public void onLastMoveChanged() {
+       postInvalidate();
+    }
+
+    @Override
     public void onBoardStateChanged() {
         mMoveSelection = null;
         if (shouldDisplayAnimations()) {
@@ -581,7 +597,7 @@ public class BoardView extends View implements OnBoardStateChangedListener {
             mAnimationTimer.start();
             //will call invalidate from the animation threads
         } else {
-            invalidate();
+            postInvalidate();
         }
     }
 
@@ -591,17 +607,19 @@ public class BoardView extends View implements OnBoardStateChangedListener {
 
     public void setDisplayAnimations(boolean displayAnimations) {
         this.displayAnimations = displayAnimations;
+        this.invalidate();
     }
 
     public void setAnimationDuration(int animationDuration) {
         this.animationDuration = animationDuration;
         cancelAnimation();
         initCountDowntimer();
+        this.invalidate();
+
     }
 
     public void setOnMakeMoveListener(OnMakeMoveListener listener) {
         this.onMakeMoveListener = listener;
-
     }
 
     public interface OnMakeMoveListener {

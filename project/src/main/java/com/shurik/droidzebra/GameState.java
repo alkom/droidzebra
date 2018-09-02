@@ -21,20 +21,22 @@ public class GameState {
     private GameStateListener handler = new GameStateListener() {
     };
 
-    @Deprecated //Creates insonsistent instance
+    @Deprecated
+        //Creates insonsistent instance
     GameState(int boardSize, List<Move> moves) {
         this.disksPlayed = moves.size();
         this.moveSequence = toBytesWithBoardSize(moves, boardSize);
         byteBoard = new ByteBoard(boardSize);
     }
 
-    GameState(int boardSize) {
+    public GameState(int boardSize) {
         this.disksPlayed = 0;
         this.moveSequence = new byte[2 * boardSize * boardSize];
         byteBoard = new ByteBoard(boardSize);
     }
 
-    @Deprecated //Creates insonsistent instance
+    @Deprecated
+        //Creates insonsistent instance
     GameState(int boardSize, byte[] moves, int movesPlayed) {
         this.disksPlayed = movesPlayed;
         this.moveSequence = Arrays.copyOf(moves, boardByteLength(boardSize));
@@ -42,14 +44,14 @@ public class GameState {
     }
 
 
-    public void removeHandler() {
+    public void removeGameStateListener() {
         handler = new GameStateListener() {
         };
     }
 
-    public void setHandler(GameStateListener handler) {
+    public void setGameStateListener(GameStateListener handler) {
         if (handler == null) {
-            removeHandler();
+            removeGameStateListener();
         } else {
             this.handler = handler;
         }
@@ -219,5 +221,14 @@ public class GameState {
 
     public void sendMoveEnd() {
         handler.onMoveEnd();
+    }
+
+    public CandidateMove getBestMove() { //TODO what if multiple best moves?
+        for (CandidateMove candidateMove : candidateMoves) {
+            if (candidateMove.isBest) {
+                return candidateMove;
+            }
+        }
+        return null;
     }
 }

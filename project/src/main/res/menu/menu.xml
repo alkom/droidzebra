@@ -36,6 +36,10 @@
             android:icon="@android:drawable/ic_menu_send" 
             android:title="@string/menu_item_mail">
         </item>
+        <item android:id="@+id/menu_guess_move"
+            android:icon="@android:drawable/ic_menu_send"
+            android:title="@string/menu_item_guess_move">
+        </item>
         <item android:id="@+id/menu_quit" 
             android:icon="@android:drawable/ic_menu_close_clear_cancel" 
             android:title="@string/menu_item_quit">

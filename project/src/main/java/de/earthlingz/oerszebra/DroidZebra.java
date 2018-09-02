@@ -35,7 +35,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import com.shurik.droidzebra.*;
 import de.earthlingz.oerszebra.BoardView.BoardView;
-import de.earthlingz.oerszebra.BoardView.BoardViewModel;
+import de.earthlingz.oerszebra.BoardView.GameStateBoardModel;
+import de.earthlingz.oerszebra.guessmove.GuessMoveActivity;
 import de.earthlingz.oerszebra.parser.GameParser;
 
 import java.lang.ref.WeakReference;
@@ -62,7 +63,7 @@ public class DroidZebra extends FragmentActivity implements MoveStringConsumer,
     private BoardView mBoardView;
     private StatusView mStatusView;
 
-    private BoardViewModel state = ZebraServices.getBoardState();
+    private GameStateBoardModel state = ZebraServices.getBoardState();
 
     private GameParser parser = ZebraServices.getGameParser();
     private WeakReference<AlertDialog> alert = null;
@@ -96,7 +97,7 @@ public class DroidZebra extends FragmentActivity implements MoveStringConsumer,
             @Override
             public void onGameStateReady(GameState gameState) {
                 DroidZebra.this.gameState = gameState;
-                gameState.setHandler(handler);
+                gameState.setGameStateListener(handler);
             }
         });
     }
@@ -132,6 +133,12 @@ public class DroidZebra extends FragmentActivity implements MoveStringConsumer,
             case R.id.menu_settings: {
                 // Launch Preference activity
                 Intent i = new Intent(this, SettingsPreferences.class);
+                startActivity(i);
+            }
+            return true;
+            case R.id.menu_guess_move: {
+                // Launch GuessMove activity
+                Intent i = new Intent(this, GuessMoveActivity.class);
                 startActivity(i);
             }
             return true;
@@ -241,7 +248,7 @@ public class DroidZebra extends FragmentActivity implements MoveStringConsumer,
             @Override
             public void onGameStateReady(GameState gameState1) {
                 DroidZebra.this.gameState = gameState1;
-                gameState1.setHandler(handler);
+                gameState1.setGameStateListener(handler);
             }
         });
 
@@ -255,7 +262,7 @@ public class DroidZebra extends FragmentActivity implements MoveStringConsumer,
             @Override
             public void onGameStateReady(GameState gameState1) {
                 DroidZebra.this.gameState = gameState1;
-                gameState1.setHandler(handler);
+                gameState1.setGameStateListener(handler);
             }
         });
 
@@ -433,7 +440,7 @@ public class DroidZebra extends FragmentActivity implements MoveStringConsumer,
     @Override
     protected void onDestroy() {
         engine.disconnect(gameState);
-        gameState.removeHandler();
+        gameState.removeGameStateListener();
 
         super.onDestroy();
     }
@@ -537,7 +544,7 @@ public class DroidZebra extends FragmentActivity implements MoveStringConsumer,
         }
     }
 
-    public BoardViewModel getState() {
+    public GameStateBoardModel getState() {
         return state;
     }
 

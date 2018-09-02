@@ -2,7 +2,7 @@ package de.earthlingz.oerszebra;
 
 import com.shurik.droidzebra.EngineConfig;
 
-interface SettingsProvider {
+public interface SettingsProvider {
 
     void setOnSettingsChangedListener(OnSettingsChangedListener onSettingsChangedListener);
 
