@@ -3,22 +3,27 @@ package de.earthlingz.oerszebra.guessmove;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.shurik.droidzebra.*;
-import de.earthlingz.oerszebra.*;
+import com.shurik.droidzebra.EngineConfig;
+import com.shurik.droidzebra.InvalidMove;
+import com.shurik.droidzebra.ZebraEngine;
+import de.earthlingz.oerszebra.AndroidContext;
 import de.earthlingz.oerszebra.BoardView.BoardView;
 import de.earthlingz.oerszebra.BoardView.BoardViewModel;
+import de.earthlingz.oerszebra.GlobalSettingsLoader;
+import de.earthlingz.oerszebra.R;
+import de.earthlingz.oerszebra.SettingsPreferences;
 
 import static com.shurik.droidzebra.ZebraEngine.PLAYER_BLACK;
 
 
-public class GuessMoveActivity extends FragmentActivity {
+public class GuessMoveActivity extends AppCompatActivity {
 
     private BoardView boardView;
     private BoardViewModel boardViewModel;
