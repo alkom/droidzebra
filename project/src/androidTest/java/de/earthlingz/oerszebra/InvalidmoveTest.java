@@ -1,10 +1,9 @@
 package de.earthlingz.oerszebra;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.test.ActivityInstrumentationTestCase2;
-
 import com.shurik.droidzebra.ZebraEngine;
 import de.earthlingz.oerszebra.BoardView.GameStateBoardModel;
 

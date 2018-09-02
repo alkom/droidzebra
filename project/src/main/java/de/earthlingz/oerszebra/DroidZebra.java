@@ -17,8 +17,6 @@
 
 package de.earthlingz.oerszebra;
 
-import android.app.ActionBar;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ClipboardManager;
@@ -28,7 +26,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.*;
 import android.widget.Button;
@@ -49,7 +49,7 @@ import static de.earthlingz.oerszebra.GameSettingsConstants.*;
 import static de.earthlingz.oerszebra.GlobalSettingsLoader.*;
 
 
-public class DroidZebra extends FragmentActivity implements MoveStringConsumer,
+public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
         OnSettingsChangedListener, BoardView.OnMakeMoveListener, GameStateListener, ZebraEngine.OnEngineErrorListener {
     private ClipboardManager clipboard;
     private ZebraEngine engine;
@@ -272,14 +272,14 @@ public class DroidZebra extends FragmentActivity implements MoveStringConsumer,
     }
 
     private void showActionBar() {
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.show();
         }
     }
 
     private void hideActionBar() {
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.hide();
         }
