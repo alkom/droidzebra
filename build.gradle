@@ -29,6 +29,7 @@ buildscript {
      */
 
     dependencies {
+        classpath 'com.github.triplet.gradle:play-publisher:1.2.2'
         classpath 'com.android.tools.build:gradle:3.4.1'
     }
 }

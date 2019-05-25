@@ -1,6 +1,8 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.github.triplet.play'
 
 apply from: "signing.gradle"
+apply from: "deploy.gradle"
 
 project.ext.set("archivesBaseName", "reversatile")
 
