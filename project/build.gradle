@@ -5,8 +5,8 @@ apply from: "signing.gradle"
 project.ext.set("archivesBaseName", "reversatile")
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '27.0.3'
+    compileSdkVersion 26
+    buildToolsVersion '28.0.3'
 
 
     dexOptions {
@@ -19,6 +19,8 @@ android {
         ndk {
             abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
         }
+        minSdkVersion 14
+        targetSdkVersion 26
     }
     externalNativeBuild {
         ndkBuild {
