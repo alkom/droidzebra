@@ -31,6 +31,7 @@ public class DroidZebraTest  {
 
 
     @UiThreadTest
+    @Test
     public void testSkipWithFinalEmptySquares() throws InterruptedException {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
@@ -48,6 +49,7 @@ public class DroidZebraTest  {
     }
 
     @UiThreadTest
+    @Test
     public void testSkipCompleteGame() throws InterruptedException {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
@@ -64,6 +66,7 @@ public class DroidZebraTest  {
     }
 
     @UiThreadTest
+    @Test
     public void testIssue22() throws InterruptedException {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);

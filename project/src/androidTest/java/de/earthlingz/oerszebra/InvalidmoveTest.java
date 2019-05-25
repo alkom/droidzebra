@@ -33,6 +33,7 @@ public class InvalidmoveTest {
     }
 
     @UiThreadTest
+    @Test
     public void testIssue24() throws InterruptedException {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
