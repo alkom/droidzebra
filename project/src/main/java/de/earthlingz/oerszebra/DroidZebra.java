@@ -227,7 +227,10 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
 
             if (Intent.ACTION_SEND.equals(action) && type != null) {
                 if ("text/plain".equals(type) || "message/rfc822".equals(type)) {
-                    startNewGameAndResetUI(parser.makeMoveList(intent.getStringExtra(Intent.EXTRA_TEXT)));
+                    String input = intent.getStringExtra(Intent.EXTRA_TEXT);
+                    if(input != null) {
+                        startNewGameAndResetUI(parser.makeMoveList(input));
+                    }
                 }
             } else if (savedInstanceState != null
                     && savedInstanceState.containsKey("moves_played_count")
@@ -536,6 +539,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         GameState gs = gameState;
         if (gs != null) {
             outState.putByteArray("moves_played", gs.exportMoveSequence());

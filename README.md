@@ -38,3 +38,6 @@ Version 1.0.0
 
 - added functionality to enter games (via copy and paste or manually)
 - added functionality to listen to intent from Reversi Wars
+
+Version 1.3.0.
+ - guess the best move mode
