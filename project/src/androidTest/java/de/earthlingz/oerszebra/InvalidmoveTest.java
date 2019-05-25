@@ -32,7 +32,6 @@ public class InvalidmoveTest {
         }
     }
 
-    @UiThreadTest
     @Test
     public void testIssue24() throws InterruptedException {
         Intent intent = new Intent();
@@ -40,7 +39,7 @@ public class InvalidmoveTest {
         intent.setType("message/rfc822");
         intent.putExtra(Intent.EXTRA_TEXT, "D3D4D5D6");
 
-        zebra.onNewIntent(intent);
+        zebra.runOnUiThread(() -> zebra.onNewIntent(intent));
         Thread.sleep(1000);
         //zebra.getEngine().waitForEngineState(ZebraEngine.ES_USER_INPUT_WAIT);
 
@@ -54,7 +53,9 @@ public class InvalidmoveTest {
 
         zebra.runOnUiThread(() -> diag.getButton(DialogInterface.BUTTON_POSITIVE).performClick());
 
-        Thread.sleep(1000);
+        while(diag.isShowing()) {
+            Thread.sleep(100);
+        }
         assertSame(60, countSquares(ZebraEngine.PLAYER_EMPTY));
         assertSame(2, countSquares(ZebraEngine.PLAYER_WHITE));
         assertSame(2, countSquares(ZebraEngine.PLAYER_BLACK));
