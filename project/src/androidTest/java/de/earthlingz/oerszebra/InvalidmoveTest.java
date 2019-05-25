@@ -3,6 +3,7 @@ package de.earthlingz.oerszebra;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AlertDialog;
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.rule.ActivityTestRule;
 import com.shurik.droidzebra.ZebraEngine;
 import de.earthlingz.oerszebra.BoardView.GameStateBoardModel;
@@ -31,7 +32,7 @@ public class InvalidmoveTest {
         }
     }
 
-    @Test
+    @UiThreadTest
     public void testIssue24() throws InterruptedException {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);

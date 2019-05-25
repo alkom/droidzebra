@@ -1,6 +1,7 @@
 package de.earthlingz.oerszebra;
 
 import android.content.Intent;
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.SmallTest;
 import androidx.test.rule.ActivityTestRule;
 import com.shurik.droidzebra.ZebraEngine;
@@ -29,11 +30,7 @@ public class DroidZebraTest  {
     }
 
 
-//    public TestView_Functional_Test() {
-//    	super("project.base", TestView.class);
-//    }
-
-    @Test
+    @UiThreadTest
     public void testSkipWithFinalEmptySquares() throws InterruptedException {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
@@ -50,7 +47,7 @@ public class DroidZebraTest  {
         assertSame(zebra.getState().getWhiteScore(), 61);
     }
 
-    @Test
+    @UiThreadTest
     public void testSkipCompleteGame() throws InterruptedException {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
@@ -66,7 +63,7 @@ public class DroidZebraTest  {
         assertSame(2, countSquares(ZebraEngine.PLAYER_BLACK));
     }
 
-    @Test
+    @UiThreadTest
     public void testIssue22() throws InterruptedException {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
