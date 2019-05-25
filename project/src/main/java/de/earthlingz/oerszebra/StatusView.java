@@ -130,7 +130,7 @@ public class StatusView extends View {
 			mScreenBounds = new RectF(mXstart*scaleW, mYstart*scaleH, mXend*scaleW, mYend*scaleH);
 			mScreenColor = getResources().getColor(mRColor);
 				
-			mScreenTextSize = mScreenBounds.height()*0.8f; 
+			mScreenTextSize = mScreenBounds.height()*0.6f;
 			mScreenText = mText;
 			p.setTextSize(mScreenTextSize);
 			
@@ -260,9 +260,9 @@ public class StatusView extends View {
 		new DrawText(ID_SCORELINE_WHITE_4, SCORE_BOX_WHITE_START_X, SCORE_BOX_START_Y+3*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, SCORE_BOX_WHITE_END_X, SCORE_BOX_START_Y+4*(SCORE_BOX_END_Y-SCORE_BOX_START_Y)/4, "f9", R.color.statustextcolor, Paint.Align.CENTER, 0),
 
 		// score panel
-		new DrawText(ID_SCORE_BLACK, 0.44f, 0.10f, 0.67f, STATUS_POS_Y-0.30f, "34", R.color.black, Paint.Align.RIGHT, 0),
+		new DrawText(ID_SCORE_BLACK, 0.44f, 0.10f, 0.67f, STATUS_POS_Y-0.30f, "34", R.color.black, Paint.Align.RIGHT, DrawText.FLAG_FIT),
 		new DrawText(ID_NONE, 0.67f, 0.20f, 0.73f, STATUS_POS_Y-0.40f, ":", R.color.statustextcolor, Paint.Align.CENTER, DrawText.FLAG_FIT),
-		new DrawText(ID_SCORE_WHITE, 0.73f, 0.10f, 0.96f, STATUS_POS_Y-0.30f, "21", R.color.white, Paint.Align.LEFT, 0),
+		new DrawText(ID_SCORE_WHITE, 0.73f, 0.10f, 0.96f, STATUS_POS_Y-0.30f, "21", R.color.white, Paint.Align.LEFT, DrawText.FLAG_FIT),
 		new DrawText(ID_SCORE_SKILL, 0.48f, STATUS_POS_Y-0.25f, 0.92f, STATUS_POS_Y-0.15f, "Mid: 8  Exact: 16  W/L: 18", R.color.white, Paint.Align.CENTER, DrawText.FLAG_FIT),
 		
 		// status panel

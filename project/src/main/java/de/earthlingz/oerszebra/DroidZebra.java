@@ -646,6 +646,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
     private void setStatusViewScores(int sideToMove) {
         String scoreText;
         if (sideToMove == ZebraEngine.PLAYER_BLACK) {
+            //with dot before
             scoreText = String.format(Locale.getDefault(), "•%d", state.getBlackScore());
         } else {
             scoreText = String.format(Locale.getDefault(), "%d", state.getBlackScore());
@@ -656,6 +657,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
         );
 
         if (sideToMove == ZebraEngine.PLAYER_WHITE) {
+            //with dot behind
             scoreText = String.format(Locale.getDefault(), "%d•", state.getWhiteScore());
         } else {
             scoreText = String.format(Locale.getDefault(), "%d", state.getWhiteScore());
