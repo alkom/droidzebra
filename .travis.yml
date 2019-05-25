@@ -12,7 +12,7 @@ before_install:
     rm android-ndk-r17b-linux-x86_64.zip;
   fi'
 - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}
-- mkdir "$ANDROID_HOME/licenses" || true
+- yes | sdkmanager "platforms;android-26"
 
 before_cache:
 - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -34,10 +34,6 @@ android:
   - extra
   - ndk-bundle
   - sys-img-armeabi-v7a-android-21
-  licenses:
-    - 'android-sdk-preview-license-52d11cd2'
-    - 'android-sdk-license-.+'
-    - 'google-gdk-license-.+'
 env:
   global:
   - ADB_INSTALL_TIMEOUT=8
