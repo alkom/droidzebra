@@ -7,18 +7,18 @@
         <item android:id="@+id/menu_take_back"
               android:icon="@drawable/ic_menu_undo"
               android:title="@string/menu_item_undo"
-              app:showAsAction="always|withText"
+              app:showAsAction="ifRoom|withText"
               tools:ignore="AppCompatResource">
         </item>
         <item android:id="@+id/menu_take_redo"
               android:icon="@drawable/ic_menu_redo"
               android:title="@string/menu_item_redo"
-              app:showAsAction="always|withText"
+              app:showAsAction="ifRoom|withText"
               tools:ignore="AppCompatResource">
         </item>
         <item android:id="@+id/menu_new_game"
               android:icon="@drawable/ic_menu_play"
-              app:showAsAction="always|withText"
+              app:showAsAction="ifRoom|withText"
               android:title="@string/menu_item_new_game"
               tools:ignore="AppCompatResource">
         </item>
