@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="dialog_cancel">Cancel</string>
-    <string name="menu_enter_moves">Enter Moves</string>
+    <string name="menu_enter_moves">Entrer des coups</string>
     <string name="settings_engine_use_book_summary">Utiliser bibliothèque d\'ouvertures</string>
     <string name="settings_engine_use_book_title">Bibliothèque d\'ouvertures</string>
     <string name="gameover_choices_options">Changer les paramètres</string>
