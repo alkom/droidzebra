@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "129613454554",
+    "firebase_url": "https://api-7853572570371364310-965980.firebaseio.com",
+    "project_id": "api-7853572570371364310-965980",
+    "storage_bucket": "api-7853572570371364310-965980.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:129613454554:android:ae90939a6c41290a",
+        "android_client_info": {
+          "package_name": "de.earthlingz.oerszebra"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "129613454554-edrv2glgk1f840q73rjuh94i2cfnmmvt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAi2godRNcB3aq6oJQXiGOFsnW6a3F0D6c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "129613454554-edrv2glgk1f840q73rjuh94i2cfnmmvt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
