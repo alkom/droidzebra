@@ -2,6 +2,7 @@ package de.earthlingz.oerszebra;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import com.shurik.droidzebra.EngineConfig;
 
 import java.util.Locale;
 
@@ -73,7 +74,7 @@ public class GlobalSettingsLoader implements SharedPreferences.OnSharedPreferenc
     private int settingZebraDepthWLD = 1;
 
     private Context context;
-    private OnChangeListener onChangeListener;
+    private OnSettingsChangedListener onSettingsChangedListener;
     private int computerMoveDelay = 1000;
 
     public GlobalSettingsLoader(Context context) {
@@ -192,14 +193,14 @@ public class GlobalSettingsLoader implements SharedPreferences.OnSharedPreferenc
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (loadSettings() && onChangeListener != null) {
-            onChangeListener.onChange();
+        if (loadSettings() && onSettingsChangedListener != null) {
+            onSettingsChangedListener.onSettingsChanged();
         }
     }
 
     @Override
-    public void setOnChangeListener(OnChangeListener onChangeListener) {
-        this.onChangeListener = onChangeListener;
+    public void setOnSettingsChangedListener(OnSettingsChangedListener onSettingsChangedListener) {
+        this.onSettingsChangedListener = onSettingsChangedListener;
     }
 
     @Override
@@ -290,6 +291,24 @@ public class GlobalSettingsLoader implements SharedPreferences.OnSharedPreferenc
     @Override
     public int getComputerMoveDelay() {
         return computerMoveDelay;
+    }
+
+    @Override
+    public EngineConfig createEngineConfig() { //TODO cache?
+        return new EngineConfig(
+                settingFunction,
+                settingZebraDepth,
+                settingZebraDepthExact,
+                settingZebraDepthWLD,
+                settingAutoMakeForcedMoves,
+                settingRandomness,
+                settingForceOpening,
+                settingHumanOpenings,
+                settingPracticeMode,
+                settingUseBook,
+                settingSlack,
+                settingPerturbation,
+                computerMoveDelay);
     }
 
 

@@ -67,4 +67,10 @@
     <string name="mail_move">Suite de coups:</string>
     <string name="somebody_wins">Somebody wins</string>
     <string name="_00_00">00:00</string>
+    <string name="guess_best_title">Guess Best Move</string>
+    <string name="guess_black_move_hint">Guess best black move.</string>
+    <string name="guess_move_correct">Correct!</string>
+    <string name="guess_move_incorrect">Not the best move, try again</string>
+    <string name="guess_white_move_hint">Guess best white move.</string>
+    <string name="menu_item_guess_move">Guess Move Mode</string>
 </resources>

@@ -2,6 +2,7 @@ package de.earthlingz.oerszebra.parser;
 
 import com.shurik.droidzebra.Move;
 
+import javax.annotation.Nonnull;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,7 +36,7 @@ public class ReversiWarsParser implements Parser {
     }
 
     @Override
-    public boolean canParse(String s) {
+    public boolean canParse(@Nonnull String s) {
         CharSequence sanitize = sanitize(s.toUpperCase());
         Matcher matcher = p.matcher(sanitize);
         return matcher.find();

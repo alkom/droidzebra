@@ -2,21 +2,22 @@ package de.earthlingz.oerszebra.parser;
 
 import com.shurik.droidzebra.Move;
 
+import javax.annotation.Nonnull;
 import java.util.LinkedList;
 
 /**
  * Created by stefan on 18.03.2018.
  */
 
-public class Gameparser {
+public class GameParser {
 
     private final Parser[] parser;
 
-    public Gameparser(Parser... parser) {
+    public GameParser(Parser... parser) {
         this.parser = parser;
     }
 
-    public LinkedList<Move> makeMoveList(String moves) {
+    public LinkedList<Move> makeMoveList(@Nonnull String moves) {
         for (Parser parse : parser) {
             if (parse.canParse(moves)) {
                 return parse.makeMoveList(moves);
@@ -25,7 +26,7 @@ public class Gameparser {
         return new LinkedList<>();
     }
 
-    public boolean canParse(String moves) {
+    public boolean canParse(@Nonnull String moves) {
         for (Parser parse : parser) {
             if (parse.canParse(moves)) {
                 return true;

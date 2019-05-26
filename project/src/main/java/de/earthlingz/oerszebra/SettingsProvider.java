@@ -1,8 +1,10 @@
 package de.earthlingz.oerszebra;
 
-interface SettingsProvider {
+import com.shurik.droidzebra.EngineConfig;
 
-    void setOnChangeListener(OnChangeListener onChangeListener);
+public interface SettingsProvider {
+
+    void setOnSettingsChangedListener(OnSettingsChangedListener onSettingsChangedListener);
 
     int getSettingFunction();
 
@@ -40,7 +42,9 @@ interface SettingsProvider {
 
     int getComputerMoveDelay();
 
-    interface OnChangeListener {
-        void onChange();
+    EngineConfig createEngineConfig();
+
+    interface OnSettingsChangedListener {
+        void onSettingsChanged();
     }
 }

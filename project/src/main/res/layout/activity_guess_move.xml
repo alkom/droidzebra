@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/main_frame"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" android:background="@color/board_color">
+
+    <de.earthlingz.oerszebra.BoardView.BoardView
+            android:id="@+id/guess_move_board"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/board_color"
+            android:visibility="visible"
+
+    />
+
+
+    <ImageView
+            app:srcCompat="@drawable/black_circle"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/side_to_move_circle" android:padding="16dp" android:layout_alignParentStart="true"
+            android:layout_below="@+id/guess_move_board" android:layout_alignParentLeft="true"/>
+    <TextView
+            android:text="Guess best move"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_below="@+id/guess_move_board"
+            android:layout_toEndOf="@+id/side_to_move_circle" android:id="@+id/guess_move_text" android:textSize="24sp"
+            android:layout_toRightOf="@+id/side_to_move_circle"/>
+
+
+</RelativeLayout>

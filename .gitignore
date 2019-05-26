@@ -14,4 +14,4 @@ android-ndk-*
 *.tgz
 #don't commit the unencrypted jks
 keystore/zebra.jks
-keystore/api-playstore.json
+/keystore/api-playstore.json

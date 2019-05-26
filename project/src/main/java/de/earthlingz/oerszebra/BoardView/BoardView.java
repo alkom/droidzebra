@@ -14,7 +14,7 @@
 	You should have received a copy of the GNU General Public License
 	along with DroidZebra.  If not, see <http://www.gnu.org/licenses/>
 */
-package de.earthlingz.oerszebra;
+package de.earthlingz.oerszebra.BoardView;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -28,11 +28,11 @@ import android.view.View;
 import com.shurik.droidzebra.CandidateMove;
 import com.shurik.droidzebra.InvalidMove;
 import com.shurik.droidzebra.Move;
-import com.shurik.droidzebra.ZebraEngine;
+import de.earthlingz.oerszebra.R;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class BoardView extends View {
+public class BoardView extends View implements BoardViewModel.BoardViewModelListener {
 
     private float lineWidth = 1;
     private float gridCirclesRadius = 3;
@@ -71,11 +71,15 @@ public class BoardView extends View {
     private int animationDuration = 500;
     private OnMakeMoveListener onMakeMoveListener = null;
 
-    public void setBoardState(BoardState boardState) {
-        this.boardState = boardState;
+    public void setBoardViewModel(BoardViewModel boardViewModel) {
+        if (this.boardViewModel != null) {
+            this.boardViewModel.removeBoardViewModeListener();
+        }
+        this.boardViewModel = boardViewModel;
+        boardViewModel.setBoardViewModelListener(this);
     }
 
-    private BoardState boardState;
+    private BoardViewModel boardViewModel;
 
     public void setDisplayEvals(boolean displayEvals) {
         this.displayEvals = displayEvals;
@@ -166,7 +170,7 @@ public class BoardView extends View {
     public Move getMoveFromCoord(float x, float y) throws InvalidMove {
         int bx = (int) Math.floor((x - mBoardRect.left) / mSizeCell);
         int by = (int) Math.floor((y - mBoardRect.top) / mSizeCell);
-        if (bx < 0 || bx >= BoardState.boardSize || by < 0 || by >= BoardState.boardSize) {
+        if (bx < 0 || bx >= boardViewModel.getBoardSize() || by < 0 || by >= boardViewModel.getBoardSize()) {
             throw new InvalidMove();
         }
         return new Move(bx, by);
@@ -216,7 +220,7 @@ public class BoardView extends View {
 
         // draw the board
         mPaint.setStrokeWidth(lineWidth);
-        int boardSize = BoardState.boardSize;
+        int boardSize = boardViewModel.getBoardSize();
         for (int i = 0; i <= boardSize; i++) {
             mPaint.setColor(mColorLine);
             canvas.drawLine(mBoardRect.left + i * mSizeCell, mBoardRect.top, mBoardRect.left + i * mSizeCell, mBoardRect.top + mSizeCell * boardSize, mPaint);
@@ -241,7 +245,7 @@ public class BoardView extends View {
         // draw helpers for move selector
         if (mMoveSelection != null) {
             if (mShowSelectionHelpers) {
-                if (getGameState().isValidMove(mMoveSelection))
+                if (this.boardViewModel.isValidMove(mMoveSelection))
                     mPaint.setColor(mColorHelpersValid);
                 else
                     mPaint.setColor(mColorHelpersInvalid);
@@ -261,7 +265,7 @@ public class BoardView extends View {
                         mPaint
                 );
             } else if (mShowSelection) {
-                if (getGameState().isValidMove(mMoveSelection))
+                if (this.boardViewModel.isValidMove(mMoveSelection))
                     mPaint.setColor(mColorSelectionValid);
                 else
                     mPaint.setColor(mColorSelectionInvalid);
@@ -277,8 +281,8 @@ public class BoardView extends View {
         }
 
         // draw next move marker
-        if (shouldDisplayLastMove() && getGameState().getNextMove() != null) {
-            Move nextMove = getGameState().getNextMove();
+        if (shouldDisplayLastMove() && this.boardViewModel.getNextMove() != null) {
+            Move nextMove = this.boardViewModel.getNextMove();
             mMoveSelection = nextMove;
             RectF cellRT = getCellRect(nextMove.getX(), nextMove.getY());
             mPaint.setColor(mColorSelectionValid);
@@ -293,13 +297,13 @@ public class BoardView extends View {
         float oval_adjustment = (float) Math.abs(circle_r * Math.cos(Math.PI * mAnimationProgress));
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                if (getGameState().getBoard()[i][j].getState() == ZebraEngine.PLAYER_EMPTY)
+                if (this.boardViewModel.isFieldEmpty(i, j))
                     continue;
-                if (getGameState().getBoard()[i][j].getState() == ZebraEngine.PLAYER_BLACK)
+                if (this.boardViewModel.isFieldBlack(i, j))
                     circle_color = Color.BLACK;
                 else
                     circle_color = Color.WHITE;
-                if (mIsAnimationRunning.get() && getGameState().getBoard()[i][j].isFlipped()) {
+                if (mIsAnimationRunning.get() && this.boardViewModel.isFieldFlipped(i, j)) {
                     oval_x = mBoardRect.left + i * mSizeCell + mSizeCell / 2;
                     oval_y = mBoardRect.top + j * mSizeCell + mSizeCell / 2;
                     mTempRect.set(
@@ -330,17 +334,17 @@ public class BoardView extends View {
 
         // draw evals if in practive mode
         if ((shouldDisplayMoves() || shouldDisplayEvals())
-                && getGameState().getMoves() != null) {
+                && this.boardViewModel.getCandidateMoves() != null) {
             mPaint.setStrokeWidth(lineWidth * 2);
             float lineLength = mSizeCell / 4;
-            for (CandidateMove m : getGameState().getMoves()) {
-                RectF cr = getCellRect(m.mMove.getX(), m.mMove.getY());
-                if (m.mHasEval && shouldDisplayEvals()) {
-                    if (m.mBest)
+            for (CandidateMove move : this.boardViewModel.getCandidateMoves()) {
+                RectF cr = getCellRect(move.getX(), move.getY());
+                if (move.hasEval && shouldDisplayEvals()) {
+                    if (move.isBest)
                         mPaintEvalText.setColor(mColorEvalsBest);
                     else
                         mPaintEvalText.setColor(mColorEvals);
-                    canvas.drawText(m.mEvalShort, cr.centerX(), cr.centerY() - (mEvalFontMetrics.ascent + mEvalFontMetrics.descent) / 2, mPaintEvalText);
+                    canvas.drawText(move.evalShort, cr.centerX(), cr.centerY() - (mEvalFontMetrics.ascent + mEvalFontMetrics.descent) / 2, mPaintEvalText);
                 } else {
                     float pts[] =
                             {
@@ -360,16 +364,12 @@ public class BoardView extends View {
         }
 
         // draw last move marker
-        if (shouldDisplayLastMove() && getGameState().getLastMove() != null) {
-            Move lm = getGameState().getLastMove();
+        if (shouldDisplayLastMove() && this.boardViewModel.getLastMove() != null) {
+            Move lm = this.boardViewModel.getLastMove();
             RectF cellRT = getCellRect(lm.getX(), lm.getY());
             mPaint.setColor(Color.BLUE);
             canvas.drawCircle(cellRT.left + mSizeCell / 10, cellRT.bottom - mSizeCell / 10, mSizeCell / 10, mPaint);
         }
-    }
-
-    private BoardState getGameState() {
-        return this.boardState;
     }
 
 
@@ -390,12 +390,12 @@ public class BoardView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         mSizeX = mSizeY = Math.min(getMeasuredWidth(), getMeasuredHeight());
-        mSizeCell = Math.min(mSizeX / (BoardState.boardSize + 1), mSizeY / (BoardState.boardSize + 1));
+        mSizeCell = Math.min(mSizeX / (boardViewModel.getBoardSize() + 1), mSizeY / (boardViewModel.getBoardSize() + 1));
         lineWidth = Math.max(1f, mSizeCell / 40f);
         gridCirclesRadius = Math.max(3f, mSizeCell / 13f);
         mBoardRect.set(
-                mSizeX - mSizeCell / 2 - mSizeCell * BoardState.boardSize,
-                mSizeY - mSizeCell / 2 - mSizeCell * BoardState.boardSize,
+                mSizeX - mSizeCell / 2 - mSizeCell * boardViewModel.getBoardSize(),
+                mSizeY - mSizeCell / 2 - mSizeCell * boardViewModel.getBoardSize(),
                 mSizeX - mSizeCell / 2,
                 mSizeY - mSizeCell / 2
         );
@@ -526,10 +526,10 @@ public class BoardView extends View {
             mMoveSelection = new Move(bX, bY);
         }
 
-        if (bX < 0 || bX >= BoardState.boardSize)
+        if (bX < 0 || bX >= boardViewModel.getBoardSize())
             bX = mMoveSelection.getX();
 
-        if (bY < 0 || bY >= BoardState.boardSize)
+        if (bY < 0 || bY >= boardViewModel.getBoardSize())
             bY = mMoveSelection.getY();
 
         if (mShowSelection != bShowSelection) {
@@ -547,7 +547,7 @@ public class BoardView extends View {
             bInvalidate = true;
             mShowSelectionHelpers = false;
             cancelAnimation();
-            if(this.onMakeMoveListener != null){
+            if (this.onMakeMoveListener != null) {
                 this.onMakeMoveListener.onMakeMove(mMoveSelection);
             }
 
@@ -566,6 +566,27 @@ public class BoardView extends View {
         }
     }
 
+    @Override
+    public void onCandidateMovesChanged() {
+       postInvalidate();
+    }
+
+    @Override
+    public void onBoardSizeChanged() {
+       postInvalidate();
+    }
+
+    @Override
+    public void onNextMoveChanged() {
+       postInvalidate();
+    }
+
+    @Override
+    public void onLastMoveChanged() {
+       postInvalidate();
+    }
+
+    @Override
     public void onBoardStateChanged() {
         mMoveSelection = null;
         if (shouldDisplayAnimations()) {
@@ -576,7 +597,7 @@ public class BoardView extends View {
             mAnimationTimer.start();
             //will call invalidate from the animation threads
         } else {
-            invalidate();
+            postInvalidate();
         }
     }
 
@@ -586,17 +607,19 @@ public class BoardView extends View {
 
     public void setDisplayAnimations(boolean displayAnimations) {
         this.displayAnimations = displayAnimations;
+        this.invalidate();
     }
 
     public void setAnimationDuration(int animationDuration) {
         this.animationDuration = animationDuration;
         cancelAnimation();
         initCountDowntimer();
+        this.invalidate();
+
     }
 
     public void setOnMakeMoveListener(OnMakeMoveListener listener) {
         this.onMakeMoveListener = listener;
-
     }
 
     public interface OnMakeMoveListener {

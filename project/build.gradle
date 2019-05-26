@@ -7,8 +7,11 @@ apply from: "deploy.gradle"
 project.ext.set("archivesBaseName", "reversatile")
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '27.0.3'
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
+
+    useLibrary 'android.test.base'
+    useLibrary 'android.test.mock'
 
 
     dexOptions {
@@ -21,6 +24,9 @@ android {
         ndk {
             abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
         }
+        minSdkVersion 14
+        targetSdkVersion 28
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     externalNativeBuild {
         ndkBuild {
@@ -31,7 +37,7 @@ android {
 
     android.applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "reversatile-${variant.name}-${variant.versionName}${variant.variantData.isSigned() ?"-signed":"-unsigned"}.apk"
+            outputFileName = "reversatile-${variant.name}-${variant.versionName}${variant.variantData.isSigned() ? "-signed" : "-unsigned"}.apk"
         }
     }
     compileOptions {
@@ -52,18 +58,19 @@ repositories {
 dependencies {
     api 'com.google.guava:guava:25.1-android'
 
-    implementation  'com.android.support:appcompat-v7:25.4.0'
-    implementation  'com.android.support:support-compat:25.4.0'
-    implementation  'com.android.support:animated-vector-drawable:25.4.0'
-    implementation  'com.android.support:support-v4:25.4.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:support-compat:28.0.0'
+    implementation 'com.android.support:animated-vector-drawable:28.0.0'
+    implementation 'com.android.support:support-v4:28.0.0'
 
     // Required -- JUnit 4 framework
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     // Optional -- Mockito framework
     testImplementation 'org.mockito:mockito-core:1.10.19'
+    androidTestImplementation 'androidx.test:runner:1.1.1'
+    androidTestImplementation 'androidx.test:rules:1.1.1'
+    // Optional -- Hamcrest library
+    androidTestImplementation 'org.hamcrest:hamcrest-library:1.3'
 }
-
-
-
-
-

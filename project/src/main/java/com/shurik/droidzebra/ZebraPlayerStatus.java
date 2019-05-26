@@ -1,40 +1,38 @@
 package com.shurik.droidzebra;
 
 public class ZebraPlayerStatus {
-    private String time;
-    private float eval;
-    private int discCount;
-    private byte[] moves = new byte[0];
+    private final String time;
+    private final float eval;
+    private final int discCount;
+    private final MoveList moveList;
 
-    public void setTime(String time) {
+    ZebraPlayerStatus() {
+        this.time = "";
+        this.eval = 0;
+        this.discCount = 0;
+        moveList = new MoveList();
+    }
+
+    ZebraPlayerStatus(String time, float eval, int discCount, MoveList moveList) {
         this.time = time;
+        this.eval = eval;
+        this.discCount = discCount;
+        this.moveList = moveList;
     }
 
     public String getTime() {
         return time;
     }
 
-    public void setEval(float eval) {
-        this.eval = eval;
-    }
-
     public float getEval() {
         return eval;
-    }
-
-    public void setDiscCount(int discCount) {
-        this.discCount = discCount;
     }
 
     public int getDiscCount() {
         return discCount;
     }
 
-    public void setMoves(byte[] moves) {
-        this.moves = moves;
-    }
-
-    public byte[] getMoves() {
-        return moves;
+    public MoveList getMoveList() {
+        return moveList;
     }
 }

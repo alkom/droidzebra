@@ -7,34 +7,26 @@ import com.google.common.base.Objects;
  */ // Zebra move representation
 public class Move {
     public static int PASS = -1;
-    public int mMove;
+    private int moveInt;
 
     public Move(int move) {
-        set(move);
+        moveInt = move;
     }
 
     public Move(int x, int y) {
-        set(x, y);
-    }
-
-    public void set(int move) {
-        mMove = move;
-    }
-
-    public void set(int x, int y) {
-        mMove = (x + 1) * 10 + y + 1;
+        moveInt = (x + 1) * 10 + y + 1;
     }
 
     public int getY() {
-        return mMove % 10 - 1;
+        return moveInt % 10 - 1;
     }
 
     public int getX() {
-        return mMove / 10 - 1;
+        return moveInt / 10 - 1;
     }
 
     public String getText() {
-        if (mMove == PASS) return "--";
+        if (moveInt == PASS) return "--";
 
         byte m[] = new byte[2];
         m[0] = (byte) ('a' + getX());
@@ -45,20 +37,25 @@ public class Move {
     @Override
     public String toString() {
         return "Move{" +
-                "mMove=" + mMove +
+                "mMove=" + moveInt +
                 '}';
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o)
+    {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Move move = (Move) o;
-        return mMove == move.mMove;
+        return moveInt == move.moveInt;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(mMove);
+        return Objects.hashCode(moveInt);
+    }
+
+    public int getMoveInt() {
+        return moveInt;
     }
 }
