@@ -19,6 +19,8 @@ public class ReversiWarsParser implements Parser {
     public LinkedList<Move> makeMoveList(String s) {
         LinkedList<Move> moves = new LinkedList<>();
 
+        s = s.replace("--", "");
+
         Matcher matcher = p.matcher(sanitize(s.toUpperCase()));
         if (!matcher.find()) {
             return new LinkedList<>();

@@ -34,6 +34,19 @@ public class ByteBoard {
         Arrays.fill(board, PLAYER_EMPTY);
     }
 
+    public ByteBoard(byte[] board, int boardSize) {
+        this.boardSize = boardSize;
+        this.board = board;
+    }
+
+    /**
+     * Returns o copy of the board
+     * @return
+     */
+    public byte[] getBoard() {
+        return Arrays.copyOf(board, board.length);
+    }
+
     public byte get(int x, int y) {
         return board[x * boardSize + y];
     }

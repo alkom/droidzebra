@@ -25,7 +25,14 @@ android:layout_width="fill_parent"
 android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/gameover_choices_new_game">
 </Button>
 
-<Button android:id="@+id/gameover_choice_switch" 
+    <Button
+        android:id="@+id/gameover_choice_rotate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/gameover_choices_rotate"
+        android:textSize="24sp"></Button>
+
+    <Button android:id="@+id/gameover_choice_switch"
 android:layout_width="fill_parent" 
 android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/gameover_choices_switch">
 </Button>

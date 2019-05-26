@@ -59,5 +59,21 @@ public class GameParserTest {
         assertThat(collect, is(game));
     }
 
+    @Test
+    public void testNoPass() {
+        String game = "f5d6c4d3c3f4f3e3e6c5f6g5h4e7c6f7g8f2g1e2f8h6f1d1d2d8d7c8c7b8g4c1c2h3g6h5g3h2g2b5a5h1b6h7b7a8a7a6g7e8--h8--a4--b4--e1b3a3--b1";
+        String sanitized = "F5D6C4D3C3F4F3E3E6C5F6G5H4E7C6F7G8F2G1E2F8H6F1D1D2D8D7C8C7B8G4C1C2H3G6H5G3H2G2B5A5H1B6H7B7A8A7A6G7E8H8A4B4E1B3A3B1";
+
+
+        assertThat(parser.canParse(game), is(true));
+
+        LinkedList<Move> moves = parser.makeMoveList(game);
+        assertThat(moves.size(), is(57));
+        String collect = moves.stream().map(Move::getText).map(String::toUpperCase).collect(Collectors.joining());
+        assertThat(collect, is(sanitized));
+    }
+
+
+
 
 }

@@ -158,6 +158,10 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                 showHint();
             }
             return true;
+            case R.id.menu_rotate: {
+                rotate();
+            }
+            return true;
         }
         return false;
     }
@@ -260,14 +264,21 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
 
     }
 
+    public GameState getGameState() {
+        return gameState;
+    }
+
     private void startNewGameAndResetUI(int moves_played_count, byte[] moves_played) {
         engine.newGame(moves_played, moves_played_count, engineConfig, new ZebraEngine.OnGameStateReadyListener() {
             @Override
             public void onGameStateReady(GameState gameState1) {
                 DroidZebra.this.gameState = gameState1;
                 gameState1.setGameStateListener(handler);
+                String moveSequenceAsString = gameState.getMoveSequenceAsString();
+                System.out.println(moveSequenceAsString);
             }
         });
+
 
         resetStateAndStatusView();
         loadUISettings();
@@ -542,8 +553,9 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
         super.onSaveInstanceState(outState);
         GameState gs = gameState;
         if (gs != null) {
-            outState.putByteArray("moves_played", gs.exportMoveSequence());
-            outState.putInt("moves_played_count", gs.getDisksPlayed());
+            byte[] moves = gs.exportMoveSequence();
+            outState.putByteArray("moves_played", moves);
+            outState.putInt("moves_played_count", moves.length);
             outState.putInt("version", 1);
         }
     }
@@ -716,6 +728,11 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
 
     }
 
+    public void rotate() {
+        byte[] rotate = gameState.rotate();
+        startNewGameAndResetUI(rotate.length, rotate);
+    }
+
 
     //-------------------------------------------------------------------------
     // Pass Dialog
@@ -782,6 +799,13 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                     v15 -> {
                         dismiss();
                         getDroidZebra().startNewGameAndResetUI();
+                    });
+
+            button = (Button) v.findViewById(R.id.gameover_choice_rotate);
+            button.setOnClickListener(
+                    click -> {
+                        dismiss();
+                        getDroidZebra().rotate();
                     });
 
             button = (Button) v.findViewById(R.id.gameover_choice_switch);

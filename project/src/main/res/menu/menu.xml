@@ -4,6 +4,10 @@
             android:icon="@android:drawable/ic_menu_compass" 
             android:title="@string/menu_item_hint">
         </item>
+        <item android:id="@+id/menu_rotate"
+            android:icon="@android:drawable/ic_menu_compass"
+            android:title="@string/gameover_choices_rotate">
+        </item>
         <item android:id="@+id/menu_take_back"
               android:icon="@drawable/ic_menu_undo"
               android:title="@string/menu_item_undo"

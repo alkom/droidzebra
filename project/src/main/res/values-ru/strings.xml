@@ -75,5 +75,6 @@
     <string name="guess_move_incorrect">Not the best move, try again</string>
     <string name="guess_white_move_hint">Guess best white move.</string>
     <string name="menu_item_guess_move">Guess Move Mode</string>
+    <string name="gameover_choices_rotate">Rotate the Board</string>
 
 </resources>
