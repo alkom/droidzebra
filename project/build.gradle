@@ -63,6 +63,8 @@ dependencies {
     implementation 'com.android.support:animated-vector-drawable:28.0.0'
     implementation 'com.android.support:support-v4:28.0.0'
 
+    implementation 'com.google.firebase:firebase-core:16.0.9'
+
     // Required -- JUnit 4 framework
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     testImplementation 'junit:junit:4.12'
@@ -74,3 +76,5 @@ dependencies {
     // Optional -- Hamcrest library
     androidTestImplementation 'org.hamcrest:hamcrest-library:1.3'
 }
+
+apply plugin: 'com.google.gms.google-services'

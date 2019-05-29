@@ -16,21 +16,7 @@ import java.lang.ref.WeakReference;
 import static org.junit.Assert.assertSame;
 
 
-public class InvalidmoveTest {
-
-    private DroidZebra zebra;
-
-    @Rule
-    public ActivityTestRule<DroidZebra> activityRule
-            = new ActivityTestRule<>(DroidZebra.class);
-
-    @Before
-    public void init() throws InterruptedException {
-        zebra = activityRule.getActivity();
-        while (!zebra.initialized()) {
-            Thread.sleep(100);
-        }
-    }
+public class InvalidmoveTest extends BasicTest {
 
     @Test
     public void testIssue24() throws InterruptedException {
@@ -61,19 +47,4 @@ public class InvalidmoveTest {
         assertSame(2, countSquares(ZebraEngine.PLAYER_BLACK));
 
     }
-
-    private int countSquares(byte color) {
-        GameStateBoardModel state = zebra.getState();
-        int result = 0;
-        for (int y = 0, boardLength = state.getBoardHeight(); y < boardLength; y++) {
-            for (int x = 0, rowLength = state.getBoardRowWidth(); x < rowLength; x++) {
-                if (color == state.getFieldByte(x,y)) {
-                    result++;
-                }
-            }
-        }
-        return result;
-    }
-
-
 }

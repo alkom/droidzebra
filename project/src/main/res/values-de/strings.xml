@@ -73,4 +73,5 @@
     <string name="guess_move_incorrect">Falsch!</string>
     <string name="guess_white_move_hint">Besten weissen Zug raten</string>
     <string name="menu_item_guess_move">Züge raten</string>
+    <string name="gameover_choices_rotate">Brett umdrehen</string>
 </resources>

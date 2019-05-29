@@ -84,4 +84,5 @@
     <string name="guess_white_move_hint">Guess best white move.</string>
     <string name="guess_move_correct">Correct!</string>
     <string name="guess_move_incorrect">Not the best move, try again</string>
+    <string name="gameover_choices_rotate">Rotate the Board</string>
 </resources>
