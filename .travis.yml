@@ -78,7 +78,7 @@ deploy:
   api_key:
     secure: OzY2HHyFmcop+412mV/XXSrbqb8T6T4K5ATr8rP4YZXWnrtRU7HvAcfYkQQNvU5d+9pBA2D6nP3ZW7R9Ia/rdT/ysylJtOM3hR+8wwVNKoa8unxHzUgQgn3txxos1VxLON5vzR4lhyNpo8j+Di3Xcb5EVw/+g7HKbr7pytAkBnvAdv4vGW4B0SFwiFpHrSLlW/5uL8BKGmi/oG4sJGKNt5UE6Z0RCtj7YgesNyDwMGtMvGBXj5PdISgETCy3ZdYCRR1G7Y4Oeqfw3LAmv9C54MrFZlNdXzAbuGhEXKy8UDLD0uYWXOsxq9xpmfE3Xw79HCqqmHXfMmuf1IO3Tgit1a/aN6CWC33fH+cMt3h9C0ulGHnrUpLKNC7xlQeP66TjPDtYQYhvnAGF8Ps7yYyjpExrREsh9ShKJPVhtfWCPQQCaCygcWTUD4JLwRr4gy0d14cpOUNVIJ5ja/u+oGCy16VZ7PFeOLiZbZQ8IWrYSRh1Rdxn/9q0ac8hAlj24QwIDTbhAHh+JgRbkCxIAPiZ+bDQCkLKe6MM9Vt7H9Yox2f83cIVfPLj9bZKRb2FuLRWtXezB41pU7Hk/+AnfLyM/hyELKE8tCe8h6yQCEIB/iPiCd1SbCYmZ0gChz4egaBCAQgJXJ+mQd8XjYnrbERbG6HK/GHsH66WLQKMbwpRVKY=
   file_glob: true
-  file: "./project/build/outputs/apk/release/reversatile-release-*signed.apk"
+  file: "./project/build/outputs/apk/release/reversatile-release-*-signed.apk"
   skip_cleanup: true
   on:
     repo: oers/oerszebra
