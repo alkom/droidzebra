@@ -102,6 +102,7 @@ static jmp_buf s_err_jmp;
 char android_files_dir[256];
 
 static void _droidzebra_undo_turn(int* side_to_move);
+static void _droidzebra_undo_all(int* side_to_move);
 static void _droidzebra_redo_turn(int* side_to_move);
 static void _droidzebra_on_settings_change(void);
 static void _droidzebra_compute_evals(int side_to_move);
@@ -822,7 +823,14 @@ AGAIN:
 							if ( side_to_move == BLACKSQ )
 								score_sheet_row--;
 							continue;
-						} else if( evt.type==UI_EVENT_REDO ) {
+						} else if( evt.type==UI_EVENT_UNDO_ALL ) {
+                            _droidzebra_undo_all(&side_to_move);
+                            // adjust for increment at the beginning of the game loop
+                            if ( side_to_move == BLACKSQ )
+                                score_sheet_row--;
+                            continue;
+                        }
+                        else if( evt.type==UI_EVENT_REDO ) {
 							_droidzebra_redo_turn(&side_to_move);
 							// adjust for increment at the beginning of the game loop
 							if ( side_to_move == BLACKSQ )
@@ -946,7 +954,14 @@ AGAIN:
 			if ( side_to_move == BLACKSQ )
 				score_sheet_row--;
 			goto AGAIN;
-		} else if( evt.type==UI_EVENT_SETTINGS_CHANGE ) {
+		} else if( evt.type==UI_EVENT_UNDO_ALL ) {
+			_droidzebra_undo_all(&side_to_move);
+			// adjust for increment at the beginning of the game loop
+			if ( side_to_move == BLACKSQ )
+				score_sheet_row--;
+			goto AGAIN;
+		}
+		else if( evt.type==UI_EVENT_SETTINGS_CHANGE ) {
 			_droidzebra_on_settings_change();
 		}
 	}
@@ -992,6 +1007,39 @@ void _droidzebra_undo_turn(int* side_to_move)
 
 		droidzebra_message_debug("undo: side_to_move %d, undo_move %d, score_sheet_row %d, disks_played %d, move_count %d", *side_to_move, curr_move, score_sheet_row, disks_played, move_count[disks_played]);
 	} while( !(score_sheet_row==0 && *side_to_move==BLACKSQ) && !human_can_move );
+	clear_endgame_performed();
+}
+
+// undo moves until player is a human and he can make a move
+void _droidzebra_undo_all(int* side_to_move)
+{
+	int curr_move;
+
+	if(score_sheet_row==0 && *side_to_move==BLACKSQ) return;
+
+
+
+	do {
+        _droidzebra_undo_stack_push(disks_played);
+		*side_to_move = OPP(*side_to_move);
+
+		if ( *side_to_move == WHITESQ )
+			score_sheet_row--;
+
+		if ( *side_to_move == WHITESQ ) {
+			curr_move = white_moves[score_sheet_row];
+			if(white_moves[score_sheet_row]!=PASS)
+				unmake_move(WHITESQ, white_moves[score_sheet_row] );
+			white_moves[score_sheet_row] = PASS;
+		} else {
+			curr_move = black_moves[score_sheet_row];
+			if(black_moves[score_sheet_row]!=PASS)
+				unmake_move(BLACKSQ, black_moves[score_sheet_row] );
+			black_moves[score_sheet_row] = PASS;
+		}
+
+		droidzebra_message_debug("undo: side_to_move %d, undo_move %d, score_sheet_row %d, disks_played %d, move_count %d", *side_to_move, curr_move, score_sheet_row, disks_played, move_count[disks_played]);
+	} while( !(score_sheet_row==0 && *side_to_move==BLACKSQ));
 	clear_endgame_performed();
 }
 

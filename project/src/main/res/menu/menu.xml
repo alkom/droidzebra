@@ -14,6 +14,11 @@
               app:showAsAction="ifRoom|withText"
               tools:ignore="AppCompatResource">
         </item>
+    <item android:id="@+id/menu_goto_beginning"
+        android:title="@string/menu_item_first_move"
+        app:showAsAction="ifRoom|withText"
+        tools:ignore="AppCompatResource">
+    </item>
     <item android:id="@+id/menu_rotate"
         android:title="@string/gameover_choices_rotate"
         app:showAsAction="ifRoom|withText">

@@ -135,6 +135,11 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                         .colorRes(R.color.white)
                         .sizeDp(12));
 
+        menu.findItem(R.id.menu_goto_beginning).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_fast_backward)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
         menu.findItem(R.id.menu_rotate).setIcon(
                 new IconDrawable(this, FontAwesomeIcons.fa_refresh)
                         .colorRes(R.color.white)
@@ -194,6 +199,9 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                 return true;
             case R.id.menu_take_back:
                 engine.undoMove(gameState);
+                return true;
+            case R.id.menu_goto_beginning:
+                undoAll();
                 return true;
             case R.id.menu_take_redo:
                 engine.redoMove(gameState);
@@ -879,6 +887,13 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                         getDroidZebra().rotate();
                     });
 
+            button = (Button) v.findViewById(R.id.gameover_choice_beginning);
+            button.setOnClickListener(
+                    click -> {
+                        dismiss();
+                        getDroidZebra().undoAll();
+                    });
+
             button = (Button) v.findViewById(R.id.gameover_choice_switch);
             button.setOnClickListener(
                     v12 -> {
@@ -917,6 +932,10 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
             super.onResume();
             refreshContent(getView());
         }
+    }
+
+    private void undoAll() {
+        engine.undoAll(gameState);
     }
 
     //-------------------------------------------------------------------------
