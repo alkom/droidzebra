@@ -4,48 +4,41 @@
             android:icon="@android:drawable/ic_menu_compass" 
             android:title="@string/menu_item_hint">
         </item>
-        <item android:id="@+id/menu_rotate"
-            android:icon="@android:drawable/ic_menu_compass"
-            android:title="@string/gameover_choices_rotate">
-        </item>
         <item android:id="@+id/menu_take_back"
-              android:icon="@drawable/ic_menu_undo"
               android:title="@string/menu_item_undo"
               app:showAsAction="ifRoom|withText"
               tools:ignore="AppCompatResource">
         </item>
         <item android:id="@+id/menu_take_redo"
-              android:icon="@drawable/ic_menu_redo"
               android:title="@string/menu_item_redo"
               app:showAsAction="ifRoom|withText"
               tools:ignore="AppCompatResource">
         </item>
+    <item android:id="@+id/menu_rotate"
+        android:title="@string/gameover_choices_rotate"
+        app:showAsAction="ifRoom|withText">
+
+    </item>
         <item android:id="@+id/menu_new_game"
-              android:icon="@drawable/ic_menu_play"
               app:showAsAction="ifRoom|withText"
               android:title="@string/menu_item_new_game"
               tools:ignore="AppCompatResource">
         </item>
-        <item android:id="@+id/menu_settings" 
-            android:icon="@android:drawable/ic_menu_preferences" 
+        <item android:id="@+id/menu_settings"
             android:title="@string/menu_item_settings">
         </item>
-        <item android:id="@+id/menu_switch_sides" 
-            android:icon="@drawable/ic_menu_switch_sides" 
+        <item android:id="@+id/menu_switch_sides"
             android:title="@string/menu_item_switch_sides">
         </item>
         <item android:title="@string/menu_enter_moves"
             android:id="@+id/menu_enter_moves" />
-        <item android:id="@+id/menu_mail" 
-            android:icon="@android:drawable/ic_menu_send" 
+        <item android:id="@+id/menu_mail"
             android:title="@string/menu_item_mail">
         </item>
         <item android:id="@+id/menu_guess_move"
-            android:icon="@android:drawable/ic_menu_send"
             android:title="@string/menu_item_guess_move">
         </item>
-        <item android:id="@+id/menu_quit" 
-            android:icon="@android:drawable/ic_menu_close_clear_cancel" 
+        <item android:id="@+id/menu_quit"
             android:title="@string/menu_item_quit">
         </item>
      </menu>

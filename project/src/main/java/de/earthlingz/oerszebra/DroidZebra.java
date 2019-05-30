@@ -17,6 +17,7 @@
 
 package de.earthlingz.oerszebra;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ClipboardManager;
@@ -29,10 +30,15 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.MenuBuilder;
 import android.util.Log;
 import android.view.*;
 import android.widget.Button;
 import android.widget.TextView;
+import com.joanzapata.iconify.IconDrawable;
+import com.joanzapata.iconify.Iconify;
+import com.joanzapata.iconify.fonts.FontAwesomeIcons;
+import com.joanzapata.iconify.fonts.FontAwesomeModule;
 import com.shurik.droidzebra.*;
 import de.earthlingz.oerszebra.BoardView.BoardView;
 import de.earthlingz.oerszebra.BoardView.GameStateBoardModel;
@@ -104,9 +110,71 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
 
     /* Creates the menu items */
     @Override
+    @SuppressLint("RestrictedApi")
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
+
+        if(menu instanceof MenuBuilder){
+            MenuBuilder m = (MenuBuilder) menu;
+            m.setOptionalIconsVisible(true);
+        }
+
+        menu.findItem(R.id.menu_take_back).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_undo)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_take_redo).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_repeat)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_new_game).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_play)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_rotate).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_refresh)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_switch_sides).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_exchange)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_hint).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_info)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_settings).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_cog)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_enter_moves).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_file_text)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_guess_move).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_question)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_quit).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_close)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_mail).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_mail_forward)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -201,6 +269,9 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         resetStateAndStatusView();
+
+        Iconify
+                .with(new FontAwesomeModule());
 
         clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 

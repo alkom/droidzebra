@@ -1,15 +1,21 @@
 package de.earthlingz.oerszebra.guessmove;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.MenuBuilder;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
+import com.joanzapata.iconify.IconDrawable;
+import com.joanzapata.iconify.Iconify;
+import com.joanzapata.iconify.fonts.FontAwesomeIcons;
+import com.joanzapata.iconify.fonts.FontAwesomeModule;
 import com.shurik.droidzebra.EngineConfig;
 import com.shurik.droidzebra.InvalidMove;
 import com.shurik.droidzebra.ZebraEngine;
@@ -40,6 +46,9 @@ public class GuessMoveActivity extends AppCompatActivity {
         globalSettingsLoader = new GlobalSettingsLoader(getApplicationContext());
         engineConfig = globalSettingsLoader.createEngineConfig();
 
+        Iconify
+                .with(new FontAwesomeModule());
+
 
         this.manager = new GuessMoveModeManager(ZebraEngine.get(
                 new AndroidContext(getApplicationContext())),
@@ -69,6 +78,8 @@ public class GuessMoveActivity extends AppCompatActivity {
         globalSettingsLoader.setOnSettingsChangedListener(null);
 
     }
+
+
 
     private void newGame() {
         ProgressDialog progressDialog = new ProgressDialog(this);
@@ -161,10 +172,43 @@ public class GuessMoveActivity extends AppCompatActivity {
     }
 
 
+    /* Creates the menu items */
     @Override
+    @SuppressLint("RestrictedApi")
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.guess_move_context_menu, menu);
+
+        if(menu instanceof MenuBuilder){
+            MenuBuilder m = (MenuBuilder) menu;
+            m.setOptionalIconsVisible(true);
+        }
+
+        menu.findItem(R.id.menu_take_back).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_undo)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_take_redo).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_repeat)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_new_game).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_play)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_hint).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_info)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_settings).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_cog)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
         return super.onCreateOptionsMenu(menu);
     }
 
