@@ -78,5 +78,6 @@
     <string name="gameover_choices_rotate">Rotate the Board</string>
     <string name="menu_item_first_move">Replay</string>
     <string name="gameover_beginning">Go to first Move</string>
+    <string name="board_description">The Board</string>
 
 </resources>

@@ -76,4 +76,5 @@
     <string name="gameover_choices_rotate">Brett umdrehen</string>
     <string name="menu_item_first_move">Erster Zug</string>
     <string name="gameover_beginning">Zum ersten Zug</string>
+    <string name="board_description">The Board</string>
 </resources>

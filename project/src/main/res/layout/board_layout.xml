@@ -6,12 +6,12 @@
   android:layout_height="fill_parent">
 
 	<de.earthlingz.oerszebra.BoardView.BoardView
-            android:id="@+id/board"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" 
-			android:background="@color/board_color"
-            android:visibility="visible"
- 			/>
+		android:id="@+id/board"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:background="@color/board_color"
+		android:contentDescription="@string/board_description"
+		android:visibility="visible" />
 
 <FrameLayout 
     android:id="@+id/board_info_layout" 
