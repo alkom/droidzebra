@@ -85,6 +85,6 @@
     <string name="guess_move_correct">Correct!</string>
     <string name="guess_move_incorrect">Not the best move, try again</string>
     <string name="gameover_choices_rotate">Rotate the Board</string>
-    <string name="menu_item_first_move">First Move</string>
+    <string name="menu_item_first_move">Replay</string>
     <string name="gameover_beginning">Go to first Move</string>
 </resources>
