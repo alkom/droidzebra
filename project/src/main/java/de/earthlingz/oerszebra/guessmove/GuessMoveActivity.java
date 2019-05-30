@@ -10,6 +10,8 @@ import android.support.v7.view.menu.MenuBuilder;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.joanzapata.iconify.IconDrawable;
@@ -60,6 +62,8 @@ public class GuessMoveActivity extends AppCompatActivity {
         boardView.requestFocus();
         sideToMoveCircle = (ImageView) findViewById(R.id.side_to_move_circle);
         hintText = (TextView) findViewById(R.id.guess_move_text);
+        Button button = (Button) findViewById(R.id.guess_move_new);
+        button.setOnClickListener((a) -> newGame());
         newGame();
     }
 
@@ -95,7 +99,7 @@ public class GuessMoveActivity extends AppCompatActivity {
                     boardView.setOnMakeMoveListener(move -> manager.guess(move));
                     updateSideToMoveCircle(sideToMove);
                     setGuessText(sideToMove);
-                    progressDialog.hide();
+                    progressDialog.dismiss();
 
                 });
 
