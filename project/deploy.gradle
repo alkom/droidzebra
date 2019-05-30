@@ -5,4 +5,9 @@ if(file('../keystore/api-playstore.json').exists()) {
         serviceAccountCredentials  = file('../keystore/api-playstore.json')
         track = 'beta'
     }
+} else {
+    play {
+        serviceAccountCredentials  = file('../keystore/api-playstore-temp.json')
+        track = 'beta'
+    }
 }

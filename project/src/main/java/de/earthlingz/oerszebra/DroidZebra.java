@@ -78,6 +78,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
     private GameStateListener handler = new GameStateHandlerProxy(this);
     private GameState gameState;
     private EngineConfig engineConfig;
+    private Menu menu;
 
 
     public void resetStateAndStatusView() {
@@ -112,6 +113,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
     @Override
     @SuppressLint("RestrictedApi")
     public boolean onCreateOptionsMenu(Menu menu) {
+        this.menu = menu;
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
 
@@ -198,7 +200,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                 showQuitDialog();
                 return true;
             case R.id.menu_take_back:
-                engine.undoMove(gameState);
+                undo();
                 return true;
             case R.id.menu_goto_beginning:
                 undoAll();
@@ -240,6 +242,11 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
             return true;
         }
         return false;
+    }
+
+    private void undo() {
+        menu.findItem(R.id.menu_take_back).setEnabled(false);
+        engine.undoMove(gameState);
     }
 
     @Override
@@ -621,7 +628,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            engine.undoMove(gameState);
+            undo();
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -672,6 +679,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
 
     @Override
     public void onBoard(GameState gameState) {
+        menu.findItem(R.id.menu_take_back).setEnabled(true);
         int sideToMove = gameState.getSideToMove();
 
         //triggers animations
