@@ -74,4 +74,6 @@
     <string name="guess_white_move_hint">Besten weissen Zug raten</string>
     <string name="menu_item_guess_move">Züge raten</string>
     <string name="gameover_choices_rotate">Brett umdrehen</string>
+    <string name="menu_item_first_move">Erster Zug</string>
+    <string name="gameover_beginning">Zum ersten Zug</string>
 </resources>
