@@ -34,8 +34,10 @@ android {
         exclude 'META-INF/NOTICE.txt'
         exclude 'META-INF/notice.txt'
         exclude 'META-INF/ASL2.0'
-        exclude 'README.TXT'
+        exclude 'README.txt'
     }
+
+
     compileSdkVersion 28
     buildToolsVersion '28.0.3'
 
