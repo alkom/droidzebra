@@ -68,5 +68,7 @@
                     android:value="de.earthlingz.oerszebra.DroidZebra" />
 
         </activity>
+        <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
+        <meta-data android:name="google_analytics_ssaid_collection_enabled" android:value="false" />
     </application>
 </manifest>
