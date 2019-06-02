@@ -10,6 +10,8 @@
             android:required="false"/>
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!-- for crashalytics-->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
             android:name=".Reversatile"
@@ -67,5 +69,4 @@
 
         </activity>
     </application>
-
 </manifest>

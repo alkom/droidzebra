@@ -283,6 +283,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        new Analytics(this).build();
         resetStateAndStatusView();
 
         Iconify
