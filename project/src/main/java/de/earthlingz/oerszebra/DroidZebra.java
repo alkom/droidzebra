@@ -35,6 +35,7 @@ import android.util.Log;
 import android.view.*;
 import android.widget.Button;
 import android.widget.TextView;
+import com.crashlytics.android.Crashlytics;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
@@ -602,6 +603,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
     }
 
     public void showAlertDialog(String msg) {
+        Crashlytics.log("Alert:" + msg);
         runOnUiThread(DroidZebra.this::startNewGameAndResetUI);
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle("Zebra Error");
