@@ -70,5 +70,10 @@
         </activity>
         <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
         <meta-data android:name="google_analytics_ssaid_collection_enabled" android:value="false" />
+
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="257376ca88de0548f559805cd6ac01a236f55576"
+             />
     </application>
 </manifest>
