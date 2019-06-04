@@ -21,6 +21,7 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ClipboardManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -107,6 +108,12 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                 gameState.setGameStateListener(handler);
             }
         });
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Analytics.ask(this);
     }
 
     /* Creates the menu items */

@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/settings_ui_preferences">
+        <CheckBoxPreference
+            android:defaultValue="@string/default_display_moves"
+            android:key="settings_ui_display_moves"
+            android:summary="@string/settings_ui_display_moves_summary"
+            android:title="@string/settings_ui_display_moves_title" />
+        <CheckBoxPreference
+            android:defaultValue="@string/default_display_last_move"
+            android:key="settings_ui_display_last_move"
+            android:summary="@string/settings_ui_display_last_move_summary"
+            android:title="@string/settings_ui_display_last_move_title" />
+        <CheckBoxPreference
+            android:defaultValue="@string/default_display_principal_variation"
+            android:key="settings_ui_display_pv"
+            android:summary="@string/settings_ui_display_pv_summary"
+            android:title="@string/settings_ui_display_pv_title" />
+        <CheckBoxPreference
+            android:defaultValue="@string/default_enable_animations"
+            android:key="settings_ui_display_enable_animations"
+            android:summary="@string/settings_ui_display_enable_animations_summary"
+            android:title="@string/settings_ui_display_enable_animations_title" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/settings_engine_preferences">
         <ListPreference
             android:defaultValue="@string/default_engine_function"
@@ -59,26 +81,12 @@
             android:summary="@string/settings_sendmail_summary"
             android:title="@string/settings_sendmail_title" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/settings_ui_preferences">
+    <PreferenceCategory android:title="@string/ask.analytics">
+
         <CheckBoxPreference
-            android:defaultValue="@string/default_display_moves"
-            android:key="settings_ui_display_moves"
-            android:summary="@string/settings_ui_display_moves_summary"
-            android:title="@string/settings_ui_display_moves_title" />
-        <CheckBoxPreference
-            android:defaultValue="@string/default_display_last_move"
-            android:key="settings_ui_display_last_move"
-            android:summary="@string/settings_ui_display_last_move_summary"
-            android:title="@string/settings_ui_display_last_move_title" />
-        <CheckBoxPreference
-            android:defaultValue="@string/default_display_principal_variation"
-            android:key="settings_ui_display_pv"
-            android:summary="@string/settings_ui_display_pv_summary"
-            android:title="@string/settings_ui_display_pv_title" />
-        <CheckBoxPreference
-            android:defaultValue="@string/default_enable_animations"
-            android:key="settings_ui_display_enable_animations"
-            android:summary="@string/settings_ui_display_enable_animations_summary"
-            android:title="@string/settings_ui_display_enable_animations_title" />
+            android:defaultValue="true"
+            android:key="analytics_setting"
+            android:title="@string/ask.analytics"
+            android:summary="@string/ask.analytics.help" />
     </PreferenceCategory>
 </PreferenceScreen>
