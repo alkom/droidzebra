@@ -350,12 +350,11 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
             public void onGameStateReady(GameState gameState1) {
                 DroidZebra.this.gameState = gameState1;
                 gameState1.setGameStateListener(handler);
+
+                resetStateAndStatusView();
+                loadUISettings();
             }
         });
-
-        resetStateAndStatusView();
-        loadUISettings();
-
     }
 
     public GameState getGameState() {
@@ -369,14 +368,12 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                 DroidZebra.this.gameState = gameState1;
                 gameState1.setGameStateListener(handler);
                 String moveSequenceAsString = gameState.getMoveSequenceAsString();
-                System.out.println(moveSequenceAsString);
+                Log.i("start", moveSequenceAsString);
+
+                resetStateAndStatusView();
+                loadUISettings();
             }
         });
-
-
-        resetStateAndStatusView();
-        loadUISettings();
-
     }
 
     private void showActionBar() {
