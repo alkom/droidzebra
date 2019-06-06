@@ -389,13 +389,16 @@ public class BoardView extends View implements BoardViewModel.BoardViewModelList
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
+        //for the android designer
+        int boardSize = boardViewModel != null?boardViewModel.getBoardSize():8;
+
         mSizeX = mSizeY = Math.min(getMeasuredWidth(), getMeasuredHeight());
-        mSizeCell = Math.min(mSizeX / (boardViewModel.getBoardSize() + 1), mSizeY / (boardViewModel.getBoardSize() + 1));
+        mSizeCell = Math.min(mSizeX / (boardSize + 1), mSizeY / (boardSize + 1));
         lineWidth = Math.max(1f, mSizeCell / 40f);
         gridCirclesRadius = Math.max(3f, mSizeCell / 13f);
         mBoardRect.set(
-                mSizeX - mSizeCell / 2 - mSizeCell * boardViewModel.getBoardSize(),
-                mSizeY - mSizeCell / 2 - mSizeCell * boardViewModel.getBoardSize(),
+                mSizeX - mSizeCell / 2 - mSizeCell * boardSize,
+                mSizeY - mSizeCell / 2 - mSizeCell * boardSize,
                 mSizeX - mSizeCell / 2,
                 mSizeY - mSizeCell / 2
         );
