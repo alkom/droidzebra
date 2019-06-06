@@ -220,7 +220,7 @@ public class BoardView extends View implements BoardViewModel.BoardViewModelList
 
         // draw the board
         mPaint.setStrokeWidth(lineWidth);
-        int boardSize = boardViewModel.getBoardSize();
+        int boardSize = boardViewModel !=null ? boardViewModel.getBoardSize():8;
         for (int i = 0; i <= boardSize; i++) {
             mPaint.setColor(mColorLine);
             canvas.drawLine(mBoardRect.left + i * mSizeCell, mBoardRect.top, mBoardRect.left + i * mSizeCell, mBoardRect.top + mSizeCell * boardSize, mPaint);
@@ -288,6 +288,9 @@ public class BoardView extends View implements BoardViewModel.BoardViewModelList
             mPaint.setColor(mColorSelectionValid);
 
             canvas.drawRect(cellRT, mPaint);
+        }
+        if(boardViewModel == null) {
+            return;
         }
 
         // draw moves

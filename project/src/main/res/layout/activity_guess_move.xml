@@ -6,37 +6,6 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" android:background="@color/board_color">
 
-    <ImageView
-        android:id="@+id/side_to_move_circle"
-
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/guess_move_board"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginStart="4dp"
-        android:layout_marginLeft="4dp"
-        android:layout_marginTop="3dp"
-        android:contentDescription="@string/menu_item_guess_move"
-        android:padding="16dp"
-        app:srcCompat="@drawable/black_circle" />
-
-    <Button
-        android:id="@+id/guess_move_new"
-        android:layout_width="182dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/side_to_move_circle"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginStart="114dp"
-        android:layout_marginLeft="114dp"
-        android:layout_marginTop="6dp"
-        android:layout_marginEnd="115dp"
-        android:layout_marginRight="115dp"
-        android:background="@color/black"
-        android:text="@string/menu_item_new_game" />
 
     <de.earthlingz.oerszebra.BoardView.BoardView
         android:id="@+id/guess_move_board"
@@ -47,16 +16,52 @@
 
         />
 
-
-    <TextView
-        android:id="@+id/guess_move_text"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_below="@+id/guess_move_board"
-        android:layout_toEndOf="@+id/side_to_move_circle"
-        android:layout_toRightOf="@+id/side_to_move_circle"
-        android:text="@string/menu_item_guess_move"
-        android:textSize="24sp" />
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp">
+
+            <ImageView
+                android:id="@+id/side_to_move_circle"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginLeft="4dp"
+                android:contentDescription="@string/menu_item_guess_move"
+                android:padding="16dp"
+                app:srcCompat="@drawable/black_circle" />
+
+            <TextView
+                android:id="@+id/guess_move_text"
+                android:layout_width="wrap_content"
+                android:layout_height="111dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_toEndOf="@id/side_to_move_circle"
+                android:layout_toRightOf="@id/side_to_move_circle"
+                android:text="@string/menu_item_guess_move"
+                android:textSize="24sp" />
+
+        </RelativeLayout>
+
+        <Button
+            android:id="@+id/guess_move_new"
+            android:layout_width="182dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="114dp"
+            android:layout_marginLeft="114dp"
+            android:layout_marginTop="23dp"
+            android:layout_marginEnd="115dp"
+            android:layout_marginRight="115dp"
+            android:background="@color/black"
+            android:text="@string/menu_item_new_game" />
+    </LinearLayout>
 
 
 </RelativeLayout>
