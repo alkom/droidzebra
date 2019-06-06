@@ -95,8 +95,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
     public void startNewGameAndResetUI() {
         startNewGame();
 
-        resetStateAndStatusView();
-        loadUISettings();
+        resetAndLoadOnGuiThread();
 
     }
 
@@ -351,8 +350,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                 DroidZebra.this.gameState = gameState1;
                 gameState1.setGameStateListener(handler);
 
-                resetStateAndStatusView();
-                loadUISettings();
+                resetAndLoadOnGuiThread();
             }
         });
     }
@@ -370,9 +368,15 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                 String moveSequenceAsString = gameState.getMoveSequenceAsString();
                 Log.i("start", moveSequenceAsString);
 
-                resetStateAndStatusView();
-                loadUISettings();
+                resetAndLoadOnGuiThread();
             }
+        });
+    }
+
+    private void resetAndLoadOnGuiThread() {
+        runOnUiThread(() -> {
+            resetStateAndStatusView();
+            loadUISettings();
         });
     }
 
