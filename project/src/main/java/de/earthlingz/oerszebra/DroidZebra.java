@@ -18,23 +18,22 @@
 package de.earthlingz.oerszebra;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.menu.MenuBuilder;
 import android.util.Log;
 import android.view.*;
 import android.widget.Button;
 import android.widget.TextView;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
@@ -45,6 +44,7 @@ import de.earthlingz.oerszebra.BoardView.GameStateBoardModel;
 import de.earthlingz.oerszebra.guessmove.GuessMoveActivity;
 import de.earthlingz.oerszebra.parser.GameParser;
 
+import javax.annotation.Nonnull;
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Date;
@@ -856,7 +856,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
         }
 
         @Override
-        @NonNull
+        @Nonnull
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             return new AlertDialog.Builder(getActivity())
                     .setTitle(R.string.app_name)
@@ -980,7 +980,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
             return (DroidZebra) getActivity();
         }
 
-        @NonNull
+        @Nonnull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             return new AlertDialog.Builder(getActivity())
@@ -1004,7 +1004,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
             return (DroidZebra) getActivity();
         }
 
-        @NonNull
+        @Nonnull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             ProgressDialog pd = new ProgressDialog(getActivity()) {

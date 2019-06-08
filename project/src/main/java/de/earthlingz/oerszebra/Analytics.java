@@ -1,10 +1,10 @@
 package de.earthlingz.oerszebra;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import com.crashlytics.android.Crashlytics;
 import com.google.firebase.analytics.FirebaseAnalytics;

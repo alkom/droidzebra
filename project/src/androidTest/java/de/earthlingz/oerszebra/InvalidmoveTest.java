@@ -1,14 +1,9 @@
 package de.earthlingz.oerszebra;
 
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.AlertDialog;
-import androidx.test.annotation.UiThreadTest;
-import androidx.test.rule.ActivityTestRule;
 import com.shurik.droidzebra.ZebraEngine;
-import de.earthlingz.oerszebra.BoardView.GameStateBoardModel;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.lang.ref.WeakReference;

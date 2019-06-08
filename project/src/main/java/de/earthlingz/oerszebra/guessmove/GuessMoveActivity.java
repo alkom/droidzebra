@@ -5,15 +5,14 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.menu.MenuBuilder;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.MenuBuilder;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
@@ -56,13 +55,13 @@ public class GuessMoveActivity extends AppCompatActivity {
                 new AndroidContext(getApplicationContext())),
                 engineConfig);
         setContentView(R.layout.activity_guess_move);
-        boardView = (BoardView) findViewById(R.id.guess_move_board);
+        boardView = findViewById(R.id.guess_move_board);
         boardViewModel = manager;
         boardView.setBoardViewModel(boardViewModel);
         boardView.requestFocus();
-        sideToMoveCircle = (ImageView) findViewById(R.id.side_to_move_circle);
-        hintText = (TextView) findViewById(R.id.guess_move_text);
-        Button button = (Button) findViewById(R.id.guess_move_new);
+        sideToMoveCircle = findViewById(R.id.side_to_move_circle);
+        hintText = findViewById(R.id.guess_move_text);
+        Button button = findViewById(R.id.guess_move_new);
         button.setOnClickListener((a) -> newGame());
         newGame();
     }

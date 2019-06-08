@@ -1,8 +1,9 @@
 package de.earthlingz.oerszebra.BoardView;
 
-import android.support.annotation.Nullable;
 import com.shurik.droidzebra.CandidateMove;
 import com.shurik.droidzebra.Move;
+
+import javax.annotation.Nullable;
 
 public interface BoardViewModel {
 
