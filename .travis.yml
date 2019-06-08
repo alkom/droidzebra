@@ -6,7 +6,7 @@ before_install:
    then
     rm -fr $ANDROID_NDK_HOME;
     curl -L https://dl.google.com/android/repository/android-ndk-r20-linux-x86_64.zip -O;
-    unzip -oq android-ndk-r20-linux-x86_64.ip;
+    unzip -oq android-ndk-r20-linux-x86_64.zip;
     ls -ltr $ANDROID_NDK_HOME;
     ls -ltr $ANDROID_NDK_HOME/platforms;
     rm android-ndk-r20-linux-x86_64.zip;
