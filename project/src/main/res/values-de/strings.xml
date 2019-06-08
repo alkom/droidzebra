@@ -80,5 +80,5 @@
     <string name="ask.analytics">Analytics</string>
     <string name="ask_analytics_deny">Ablehnen</string>
     <string name="ask_analytics_accept">Akzeptieren</string>
-    <string name="ask.analytics.help">Anonymisierte Nutzungsdaten senden, damit die App verbessert werden kann. Es werden Google Analytics for Firebase und Firebase Crashlytics verwendet.</string>
+    <string name="ask.analytics.help">Anonymisierte Nutzungsdaten senden, damit die App verbessert werden kann. Es werden Google Analytics for Firebase und Firebase Crashlytics verwendet. Es werde keine Geräte-Ids oder Ad-Ids übermittelt. Die Auswahl kann in den EInstellungen jederzeit geändert werden.</string>
 </resources>
