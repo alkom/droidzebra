@@ -244,37 +244,38 @@ public class BoardView extends View implements BoardViewModel.BoardViewModelList
 
         // draw helpers for move selector
         if (mMoveSelection != null) {
+            Move selection = mMoveSelection;
             if (mShowSelectionHelpers) {
-                if (this.boardViewModel.isValidMove(mMoveSelection))
+                if (this.boardViewModel.isValidMove(selection))
                     mPaint.setColor(mColorHelpersValid);
                 else
                     mPaint.setColor(mColorHelpersInvalid);
 
                 canvas.drawRect(
-                        mBoardRect.left + mMoveSelection.getX() * mSizeCell,
+                        mBoardRect.left + selection.getX() * mSizeCell,
                         mBoardRect.top,
-                        mBoardRect.left + (mMoveSelection.getX() + 1) * mSizeCell,
+                        mBoardRect.left + (selection.getX() + 1) * mSizeCell,
                         mBoardRect.bottom,
                         mPaint
                 );
                 canvas.drawRect(
                         mBoardRect.left,
-                        mBoardRect.top + mMoveSelection.getY() * mSizeCell,
+                        mBoardRect.top + selection.getY() * mSizeCell,
                         mBoardRect.right,
-                        mBoardRect.top + (mMoveSelection.getY() + 1) * mSizeCell,
+                        mBoardRect.top + (selection.getY() + 1) * mSizeCell,
                         mPaint
                 );
             } else if (mShowSelection) {
-                if (this.boardViewModel.isValidMove(mMoveSelection))
+                if (this.boardViewModel.isValidMove(selection))
                     mPaint.setColor(mColorSelectionValid);
                 else
                     mPaint.setColor(mColorSelectionInvalid);
 
                 canvas.drawRect(
-                        mBoardRect.left + mMoveSelection.getX() * mSizeCell,
-                        mBoardRect.top + mMoveSelection.getY() * mSizeCell,
-                        mBoardRect.left + (mMoveSelection.getX() + 1) * mSizeCell,
-                        mBoardRect.top + (mMoveSelection.getY() + 1) * mSizeCell,
+                        mBoardRect.left + selection.getX() * mSizeCell,
+                        mBoardRect.top + selection.getY() * mSizeCell,
+                        mBoardRect.left + (selection.getX() + 1) * mSizeCell,
+                        mBoardRect.top + (selection.getY() + 1) * mSizeCell,
                         mPaint
                 );
             }
