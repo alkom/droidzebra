@@ -548,8 +548,10 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
 
     @Override
     protected void onDestroy() {
-        engine.disconnect(gameState);
-        gameState.removeGameStateListener();
+        if(gameState != null) {
+            engine.disconnect(gameState);
+            gameState.removeGameStateListener();
+        }
 
         super.onDestroy();
     }
