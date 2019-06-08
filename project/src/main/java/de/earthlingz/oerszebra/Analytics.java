@@ -3,21 +3,27 @@ package de.earthlingz.oerszebra;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import com.crashlytics.android.Crashlytics;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.shurik.droidzebra.GameState;
 import io.fabric.sdk.android.Fabric;
+
+import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static android.content.Context.MODE_PRIVATE;
 import static de.earthlingz.oerszebra.GlobalSettingsLoader.SHARED_PREFS_NAME;
 
 public class Analytics {
 
-    public static final String ANALYTICS_SETTING = "analytics_setting";
-    private final DroidZebra app;
+    static final String ANALYTICS_SETTING = "analytics_setting";
+    private static AtomicReference<DroidZebra> app = new AtomicReference<>();
 
-    Analytics(DroidZebra app) {
-        this.app = app;
+    public static void setApp(DroidZebra zebra) {
+        app.set(zebra);
     }
 
     public static void ask(DroidZebra app) {
@@ -52,28 +58,42 @@ public class Analytics {
         handleConsent(app, consent);
     }
 
-    public static void settingsChanged(Context app) {
+    public static void settingsChanged() {
         final SharedPreferences settings =
-                app.getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
+                app.get().getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
 
         boolean consent = settings.getBoolean(ANALYTICS_SETTING, true);
 
-        handleConsent(app, consent);
+        handleConsent(app.get(), consent);
     }
 
-    public Analytics build() {
+    public static void log(String id, String message) {
 
+        if(app.get() == null) {
+            return;
+        }
+
+        Fabric.getLogger().log(Log.INFO, id, message);
+    }
+
+    public static void build() {
+
+        if(app.get() == null) {
+            return;
+        }
+
+        DroidZebra droidZebra = app.get();
         final SharedPreferences settings =
-                app.getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
+                droidZebra.getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
         boolean consent = settings.getBoolean("analytics_setting", false);
 
         if (consent) { //one time only, needs reboot of the app to work
-            Fabric.with(app, new Crashlytics());
+            Fabric.with(droidZebra, new Crashlytics());
         }
 
-        handleConsent(app, consent);
+        handleConsent(droidZebra, consent);
 
-        return this;
+        return;
 
     }
 
@@ -85,7 +105,21 @@ public class Analytics {
         if (!consent) {
             instance.resetAnalyticsData();
         }
+    }
 
+    public static void converse(String converse, @Nullable Bundle bundle) {
+        if(app.get() != null) {
+            FirebaseAnalytics fb = FirebaseAnalytics.getInstance(app.get());
+            fb.logEvent(converse, bundle);
+        }
 
+    }
+
+    public static void error(String msg, GameState state) {
+
+        if(app.get() == null) {
+            return;
+        }
+        Fabric.getLogger().log(Log.ERROR, "alert", msg + (state!=null? " -" + state.getMoveSequenceAsString():""));
     }
 }

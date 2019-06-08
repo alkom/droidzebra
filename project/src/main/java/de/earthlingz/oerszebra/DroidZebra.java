@@ -21,7 +21,6 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ClipboardManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -266,12 +265,18 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             switch (type) {
                 case "text/plain":
-                    consumeMovesString(intent.getDataString()); // Handle text being sent
+
+                    String dataString = intent.getDataString();
+                    Analytics.converse("intent", null);
+                    Analytics.log("intent", dataString);
+                    consumeMovesString(dataString); // Handle text being sent
 
                     break;
                 case "message/rfc822":
-                    Log.i("Intent", intent.getStringExtra(Intent.EXTRA_TEXT));
-                    consumeMovesString(intent.getStringExtra(Intent.EXTRA_TEXT)); // Handle text being sent
+                    String text = intent.getStringExtra(Intent.EXTRA_TEXT);
+                    Analytics.converse("intent", null);
+                    Analytics.log("intent", text);
+                    consumeMovesString(text); // Handle text being sent
 
                     break;
                 default:
@@ -289,7 +294,8 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new Analytics(this).build();
+        Analytics.setApp(this);
+        Analytics.build();
         resetStateAndStatusView();
 
         Iconify
@@ -315,8 +321,8 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
         engine.onReady(() -> {
             setContentView(R.layout.board_layout);
             showActionBar();
-            mBoardView = (BoardView) findViewById(R.id.board);
-            mStatusView = (StatusView) findViewById(R.id.status_panel);
+            mBoardView = findViewById(R.id.board);
+            mStatusView = findViewById(R.id.status_panel);
             mBoardView.setBoardViewModel(getState());
             mBoardView.setOnMakeMoveListener(this);
             mBoardView.requestFocus();
@@ -344,6 +350,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
 
 
     private void startNewGameAndResetUI(LinkedList<Move> moves) {
+        Analytics.log("new_game", new GameState(8, moves).getMoveSequenceAsString());
         engine.newGame(moves, engineConfig, new ZebraEngine.OnGameStateReadyListener() {
             @Override
             public void onGameStateReady(GameState gameState1) {
@@ -360,6 +367,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
     }
 
     private void startNewGameAndResetUI(int moves_played_count, byte[] moves_played) {
+        Analytics.log("new_game", new GameState(8, moves_played, moves_played_count).getMoveSequenceAsString());
         engine.newGame(moves_played, moves_played_count, engineConfig, new ZebraEngine.OnGameStateReadyListener() {
             @Override
             public void onGameStateReady(GameState gameState1) {
@@ -448,6 +456,8 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                 new String[]{settings.getString(SETTINGS_KEY_SENDMAIL, DEFAULT_SETTING_SENDMAIL)});
 
         intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.app_name));
+
+        Analytics.converse("send_mail", null);
 
         //get BlackPlayer and WhitePlayer
         switch (settingsProvider.getSettingFunction()) { //TODO this might cause a problem, because settings provider is not a source of truth here. It should be taken from ZebraEngine
@@ -612,6 +622,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
     }
 
     public void showAlertDialog(String msg) {
+        Analytics.error(msg, gameState);
         runOnUiThread(DroidZebra.this::startNewGameAndResetUI);
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle("Zebra Error");
@@ -892,39 +903,39 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
             View v = inflater.inflate(R.layout.gameover, container, false);
 
             Button button;
-            button = (Button) v.findViewById(R.id.gameover_choice_new_game);
+            button = v.findViewById(R.id.gameover_choice_new_game);
             button.setOnClickListener(
                     v15 -> {
                         dismiss();
                         getDroidZebra().startNewGameAndResetUI();
                     });
 
-            button = (Button) v.findViewById(R.id.gameover_choice_rotate);
+            button = v.findViewById(R.id.gameover_choice_rotate);
             button.setOnClickListener(
                     click -> {
                         dismiss();
                         getDroidZebra().rotate();
                     });
 
-            button = (Button) v.findViewById(R.id.gameover_choice_beginning);
+            button = v.findViewById(R.id.gameover_choice_beginning);
             button.setOnClickListener(
                     click -> {
                         dismiss();
                         getDroidZebra().undoAll();
                     });
 
-            button = (Button) v.findViewById(R.id.gameover_choice_switch);
+            button = v.findViewById(R.id.gameover_choice_switch);
             button.setOnClickListener(
                     v12 -> {
                         dismiss();
                         getDroidZebra().switchSides();
                     });
 
-            button = (Button) v.findViewById(R.id.gameover_choice_cancel);
+            button = v.findViewById(R.id.gameover_choice_cancel);
             button.setOnClickListener(
                     v1 -> dismiss());
 
-            button = (Button) v.findViewById(R.id.gameover_choice_options);
+            button = v.findViewById(R.id.gameover_choice_options);
             button.setOnClickListener(
                     v13 -> {
                         dismiss();
@@ -934,7 +945,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                         startActivity(i);
                     });
 
-            button = (Button) v.findViewById(R.id.gameover_choice_email);
+            button = v.findViewById(R.id.gameover_choice_email);
             button.setOnClickListener(
                     v14 -> {
                         dismiss();

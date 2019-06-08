@@ -60,7 +60,11 @@ public class EnterMovesDialog extends DialogFragment {
 
 
         // Set up the buttons
-        builder.setPositiveButton(R.string.dialog_ok, (dialog, which) -> getController().consumeMovesString(input.getText().toString()));
+        builder.setPositiveButton(R.string.dialog_ok, (dialog, which) -> {
+            Analytics.converse("enter_moves", null);
+            Analytics.log("enter_moves", input.getText().toString());
+            getController().consumeMovesString(input.getText().toString());
+        });
         builder.setNegativeButton(R.string.dialog_cancel, (dialog, which) -> dialog.cancel());
 
         return builder.create();
