@@ -76,5 +76,12 @@
     <string name="guess_white_move_hint">Guess best white move.</string>
     <string name="menu_item_guess_move">Guess Move Mode</string>
     <string name="gameover_choices_rotate">Rotate the Board</string>
+    <string name="menu_item_first_move">Replay</string>
+    <string name="gameover_beginning">Go to first Move</string>
+    <string name="board_description">The Board</string>
+    <string name="ask.analytics">Analytics</string>
+    <string name="ask_analytics_deny">Deny</string>
+    <string name="ask_analytics_accept">Accept</string>
+    <string name="ask.analytics.help">To improve the app I need some anonymous usage statistics and error logs Please allow the collection and transmision of these statistics. The app uses Google Analytics for Firebase and Firebase Crashlytics. DeviceIds and Ad-Ids are not transmitted. You can change your this in the settings later.</string>
 
 </resources>

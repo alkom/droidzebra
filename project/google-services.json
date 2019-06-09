@@ -15,6 +15,43 @@
       },
       "oauth_client": [
         {
+          "client_id": "129613454554-f6gfcvrbfgv3rr63cdds41akpur9ggo7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "de.earthlingz.oerszebra",
+            "certificate_hash": "bc563ff57cd61d24fb5690fd8709029743460f17"
+          }
+        },
+        {
+          "client_id": "129613454554-edrv2glgk1f840q73rjuh94i2cfnmmvt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAi2godRNcB3aq6oJQXiGOFsnW6a3F0D6c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "129613454554-edrv2glgk1f840q73rjuh94i2cfnmmvt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:129613454554:android:5f6d0500d16139a6",
+        "android_client_info": {
+          "package_name": "de.earthlingz.oerszebra.debug"
+        }
+      },
+      "oauth_client": [
+        {
           "client_id": "129613454554-edrv2glgk1f840q73rjuh94i2cfnmmvt.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -1,15 +1,22 @@
 package de.earthlingz.oerszebra.guessmove;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.MenuBuilder;
+import com.joanzapata.iconify.IconDrawable;
+import com.joanzapata.iconify.Iconify;
+import com.joanzapata.iconify.fonts.FontAwesomeIcons;
+import com.joanzapata.iconify.fonts.FontAwesomeModule;
 import com.shurik.droidzebra.EngineConfig;
 import com.shurik.droidzebra.InvalidMove;
 import com.shurik.droidzebra.ZebraEngine;
@@ -40,17 +47,22 @@ public class GuessMoveActivity extends AppCompatActivity {
         globalSettingsLoader = new GlobalSettingsLoader(getApplicationContext());
         engineConfig = globalSettingsLoader.createEngineConfig();
 
+        Iconify
+                .with(new FontAwesomeModule());
+
 
         this.manager = new GuessMoveModeManager(ZebraEngine.get(
                 new AndroidContext(getApplicationContext())),
                 engineConfig);
         setContentView(R.layout.activity_guess_move);
-        boardView = (BoardView) findViewById(R.id.guess_move_board);
+        boardView = findViewById(R.id.guess_move_board);
         boardViewModel = manager;
         boardView.setBoardViewModel(boardViewModel);
         boardView.requestFocus();
-        sideToMoveCircle = (ImageView) findViewById(R.id.side_to_move_circle);
-        hintText = (TextView) findViewById(R.id.guess_move_text);
+        sideToMoveCircle = findViewById(R.id.side_to_move_circle);
+        hintText = findViewById(R.id.guess_move_text);
+        Button button = findViewById(R.id.guess_move_new);
+        button.setOnClickListener((a) -> newGame());
         newGame();
     }
 
@@ -70,6 +82,8 @@ public class GuessMoveActivity extends AppCompatActivity {
 
     }
 
+
+
     private void newGame() {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Generating game");
@@ -84,7 +98,7 @@ public class GuessMoveActivity extends AppCompatActivity {
                     boardView.setOnMakeMoveListener(move -> manager.guess(move));
                     updateSideToMoveCircle(sideToMove);
                     setGuessText(sideToMove);
-                    progressDialog.hide();
+                    progressDialog.dismiss();
 
                 });
 
@@ -161,10 +175,43 @@ public class GuessMoveActivity extends AppCompatActivity {
     }
 
 
+    /* Creates the menu items */
     @Override
+    @SuppressLint("RestrictedApi")
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.guess_move_context_menu, menu);
+
+        if(menu instanceof MenuBuilder){
+            MenuBuilder m = (MenuBuilder) menu;
+            m.setOptionalIconsVisible(true);
+        }
+
+        menu.findItem(R.id.menu_take_back).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_undo)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_take_redo).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_repeat)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_new_game).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_play)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_hint).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_info)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
+        menu.findItem(R.id.menu_settings).setIcon(
+                new IconDrawable(this, FontAwesomeIcons.fa_cog)
+                        .colorRes(R.color.white)
+                        .sizeDp(12));
+
         return super.onCreateOptionsMenu(menu);
     }
 

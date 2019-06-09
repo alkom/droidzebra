@@ -43,6 +43,7 @@
 #define UI_EVENT_UNDO  2
 #define UI_EVENT_SETTINGS_CHANGE 3
 #define UI_EVENT_REDO  4
+#define UI_EVENT_UNDO_ALL  5
 
 typedef struct {
 	int type;

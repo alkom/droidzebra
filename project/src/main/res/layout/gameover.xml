@@ -1,53 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/gameover_root"
-              android:orientation="vertical"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-              android:padding="10dp"
-              android:gravity="center"
-              >
-    <TextView android:id="@+id/gameover_text"
-        android:text="@string/somebody_wins"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
-              android:textColor="#FFF"
-              android:gravity="center" android:textSize="36sp"/>
-    <TextView android:id="@+id/gameover_score"
-        android:text="@string/_00_00"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
-              android:textColor="#FFF"
-              android:gravity="center" android:textSize="36sp" android:paddingBottom="20sp" android:paddingTop="15sp"/>
+    android:id="@+id/gameover_root"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="10dp">
 
-<Button android:id="@+id/gameover_choice_new_game" 
-android:layout_width="fill_parent" 
-android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/gameover_choices_new_game">
-</Button>
+    <TextView
+        android:id="@+id/gameover_text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/somebody_wins"
+        android:textColor="#FFF"
+        android:textSize="36sp" />
+
+    <TextView
+        android:id="@+id/gameover_score"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="15sp"
+        android:paddingBottom="20sp"
+        android:text="@string/_00_00"
+        android:textColor="#FFF"
+        android:textSize="36sp" />
+
+    <Button
+        android:id="@+id/gameover_choice_new_game"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/gameover_choices_new_game"
+        android:textSize="24sp"/>
+
+    <Button
+        android:id="@+id/gameover_choice_beginning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/gameover_beginning"
+        android:textSize="24sp" />
 
     <Button
         android:id="@+id/gameover_choice_rotate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/gameover_choices_rotate"
-        android:textSize="24sp"></Button>
+        android:textSize="24sp" />
 
-    <Button android:id="@+id/gameover_choice_switch"
-android:layout_width="fill_parent" 
-android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/gameover_choices_switch">
-</Button>
+    <Button
+        android:id="@+id/gameover_choice_switch"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/gameover_choices_switch"
+        android:textSize="24sp"/>
 
-<Button android:layout_width="fill_parent" android:textSize="24sp" android:id="@+id/gameover_choice_options" android:text="@string/gameover_choices_options" android:layout_height="wrap_content"></Button>
+    <Button
+        android:id="@+id/gameover_choice_options"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/gameover_choices_options"
+        android:textSize="24sp"/>
 
-<Button android:id="@+id/gameover_choice_email" 
-android:layout_width="fill_parent" 
-android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/gameover_choices_email">
-</Button>
+    <Button
+        android:id="@+id/gameover_choice_email"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/gameover_choices_email"
+        android:textSize="24sp"/>
 
-<Button android:id="@+id/gameover_choice_cancel" 
-android:layout_width="fill_parent" 
-android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/gameover_choices_cancel">
-</Button>
+    <Button
+        android:id="@+id/gameover_choice_cancel"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/gameover_choices_cancel"
+        android:textSize="24sp"/>
 
 
 </LinearLayout>

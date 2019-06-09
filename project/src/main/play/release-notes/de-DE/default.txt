@@ -1,2 +1,4 @@
 "Zug raten" Modus
 "Brett umdrehen" - Option
+Neues Logo/Icons
+"Erster Zug" Option

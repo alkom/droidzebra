@@ -1,6 +1,6 @@
 package de.earthlingz.oerszebra.guessmove;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import com.shurik.droidzebra.*;
 import de.earthlingz.oerszebra.BoardView.BoardViewModel;
 import de.earthlingz.oerszebra.GameSettingsConstants;

@@ -1,14 +1,15 @@
 package de.earthlingz.oerszebra;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
 import android.text.InputType;
 import android.widget.EditText;
+import androidx.fragment.app.DialogFragment;
+
+import javax.annotation.Nonnull;
 
 /**
  * Created by stefan on 18.03.2018.
@@ -28,7 +29,7 @@ public class EnterMovesDialog extends DialogFragment {
         return (MoveStringConsumer) getActivity();
     }
 
-    @NonNull
+    @Nonnull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -60,7 +61,11 @@ public class EnterMovesDialog extends DialogFragment {
 
 
         // Set up the buttons
-        builder.setPositiveButton(R.string.dialog_ok, (dialog, which) -> getController().consumeMovesString(input.getText().toString()));
+        builder.setPositiveButton(R.string.dialog_ok, (dialog, which) -> {
+            Analytics.converse("enter_moves", null);
+            Analytics.log("enter_moves", input.getText().toString());
+            getController().consumeMovesString(input.getText().toString());
+        });
         builder.setNegativeButton(R.string.dialog_cancel, (dialog, which) -> dialog.cancel());
 
         return builder.create();

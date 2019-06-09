@@ -74,4 +74,11 @@
     <string name="guess_white_move_hint">Besten weissen Zug raten</string>
     <string name="menu_item_guess_move">Züge raten</string>
     <string name="gameover_choices_rotate">Brett umdrehen</string>
+    <string name="menu_item_first_move">Erster Zug</string>
+    <string name="gameover_beginning">Zum ersten Zug</string>
+    <string name="board_description">The Board</string>
+    <string name="ask.analytics">Analytics</string>
+    <string name="ask_analytics_deny">Ablehnen</string>
+    <string name="ask_analytics_accept">Akzeptieren</string>
+    <string name="ask.analytics.help">Anonymisierte Nutzungsdaten senden, damit die App verbessert werden kann. Es werden Google Analytics for Firebase und Firebase Crashlytics verwendet. Es werde keine Geräte-IDs oder AD-Ids übermittelt. Die Auswahl kann in den Einstellungen jederzeit geändert werden.</string>
 </resources>

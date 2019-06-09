@@ -1,7 +1,7 @@
 package de.earthlingz.oerszebra.BoardView;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.shurik.droidzebra.*;
 
 import static com.shurik.droidzebra.ZebraEngine.PLAYER_EMPTY;

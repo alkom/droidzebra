@@ -193,6 +193,10 @@ public class GlobalSettingsLoader implements SharedPreferences.OnSharedPreferenc
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(Analytics.ANALYTICS_SETTING.equals(key)) {
+            Analytics.settingsChanged();
+        }
+
         if (loadSettings() && onSettingsChangedListener != null) {
             onSettingsChangedListener.onSettingsChanged();
         }

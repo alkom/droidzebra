@@ -220,7 +220,7 @@ public class BoardView extends View implements BoardViewModel.BoardViewModelList
 
         // draw the board
         mPaint.setStrokeWidth(lineWidth);
-        int boardSize = boardViewModel.getBoardSize();
+        int boardSize = boardViewModel !=null ? boardViewModel.getBoardSize():8;
         for (int i = 0; i <= boardSize; i++) {
             mPaint.setColor(mColorLine);
             canvas.drawLine(mBoardRect.left + i * mSizeCell, mBoardRect.top, mBoardRect.left + i * mSizeCell, mBoardRect.top + mSizeCell * boardSize, mPaint);
@@ -244,37 +244,38 @@ public class BoardView extends View implements BoardViewModel.BoardViewModelList
 
         // draw helpers for move selector
         if (mMoveSelection != null) {
+            Move selection = mMoveSelection;
             if (mShowSelectionHelpers) {
-                if (this.boardViewModel.isValidMove(mMoveSelection))
+                if (this.boardViewModel.isValidMove(selection))
                     mPaint.setColor(mColorHelpersValid);
                 else
                     mPaint.setColor(mColorHelpersInvalid);
 
                 canvas.drawRect(
-                        mBoardRect.left + mMoveSelection.getX() * mSizeCell,
+                        mBoardRect.left + selection.getX() * mSizeCell,
                         mBoardRect.top,
-                        mBoardRect.left + (mMoveSelection.getX() + 1) * mSizeCell,
+                        mBoardRect.left + (selection.getX() + 1) * mSizeCell,
                         mBoardRect.bottom,
                         mPaint
                 );
                 canvas.drawRect(
                         mBoardRect.left,
-                        mBoardRect.top + mMoveSelection.getY() * mSizeCell,
+                        mBoardRect.top + selection.getY() * mSizeCell,
                         mBoardRect.right,
-                        mBoardRect.top + (mMoveSelection.getY() + 1) * mSizeCell,
+                        mBoardRect.top + (selection.getY() + 1) * mSizeCell,
                         mPaint
                 );
             } else if (mShowSelection) {
-                if (this.boardViewModel.isValidMove(mMoveSelection))
+                if (this.boardViewModel.isValidMove(selection))
                     mPaint.setColor(mColorSelectionValid);
                 else
                     mPaint.setColor(mColorSelectionInvalid);
 
                 canvas.drawRect(
-                        mBoardRect.left + mMoveSelection.getX() * mSizeCell,
-                        mBoardRect.top + mMoveSelection.getY() * mSizeCell,
-                        mBoardRect.left + (mMoveSelection.getX() + 1) * mSizeCell,
-                        mBoardRect.top + (mMoveSelection.getY() + 1) * mSizeCell,
+                        mBoardRect.left + selection.getX() * mSizeCell,
+                        mBoardRect.top + selection.getY() * mSizeCell,
+                        mBoardRect.left + (selection.getX() + 1) * mSizeCell,
+                        mBoardRect.top + (selection.getY() + 1) * mSizeCell,
                         mPaint
                 );
             }
@@ -288,6 +289,9 @@ public class BoardView extends View implements BoardViewModel.BoardViewModelList
             mPaint.setColor(mColorSelectionValid);
 
             canvas.drawRect(cellRT, mPaint);
+        }
+        if(boardViewModel == null) {
+            return;
         }
 
         // draw moves
@@ -389,13 +393,16 @@ public class BoardView extends View implements BoardViewModel.BoardViewModelList
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
+        //for the android designer
+        int boardSize = boardViewModel != null?boardViewModel.getBoardSize():8;
+
         mSizeX = mSizeY = Math.min(getMeasuredWidth(), getMeasuredHeight());
-        mSizeCell = Math.min(mSizeX / (boardViewModel.getBoardSize() + 1), mSizeY / (boardViewModel.getBoardSize() + 1));
+        mSizeCell = Math.min(mSizeX / (boardSize + 1), mSizeY / (boardSize + 1));
         lineWidth = Math.max(1f, mSizeCell / 40f);
         gridCirclesRadius = Math.max(3f, mSizeCell / 13f);
         mBoardRect.set(
-                mSizeX - mSizeCell / 2 - mSizeCell * boardViewModel.getBoardSize(),
-                mSizeY - mSizeCell / 2 - mSizeCell * boardViewModel.getBoardSize(),
+                mSizeX - mSizeCell / 2 - mSizeCell * boardSize,
+                mSizeY - mSizeCell / 2 - mSizeCell * boardSize,
                 mSizeX - mSizeCell / 2,
                 mSizeY - mSizeCell / 2
         );

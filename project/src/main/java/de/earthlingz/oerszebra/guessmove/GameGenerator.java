@@ -1,6 +1,6 @@
 package de.earthlingz.oerszebra.guessmove;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.shurik.droidzebra.*;
 
 public class GameGenerator {
