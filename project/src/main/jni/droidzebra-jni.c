@@ -690,6 +690,7 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz, jint providedMo
 	provided_move_index = 0;
 	provided_move_count = 0;
 	if( providedMoveCount>0 && providedMoves ) {
+
 		jbyte* providedMovesJNI;
 		provided_move_count = providedMoveCount;
 		i = (*env)->GetArrayLength(env, providedMoves);
@@ -708,6 +709,9 @@ JNIFn(droidzebra,ZebraEngine,zePlay)( JNIEnv* env, jobject thiz, jint providedMo
 
 	/* Set up the position and the search engine */
 	game_init( NULL, &side_to_move );
+
+    _droidzebra_undo_stack_clear();
+
 	setup_hash( TRUE );
 	clear_stored_game();
     set_slack(s_slack * 128);

@@ -211,7 +211,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
                 undoAll();
                 return true;
             case R.id.menu_take_redo:
-                engine.redoMove(gameState);
+                redo();
                 return true;
             case R.id.menu_settings: {
                 // Launch Preference activity
@@ -249,7 +249,11 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
         return false;
     }
 
-    private void undo() {
+    void redo() {
+        engine.redoMove(gameState);
+    }
+
+    void undo() {
         menu.findItem(R.id.menu_take_back).setEnabled(false);
         engine.undoMove(gameState);
     }
@@ -307,6 +311,12 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
         hideActionBar();
 
         engine = ZebraEngine.get(new AndroidContext(getApplicationContext()));
+        engine.setOnDebugListener(new ZebraEngine.OnEngineDebugListener() {
+            @Override
+            public void onDebug(String message) {
+                Log.d("engine", message);
+            }
+        });
         this.settingsProvider = new GlobalSettingsLoader(this);
         this.settingsProvider.setOnSettingsChangedListener(this);
         this.engineConfig = settingsProvider.createEngineConfig();
@@ -839,7 +849,7 @@ public class DroidZebra extends AppCompatActivity implements MoveStringConsumer,
 
     public void rotate() {
         byte[] rotate = gameState.rotate();
-        startNewGameAndResetUI(rotate.length, rotate);
+        startNewGameAndResetUI(gameState.getDisksPlayed(), rotate);
     }
 
 
