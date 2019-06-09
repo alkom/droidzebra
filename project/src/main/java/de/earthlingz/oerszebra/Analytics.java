@@ -83,19 +83,26 @@ public class Analytics {
             return;
         }
 
-        DroidZebra droidZebra = app.get();
-        final SharedPreferences settings =
-                droidZebra.getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
-        boolean consent = settings.getBoolean(ANALYTICS_SETTING, false);
+        boolean consent = isConsent();
 
         if (consent) { //one time only, needs reboot of the app to work
-            Fabric.with(droidZebra, new Crashlytics());
+            Fabric.with(app.get(), new Crashlytics());
         }
 
-        handleConsent(droidZebra, consent);
+        handleConsent(app.get(), consent);
 
         return;
 
+    }
+
+    private static boolean isConsent() {
+        if(app.get() == null) {
+            return false;
+        }
+        DroidZebra droidZebra = app.get();
+        final SharedPreferences settings =
+                droidZebra.getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
+        return settings.getBoolean(ANALYTICS_SETTING, false);
     }
 
     private static void handleConsent(Context app, boolean consent) {
@@ -116,6 +123,11 @@ public class Analytics {
     }
 
     public static void converse(String converse, @Nullable Bundle bundle) {
+        if(!isConsent()) {
+            Log.i("converse", converse);
+            return;
+        }
+        Fabric.getLogger().log(Log.INFO, "converse", converse);
         if(app.get() != null) {
             FirebaseAnalytics fb = getFirebaseAnalytics(app.get());
             fb.logEvent(converse, bundle);
@@ -124,10 +136,15 @@ public class Analytics {
     }
 
     public static void error(String msg, GameState state) {
+        String message = msg + (state!=null? " -" + state.getMoveSequenceAsString():"");
+        if(!isConsent()) {
+            Log.e("alert", message);
+            return;
+        }
 
         if(app.get() == null) {
             return;
         }
-        Fabric.getLogger().log(Log.ERROR, "alert", msg + (state!=null? " -" + state.getMoveSequenceAsString():""));
+        Fabric.getLogger().log(Log.ERROR, "alert", message);
     }
 }
