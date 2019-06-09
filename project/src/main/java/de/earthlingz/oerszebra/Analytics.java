@@ -21,6 +21,7 @@ public class Analytics {
 
     static final String ANALYTICS_SETTING = "analytics_setting";
     private static AtomicReference<DroidZebra> app = new AtomicReference<>();
+    private static FirebaseAnalytics firebase = null;
 
     public static void setApp(DroidZebra zebra) {
         app.set(zebra);
@@ -53,7 +54,7 @@ public class Analytics {
         final SharedPreferences settings =
                 app.getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
 
-        settings.edit().putBoolean("analytics_setting", consent).apply();
+        settings.edit().putBoolean(ANALYTICS_SETTING, consent).apply();
 
         handleConsent(app, consent);
     }
@@ -85,7 +86,7 @@ public class Analytics {
         DroidZebra droidZebra = app.get();
         final SharedPreferences settings =
                 droidZebra.getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
-        boolean consent = settings.getBoolean("analytics_setting", false);
+        boolean consent = settings.getBoolean(ANALYTICS_SETTING, false);
 
         if (consent) { //one time only, needs reboot of the app to work
             Fabric.with(droidZebra, new Crashlytics());
@@ -99,7 +100,7 @@ public class Analytics {
 
     private static void handleConsent(Context app, boolean consent) {
 
-        FirebaseAnalytics instance = FirebaseAnalytics.getInstance(app);
+        FirebaseAnalytics instance = getFirebaseAnalytics(app);
         instance.setAnalyticsCollectionEnabled(consent);
 
         if (!consent) {
@@ -107,9 +108,16 @@ public class Analytics {
         }
     }
 
+    private synchronized static FirebaseAnalytics getFirebaseAnalytics(Context app) {
+        if(firebase == null) {
+            firebase = FirebaseAnalytics.getInstance(app);
+        }
+        return firebase;
+    }
+
     public static void converse(String converse, @Nullable Bundle bundle) {
         if(app.get() != null) {
-            FirebaseAnalytics fb = FirebaseAnalytics.getInstance(app.get());
+            FirebaseAnalytics fb = getFirebaseAnalytics(app.get());
             fb.logEvent(converse, bundle);
         }
 
