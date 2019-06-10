@@ -19,7 +19,7 @@ public class BoardRotateTest extends BasicTest {
         zebra.runOnUiThread(() -> zebra.onNewIntent(intent));
         //zebra.getEngine().waitForEngineState(ZebraEngine.ES_USER_INPUT_WAIT);
 
-        waitForOpenendDialogs();
+        waitForOpenendDialogs(false);
 
         assertSame(3, countSquares(ZebraEngine.PLAYER_EMPTY));
         assertSame(58, countSquares(ZebraEngine.PLAYER_WHITE));
@@ -37,5 +37,55 @@ public class BoardRotateTest extends BasicTest {
         assertSame(zebra.getState().getBlackScore(), 3);
         assertSame(zebra.getState().getWhiteScore(), 61);
 
+    }
+
+
+    @Test
+    public void testRotateWithUndo() throws InterruptedException {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.setType("message/rfc822");
+        intent.putExtra(Intent.EXTRA_TEXT, "D3C5F6F5F4C3C4D2E2B4D1F3B5E3F2F1A4D6E6E7F7B6E8C6B3A5D7A3E1A6G1A2C2C7B8D8C8G8G6H6G5H5G4H4H3G7H8F8H7A8A7B7A1B2G3G2H2H1C1B1");
+
+        zebra.runOnUiThread(() -> zebra.onNewIntent(intent));
+        //zebra.getEngine().waitForEngineState(ZebraEngine.ES_USER_INPUT_WAIT);
+
+        waitForOpenendDialogs(true);
+
+        assertSame(0, countSquares(ZebraEngine.PLAYER_EMPTY));
+        assertSame(32, countSquares(ZebraEngine.PLAYER_WHITE));
+        assertSame(32, countSquares(ZebraEngine.PLAYER_BLACK));
+        assertSame(zebra.getState().getBlackScore(), 32);
+        assertSame(zebra.getState().getWhiteScore(), 32);
+
+
+        zebra.runOnUiThread(() -> zebra.undo());Thread.sleep(500);
+        zebra.runOnUiThread(() -> zebra.undo());Thread.sleep(500);
+        zebra.runOnUiThread(() -> zebra.undo());Thread.sleep(500);
+        zebra.runOnUiThread(() -> zebra.undo());Thread.sleep(500);
+
+
+        zebra.runOnUiThread(() -> zebra.rotate());Thread.sleep(500);
+
+
+        zebra.runOnUiThread(() -> zebra.undo());Thread.sleep(500);
+        zebra.runOnUiThread(() -> zebra.undo());Thread.sleep(500);
+
+
+        zebra.runOnUiThread(() -> zebra.redo());Thread.sleep(500);
+        zebra.runOnUiThread(() -> zebra.redo());Thread.sleep(500);
+
+
+        //no redo possible, yet, but no exception either
+        zebra.runOnUiThread(() -> zebra.redo());Thread.sleep(500);
+        zebra.runOnUiThread(() -> zebra.redo());Thread.sleep(500);
+
+        Thread.sleep(500);
+
+        assertSame(4, countSquares(ZebraEngine.PLAYER_EMPTY));
+        assertSame(29, countSquares(ZebraEngine.PLAYER_WHITE));
+        assertSame(31, countSquares(ZebraEngine.PLAYER_BLACK));
+        assertSame(zebra.getState().getBlackScore(), 31);
+        assertSame(zebra.getState().getWhiteScore(), 29);
     }
 }

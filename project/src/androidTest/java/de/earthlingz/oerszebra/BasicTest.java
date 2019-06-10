@@ -27,16 +27,19 @@ class BasicTest {
         }
     }
 
-    void waitForOpenendDialogs() throws InterruptedException {
-        while(!hasOpenedDialogs(zebra)) {
+    void waitForOpenendDialogs(boolean dismiss) throws InterruptedException {
+        while(!hasOpenedDialogs(zebra, dismiss)) {
             Thread.sleep(100);
         }
     }
 
-   private boolean hasOpenedDialogs(FragmentActivity activity) {
+   private boolean hasOpenedDialogs(FragmentActivity activity, boolean dismiss) {
         List<Fragment> fragments = activity.getSupportFragmentManager().getFragments();
         for (Fragment fragment : fragments) {
             if (fragment instanceof DialogFragment) {
+                if(dismiss) {
+                    ((DialogFragment) fragment).dismiss();
+                }
                 return true;
             }
         }
