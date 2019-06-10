@@ -76,15 +76,16 @@ public class BoardRotateTest extends BasicTest {
         zebra.runOnUiThread(() -> zebra.redo());Thread.sleep(500);
 
 
+        //no redo possible, yet, but no exception either
         zebra.runOnUiThread(() -> zebra.redo());Thread.sleep(500);
         zebra.runOnUiThread(() -> zebra.redo());Thread.sleep(500);
 
         Thread.sleep(500);
 
-        assertSame(3, countSquares(ZebraEngine.PLAYER_EMPTY));
-        assertSame(32, countSquares(ZebraEngine.PLAYER_WHITE));
-        assertSame(32, countSquares(ZebraEngine.PLAYER_BLACK));
-        assertSame(zebra.getState().getBlackScore(), 32);
-        assertSame(zebra.getState().getWhiteScore(), 32);
+        assertSame(4, countSquares(ZebraEngine.PLAYER_EMPTY));
+        assertSame(29, countSquares(ZebraEngine.PLAYER_WHITE));
+        assertSame(31, countSquares(ZebraEngine.PLAYER_BLACK));
+        assertSame(zebra.getState().getBlackScore(), 31);
+        assertSame(zebra.getState().getWhiteScore(), 29);
     }
 }
