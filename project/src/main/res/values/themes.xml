@@ -5,6 +5,7 @@
     <style name="CustomActionBarTheme" parent="Theme.AppCompat">
         <item name="actionBarStyle">@style/MyActionBar</item>
         <item name="android:textColor">@color/statustextcolor</item>
+        <item name="android:actionButtonStyle">@style/ActionButton</item>
     </style>
 
     <!-- ActionBar styles -->
@@ -16,5 +17,9 @@
     <!-- ActionBar title text -->
     <style name="MyActionBarTitleText" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
         <item name="android:textColor">@color/statustextcolor</item>
+    </style>
+
+    <style name="ActionButton" parent="@android:style/Widget.ActionButton">
+        <item name="android:drawablePadding">3dp</item>
     </style>
 </resources>

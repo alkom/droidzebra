@@ -6,23 +6,18 @@
         </item>
         <item android:id="@+id/menu_take_back"
               android:title="@string/menu_item_undo"
-              app:showAsAction="ifRoom|withText"
               tools:ignore="AppCompatResource">
         </item>
         <item android:id="@+id/menu_take_redo"
               android:title="@string/menu_item_redo"
-              app:showAsAction="ifRoom|withText"
               tools:ignore="AppCompatResource">
         </item>
     <item android:id="@+id/menu_goto_beginning"
         android:title="@string/menu_item_first_move"
-        app:showAsAction="ifRoom|withText"
         tools:ignore="AppCompatResource">
     </item>
     <item android:id="@+id/menu_rotate"
-        android:title="@string/gameover_choices_rotate"
-        app:showAsAction="ifRoom|withText">
-
+        android:title="@string/gameover_choices_rotate">
     </item>
         <item android:id="@+id/menu_new_game"
               app:showAsAction="ifRoom|withText"

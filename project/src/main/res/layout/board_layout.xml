@@ -25,15 +25,7 @@
     android:visibility="visible"
 > 
 
-	<view
-		class="de.earthlingz.oerszebra.StatusView"
-	android:focusable="false"
-	android:id="@+id/status_panel" 
-	android:layout_width="fill_parent" 
-	android:layout_height="fill_parent"
-	android:background="@color/board_color"
-    android:visibility="visible"
-	/>
+	<include layout="@layout/status"/>
 	
 </FrameLayout>
 </RelativeLayout>
